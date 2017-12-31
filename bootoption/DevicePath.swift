@@ -106,13 +106,13 @@ struct HardDriveMediaDevicePath {
                 guard let description: [String: Any] = cfDescription as? Dictionary else {
                         fatalError("Failed to get volume description as Dictionary")
                 }
-                guard let registryPath = description["DAMediaPath"] as? String else {
+                guard let daMediaPath = description["DAMediaPath"] as? String else {
                         fatalError("Failed to get DAMediaPath as String")
                 }
 
                 /* Get the registry object for our partition */
 
-                let partitionProperties = RegistryEntry.init(fromPath: registryPath)
+                let partitionProperties = RegistryEntry.init(fromPath: daMediaPath)
                 
                 /* To do - Check disk is GPT */
                 

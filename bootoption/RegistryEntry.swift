@@ -1,4 +1,6 @@
 /*
+ * File: RegistryEntry.swift
+ *
  * bootoption © vulgo 2017 - A program to create / save an EFI boot
  * option - so that it might be added to the firmware menu later
  *
@@ -23,59 +25,40 @@ class RegistryEntry {
         
         var registryEntry:io_registry_entry_t = io_registry_entry_t.init()
         
-        init(from: String) {
-                registryEntry = IORegistryEntryFromPath(kIOMasterPortDefault, from)
+        init(fromPath path: String) {
+                registryEntry = IORegistryEntryFromPath(kIOMasterPortDefault, path)
                 guard registryEntry != 0 else {
-                        print("RegistryEntry: Error getting registry entry from path")
-                        exit(1)
+                        fatalError("RegistryEntry: Error getting registry entry from path")
                 }
         }
         
-        private func valueFrom(key: String, type: CFTypeID) -> Any? {
+        private func value(fromKey key: String, type: CFTypeID) -> Any? {
                 let registryKey:CFString = key as CFString
                 let registryValue:Unmanaged<CFTypeRef>? = (IORegistryEntryCreateCFProperty(registryEntry, registryKey , kCFAllocatorDefault, 0))
-                
                 guard (registryValue != nil) else {
                         return nil
                 }
-                
                 let value = registryValue!.takeRetainedValue()
                 let valueType = CFGetTypeID(value)
-                
                 guard valueType == type else {
-                        print("Error: valueFrom(): Expected '\(CFCopyTypeIDDescription(type))' type for '\(key)' Instead: '\(CFCopyTypeIDDescription(valueType))'")
+                        print("RegistryEntry valueFrom(): Expected '\(CFCopyTypeIDDescription(type))' type for '\(key)' Instead: '\(CFCopyTypeIDDescription(valueType))'")
                         return nil
                 }
-                
                 return value
         }
         
-        func dataFrom(key: String) -> Data? {
-                
-                guard let data:Data = valueFrom(key: key, type: CFDataGetTypeID() ) as? Data else {
+        func int(fromKey key: String) -> Int? {
+                guard let int:Int = value(fromKey: key, type: CFNumberGetTypeID()) as? Int else {
                         return nil
                 }
-                
-                return data
-        }
-        
-        func intFrom(key: String) -> Int? {
-                
-                guard let int:Int = valueFrom(key: key, type: CFNumberGetTypeID()) as? Int else {
-                        return nil
-                }
-                
                 return int
         }
         
-        func stringFrom(key: String) -> String? {
-                
-                guard let string:String = valueFrom(key: key, type: CFStringGetTypeID()) as? String else {
+        func string(fromKey key: String) -> String? {
+                guard let string:String = value(fromKey: key, type: CFStringGetTypeID()) as? String else {
                         return nil
                 }
-                
                 return string
         }
         
 }
-

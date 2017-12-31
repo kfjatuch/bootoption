@@ -1,4 +1,6 @@
 /*
+ * File: main.swift
+ *
  * bootoption © vulgo 2017 - A program to create / save an EFI boot
  * option - so that it might be added to the firmware menu later
  *
@@ -53,13 +55,13 @@ func main() {
         
         /* Boot option variable data */
         
-        var bootVar = Data.init()
-        bootVar.append(attributes)
-        bootVar.append(devicePathListLength)
-        bootVar.append(description)
-        bootVar.append(devicePathList)
+        var efiLoadOption = Data.init()
+        efiLoadOption.append(attributes)
+        efiLoadOption.append(devicePathListLength)
+        efiLoadOption.append(description)
+        efiLoadOption.append(devicePathList)
         
-        let data = bootVar as NSData
+        let data = efiLoadOption as NSData
         let dictionary: NSDictionary = ["Boot": data]
         let url = URL(fileURLWithPath: outputFile!)
         do {

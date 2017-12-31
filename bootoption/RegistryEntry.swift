@@ -41,7 +41,7 @@ class RegistryEntry {
                 let value = registryValue!.takeRetainedValue()
                 let valueType = CFGetTypeID(value)
                 guard valueType == type else {
-                        print("RegistryEntry valueFrom(): Expected '\(CFCopyTypeIDDescription(type))' type for '\(key)' Instead: '\(CFCopyTypeIDDescription(valueType))'")
+                        print("RegistryEntry value(key:type:): Expected '\(CFCopyTypeIDDescription(type))' type for '\(key)' Instead: '\(CFCopyTypeIDDescription(valueType))'")
                         return nil
                 }
                 return value

@@ -32,6 +32,10 @@ func main() {
         
         /* Description */
         
+        if bootOptionDescription!.containsOutlawedCharacters() {
+                fatalError("Forbidden character(s) found in description")
+        }
+        
         var description = bootOptionDescription!.data(using: String.Encoding.utf16)!
         description.removeFirst()
         description.removeFirst()

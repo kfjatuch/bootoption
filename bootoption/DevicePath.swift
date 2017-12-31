@@ -200,6 +200,9 @@ struct FilePathMediaDevicePath {
                 let i = localPath.index(localPath.startIndex, offsetBy: c)
                 var efiPath = "/" + localPath[i...]
                 efiPath = efiPath.uppercased().replacingOccurrences(of: "/", with: "\\")
+                if efiPath.containsOutlawedCharacters() {
+                        fatalError("Forbidden character(s) found in path")
+                }
                 var pathData = efiPath.data(using: String.Encoding.utf16)!
                 pathData.removeFirst()
                 pathData.removeFirst()

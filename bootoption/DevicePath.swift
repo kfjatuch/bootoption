@@ -60,18 +60,17 @@ struct HardDriveMediaDevicePath {
                         fatalError("Failed to create DASession")
                 }
                 
-                guard let volumes:[URL] = fileManager.mountedVolumeURLs(includingResourceValuesForKeys: nil) else {
+                guard var volumes:[URL] = fileManager.mountedVolumeURLs(includingResourceValuesForKeys: nil) else {
                         fatalError("Failed to get mounted volume URLs")
                 }
+                volumes = volumes.filter { $0.isFileURL }
 
                 /*  Find a mounted volume path from our loader path */
 
                 var longestMatch: Int = 0
                 var mountedVolumePath: String?
                 let prefix: String = "file://"
-                
-                /* To do - eliminate anything that doesn't start with "file://" */
-                
+
                 for volume in volumes {
                         let unprefixedVolumeString: String = volume.absoluteString.replacingOccurrences(of: prefix, with: "")
                         let stringLength: Int = unprefixedVolumeString.characters.count

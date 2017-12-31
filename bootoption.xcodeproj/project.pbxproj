@@ -46,6 +46,7 @@
 		4DD5EF611FF91D8600C82104 = {
 			isa = PBXGroup;
 			children = (
+				4DD5EF7A1FF9238000C82104 /* README.md */,
 				4DD5EF6C1FF91D8600C82104 /* bootoption */,
 				4DD5EF6B1FF91D8600C82104 /* Products */,
 			);
@@ -65,7 +66,6 @@
 				4DD5EF751FF91DDE00C82104 /* DevicePath.swift */,
 				4DD5EF741FF91DDE00C82104 /* main.swift */,
 				4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */,
-				4DD5EF7A1FF9238000C82104 /* README.md */,
 			);
 			path = bootoption;
 			sourceTree = "<group>";

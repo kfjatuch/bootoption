@@ -1,4 +1,6 @@
 /*
+ * File: DevicePath.swift
+ *
  * bootoption © vulgo 2017 - A program to create / save an EFI boot
  * option - so that it might be added to the firmware menu later
  *
@@ -40,104 +42,89 @@ struct HardDriveMediaDevicePath {
         let type: Data = Data.init(bytes: [4])
         let subType: Data = Data.init(bytes: [1])
         let length: Data = Data.init(bytes: [42, 0])
-        let partitionFormat = Data.init(bytes: [2])
-        let signatureType = Data.init(bytes: [2])
         var partitionNumber = Data.init()
         var partitionStart = Data.init()
         var partitionSize = Data.init()
         var partitionSignature = Data.init()
+        let partitionFormat = Data.init(bytes: [2])
+        let signatureType = Data.init(bytes: [2])
         
         init(forFile path: String) {
-                let fm: FileManager = FileManager()
+                let fileManager: FileManager = FileManager()
                 
-                guard fm.fileExists(atPath: path) else {
-                        print("MediaDescription: File not found")
-                        exit(1)
+                guard fileManager.fileExists(atPath: path) else {
+                        fatalError("File not found")
                 }
                 
                 guard let session:DASession = DASessionCreate(kCFAllocatorDefault) else {
-                        print("MediaDescription: Failed to create DASession")
-                        exit(1)
+                        fatalError("Failed to create DASession")
                 }
                 
-                guard let volumes:[URL] = fm.mountedVolumeURLs(includingResourceValuesForKeys: nil) else {
-                        print("MediaDescription: Failed to get mounted volume URLs")
-                        exit(1)
+                guard let volumes:[URL] = fileManager.mountedVolumeURLs(includingResourceValuesForKeys: nil) else {
+                        fatalError("Failed to get mounted volume URLs")
                 }
-                
-                /*
-                 *  Find a mounted volume path from our loader path
-                 */
-                
-                var longest: Int = 0
+
+                /*  Find a mounted volume path from our loader path */
+
+                var longestMatch: Int = 0
                 var mountedVolumePath: String?
                 let prefix: String = "file://"
                 
                 /* To do - eliminate anything that doesn't start with "file://" */
                 
-                for i in volumes {
-                        let v: String = i.absoluteString.replacingOccurrences(of: prefix, with: "")
-                        let c: Int = v.characters.count
-                        let start = v.index(v.startIndex, offsetBy: 0), end = v.index(v.startIndex, offsetBy: c)
+                for volume in volumes {
+                        let unprefixedVolumeString: String = volume.absoluteString.replacingOccurrences(of: prefix, with: "")
+                        let stringLength: Int = unprefixedVolumeString.characters.count
+                        let start = unprefixedVolumeString.index(unprefixedVolumeString.startIndex, offsetBy: 0), end = unprefixedVolumeString.index(unprefixedVolumeString.startIndex, offsetBy: stringLength)
                         let test: String = String(path[start..<end])
                         
                         /*
-                         *  Check if v is the start of our loader path string and
-                         *  the longest mounted volume path thats also a string match
+                         *  Check if unprefixedVolumeString is the start of our loader path string,
+                         *  and also the longest mounted volume path that is also a string match
                          */
                         
-                        if test == v && c > longest {
-                                mountedVolumePath = v
-                                longest = c
+                        if test == unprefixedVolumeString && stringLength > longestMatch {
+                                mountedVolumePath = unprefixedVolumeString
+                                longestMatch = stringLength
                         }
                 }
                 
                 mountPoint = mountedVolumePath!
-                
-                /*
-                 *  Find DAMedia registry path
-                 */
-                
+
+                /*  Find DAMedia registry path */
+
                 let cfMountPoint: CFString = mountPoint as CFString
                 
                 guard let url: CFURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfMountPoint, CFURLPathStyle(rawValue: 0)!, true) else {
-                        print("MediaDescription: Failed to create CFURL for mount point")
-                        exit(1)
+                        fatalError("Failed to create CFURL for mount point")
                 }
                 guard let disk: DADisk = DADiskCreateFromVolumePath(kCFAllocatorDefault, session, url) else {
-                        print("MediaDescription: Failed to create DADisk from volume URL")
-                        exit(1)
+                        fatalError("Failed to create DADisk from volume URL")
                 }
                 guard let cfDescription: CFDictionary = DADiskCopyDescription(disk) else {
-                        print("MediaDescription: Failed to get volume description CFDictionary")
-                        exit(1)
+                        fatalError("Failed to get volume description CFDictionary")
                 }
                 guard let description: [String: Any] = cfDescription as? Dictionary else {
-                        print("MediaDescription: Failed to get volume description as Dictionary")
-                        exit(1)
+                        fatalError("Failed to get volume description as Dictionary")
                 }
                 guard let registryPath = description["DAMediaPath"] as? String else {
-                        print("MediaDescription: Failed to get DAMediaPath as String")
-                        exit(1)
+                        fatalError("Failed to get DAMediaPath as String")
                 }
-                
-                /*
-                 *  Get the registry object for our partition
-                 */
-                
-                let partitionProperties = RegistryEntry.init(from: registryPath)
+
+                /* Get the registry object for our partition */
+
+                let partitionProperties = RegistryEntry.init(fromPath: registryPath)
                 
                 /* To do - Check disk is GPT */
                 
-                let ioPreferredBlockSize: Int? = partitionProperties.intFrom(key: "Preferred Block Size")
-                let ioPartitionID: Int? = partitionProperties.intFrom(key: "Partition ID")
-                let ioBase: Int? = partitionProperties.intFrom(key: "Base")
-                let ioSize: Int? = partitionProperties.intFrom(key: "Size")
-                let ioUUID: String? = partitionProperties.stringFrom(key: "UUID")
+                let ioPreferredBlockSize: Int? = partitionProperties.int(fromKey: "Preferred Block Size")
+                let ioPartitionID: Int? = partitionProperties.int(fromKey: "Partition ID")
+                let ioBase: Int? = partitionProperties.int(fromKey: "Base")
+                let ioSize: Int? = partitionProperties.int(fromKey: "Size")
+                let ioUUID: String? = partitionProperties.string(fromKey: "UUID")
                 
                 if (ioPreferredBlockSize == nil || ioPartitionID == nil || ioBase == nil || ioSize == nil || ioUUID == nil) {
-                        print ("MediaDescription: Failed to get registry values")
-                        exit(1)
+                        fatalError("Failed to get registry values")
                 }
                 
                 let blockSize = ioPreferredBlockSize!
@@ -148,11 +135,8 @@ struct HardDriveMediaDevicePath {
                 partitionStart.append(UnsafeBufferPointer(start: &startValue, count: 1))
                 var sizeValue = UInt64(ioSize! / blockSize)
                 partitionSize.append(UnsafeBufferPointer(start: &sizeValue, count: 1))
-                
-                
-                /*
-                 *  EFI Signature from volume GUID string
-                 */
+
+                /*  EFI Signature from volume GUID string */
                 
                 func subStr(string: String, from: Int, to: Int) -> String {
                         let start = string.index(string.startIndex, offsetBy: from)
@@ -187,7 +171,6 @@ struct HardDriveMediaDevicePath {
                 partitionSignature.append(hexStringToData(string: part[2], swap: true)!)
                 partitionSignature.append(hexStringToData(string: part[3])!)
                 partitionSignature.append(hexStringToData(string: part[4])!)
-                
         }
 }
 
@@ -212,6 +195,7 @@ struct FilePathMediaDevicePath {
         init(path localPath: String, mountPoint: String) {
                 
                 /* Path */
+                
                 let c = mountPoint.characters.count
                 let i = localPath.index(localPath.startIndex, offsetBy: c)
                 var efiPath = "/" + localPath[i...]
@@ -223,11 +207,10 @@ struct FilePathMediaDevicePath {
                 path = pathData
                 
                 /* Length */
+                
                 var lengthValue = UInt16(pathData.count + 4)
                 length.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
-                
-        }
-        
+        }   
 }
 
 struct EndDevicePath {

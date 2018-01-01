@@ -32,4 +32,31 @@ extension String {
                 }
                 return false
         }
+        
+        func subString(from: Int, to: Int) -> String {
+                let start = self.index(self.startIndex, offsetBy: from)
+                let end = self.index(self.startIndex, offsetBy: to)
+                return String(self[start..<end])
+        }
+        
+        func hexToData(swap: Bool = false) -> Data? {
+                var strings: [String] = []
+                let width: Int = 2
+                let max: Int = self.characters.count
+                if swap {
+                        var start: Int = max - width, end: Int = max
+                        while start >= 0 {
+                                strings.append(self.subString(from: start, to: end))
+                                start -= width; end = start + width
+                        }
+                } else {
+                        var start: Int = 0, end: Int = start + width
+                        while end <= max {
+                                strings.append(self.subString(from: start, to: end))
+                                start += width; end = start + width
+                        }
+                }
+                let bytes: [UInt8] = strings.map{UInt8(strtoul((String($0)), nil, 16))}
+                return bytes.withUnsafeBufferPointer{Data(buffer: $0)}
+        }
 }

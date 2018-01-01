@@ -136,40 +136,13 @@ struct HardDriveMediaDevicePath {
                 partitionSize.append(UnsafeBufferPointer(start: &sizeValue, count: 1))
 
                 /*  EFI Signature from volume GUID string */
-                
-                func subStr(string: String, from: Int, to: Int) -> String {
-                        let start = string.index(string.startIndex, offsetBy: from)
-                        let end = string.index(string.startIndex, offsetBy: to)
-                        return String(string[start..<end])
-                }
-                
-                func hexStringToData(string: String, swap: Bool = false) -> Data? {
-                        var strings: [String] = []
-                        let width: Int = 2
-                        let max: Int = string.characters.count
-                        if swap {
-                                var start: Int = max - width, end: Int = max
-                                while start >= 0 {
-                                        strings.append(subStr(string: string, from: start, to: end))
-                                        start -= width; end = start + width
-                                }
-                        } else {
-                                var start: Int = 0, end: Int = start + width
-                                while end <= max {
-                                        strings.append(subStr(string: string, from: start, to: end))
-                                        start += width; end = start + width
-                                }
-                        }
-                        let bytes: [UInt8] = strings.map{UInt8(strtoul((String($0)), nil, 16))}
-                        return bytes.withUnsafeBufferPointer{Data(buffer: $0)}
-                }
-                
+
                 var part: [String] = uuid.components(separatedBy: "-")
-                partitionSignature.append(hexStringToData(string: part[0], swap: true)!)
-                partitionSignature.append(hexStringToData(string: part[1], swap: true)!)
-                partitionSignature.append(hexStringToData(string: part[2], swap: true)!)
-                partitionSignature.append(hexStringToData(string: part[3])!)
-                partitionSignature.append(hexStringToData(string: part[4])!)
+                partitionSignature.append(part[0].hexToData(swap: true)!)
+                partitionSignature.append(part[1].hexToData(swap: true)!)
+                partitionSignature.append(part[2].hexToData(swap: true)!)
+                partitionSignature.append(part[3].hexToData()!)
+                partitionSignature.append(part[4].hexToData()!)
         }
 }
 

@@ -37,6 +37,17 @@ The command above creates /Volumes/EFI/boot.plist with the following contents:
 
 The data element contains the base 64 encoded variable data conforming to the EFI_LOAD_OPTION structure, as defined in section 3.1.3 of the UEFI Specification 2.7.
 
+## mkbootoption.sh
+
+Highly experimental, potentially dangerous shell script that will attempt to add a boot option to EFI using Apple's nvram command. Requires bootoption and nvrambytes (factory defaults: the binaries should be located in the same directory as the script). Usage:
+
+```
+./mkbootoption.sh "path" "description"
+     required parameters:
+     path                        path to EFI executable
+     description                 name for boot menu entry
+```
+
 ## License
 
 GPL version 3

@@ -8,12 +8,22 @@
 
 /* Begin PBXBuildFile section */
 		4D2B86801FF98F3900C82104 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2B867F1FF98F3900C82104 /* Extensions.swift */; };
+		4D4B51CA1FFA838A00C82104 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D4B51C91FFA838A00C82104 /* main.swift */; };
 		4DD5EF771FF91DDF00C82104 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF741FF91DDE00C82104 /* main.swift */; };
 		4DD5EF781FF91DDF00C82104 /* DevicePath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF751FF91DDE00C82104 /* DevicePath.swift */; };
 		4DD5EF791FF91DDF00C82104 /* RegistryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		4D4B51C51FFA838900C82104 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		4DD5EF681FF91D8600C82104 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -27,6 +37,8 @@
 
 /* Begin PBXFileReference section */
 		4D2B867F1FF98F3900C82104 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		4D4B51C71FFA838900C82104 /* nvrambytes */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = nvrambytes; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D4B51C91FFA838A00C82104 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		4DD5EF6A1FF91D8600C82104 /* bootoption */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = bootoption; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DD5EF741FF91DDE00C82104 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		4DD5EF751FF91DDE00C82104 /* DevicePath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevicePath.swift; sourceTree = "<group>"; };
@@ -35,6 +47,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4D4B51C41FFA838900C82104 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4DD5EF671FF91D8600C82104 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -45,11 +64,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4D4B51C81FFA838A00C82104 /* nvrambytes */ = {
+			isa = PBXGroup;
+			children = (
+				4D4B51C91FFA838A00C82104 /* main.swift */,
+			);
+			path = nvrambytes;
+			sourceTree = "<group>";
+		};
 		4DD5EF611FF91D8600C82104 = {
 			isa = PBXGroup;
 			children = (
 				4DD5EF7A1FF9238000C82104 /* README.md */,
 				4DD5EF6C1FF91D8600C82104 /* bootoption */,
+				4D4B51C81FFA838A00C82104 /* nvrambytes */,
 				4DD5EF6B1FF91D8600C82104 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -58,6 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				4DD5EF6A1FF91D8600C82104 /* bootoption */,
+				4D4B51C71FFA838900C82104 /* nvrambytes */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,6 +105,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		4D4B51C61FFA838900C82104 /* nvrambytes */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D4B51CB1FFA838A00C82104 /* Build configuration list for PBXNativeTarget "nvrambytes" */;
+			buildPhases = (
+				4D4B51C31FFA838900C82104 /* Sources */,
+				4D4B51C41FFA838900C82104 /* Frameworks */,
+				4D4B51C51FFA838900C82104 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = nvrambytes;
+			productName = nvrambytes;
+			productReference = 4D4B51C71FFA838900C82104 /* nvrambytes */;
+			productType = "com.apple.product-type.tool";
+		};
 		4DD5EF691FF91D8600C82104 /* bootoption */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4DD5EF711FF91D8600C82104 /* Build configuration list for PBXNativeTarget "bootoption" */;
@@ -103,6 +149,10 @@
 				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = vulgo;
 				TargetAttributes = {
+					4D4B51C61FFA838900C82104 = {
+						CreatedOnToolsVersion = 9.0;
+						ProvisioningStyle = Automatic;
+					};
 					4DD5EF691FF91D8600C82104 = {
 						CreatedOnToolsVersion = 9.0;
 						LastSwiftMigration = 0900;
@@ -123,11 +173,20 @@
 			projectRoot = "";
 			targets = (
 				4DD5EF691FF91D8600C82104 /* bootoption */,
+				4D4B51C61FFA838900C82104 /* nvrambytes */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		4D4B51C31FFA838900C82104 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4D4B51CA1FFA838A00C82104 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4DD5EF661FF91D8600C82104 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -142,6 +201,24 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		4D4B51CC1FFA838A00C82104 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+			};
+			name = Debug;
+		};
+		4D4B51CD1FFA838A00C82104 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+			};
+			name = Release;
+		};
 		4DD5EF6F1FF91D8600C82104 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -274,6 +351,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4D4B51CB1FFA838A00C82104 /* Build configuration list for PBXNativeTarget "nvrambytes" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D4B51CC1FFA838A00C82104 /* Debug */,
+				4D4B51CD1FFA838A00C82104 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4DD5EF651FF91D8600C82104 /* Build configuration list for PBXProject "bootoption" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -39,7 +39,7 @@ The data element contains the base 64 encoded variable data conforming to the EF
 
 ## mkbootoption.sh
 
-Highly experimental, potentially dangerous shell script that will attempt to add a boot option to EFI using Apple's nvram command. Requires bootoption and nvrambytes (factory defaults: the binaries should be located in the same directory as the script). Usage:
+Somewhat experimental, potentially dangerous shell script that will attempt to add a boot option to EFI using Apple's nvram command. Requires bootoption and nvrambytes (factory defaults: the binaries should be located in the same directory as the script). Usage:
 
 ```
 ./mkbootoption.sh "path" "description"

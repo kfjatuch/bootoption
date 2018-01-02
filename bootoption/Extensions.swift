@@ -34,8 +34,8 @@ extension String {
         }
         
         func subString(from: Int, to: Int) -> String {
-                let start = self.index(self.startIndex, offsetBy: from)
-                let end = self.index(self.startIndex, offsetBy: to)
+                let start: String.Index = self.index(self.startIndex, offsetBy: from)
+                let end: String.Index = self.index(self.startIndex, offsetBy: to)
                 return String(self[start..<end])
         }
         

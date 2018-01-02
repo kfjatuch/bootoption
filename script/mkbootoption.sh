@@ -33,8 +33,8 @@ EMPTY_BOOT_VARIABLE_WITH_GUID="none"
 function usage {
         echo "Usage: $(basename $0) \"path\" \"description\""
         echo "     required parameters:"
-        echo "     path                        path to EFI executable"
-        echo "     description                 name for boot menu entry"
+        echo "     path                  path to an EFI executable"
+        echo "     description           description for the new boot menu entry"
 }
 
 function error {

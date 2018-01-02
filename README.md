@@ -5,10 +5,10 @@ A program to create and save an EFI boot load option - so that it might be added
 ## Usage
 
 ```
-bootoption -p path -d description -o file
-    -p path to EFI executable
-    -d boot option description
-    -o file to write to (XML property list)
+bootoption -p path -d description [-o file]
+    -p path to an EFI executable
+    -d description for the boot option
+    -o output to file (XML property list)
 ```
 
 ### Sample usage
@@ -39,13 +39,13 @@ The data element contains the base 64 encoded variable data conforming to the EF
 
 ## mkbootoption.sh
 
-Somewhat experimental, potentially dangerous shell script that will attempt to add a boot option to EFI using Apple's nvram command. Requires bootoption and nvrambytes (factory defaults: the binaries should be located in the same directory as the script). Usage:
+Somewhat experimental, potentially dangerous shell script that will attempt to add a boot option to EFI using Apple's nvram command. By default requires that the built bootoption binary be located in the same directory as the script. Usage:
 
 ```
 ./mkbootoption.sh "path" "description"
      required parameters:
-     path                        path to EFI executable
-     description                 name for boot menu entry
+     path                  path to an EFI executable
+     description           description for the new boot menu entry
 ```
 
 ## License

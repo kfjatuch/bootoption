@@ -106,10 +106,10 @@ func main() {
 
 func usage() {
         let basename = NSString(string: CommandLine.arguments[0]).lastPathComponent
-        print("Usage: \(basename) -p path -d description -o file")
-        print("  -p path to EFI executable")
-        print("  -d boot option description")
-        print("  -o file to write to (XML property list)")
+        print("Usage: \(basename) -p path -d description [-o file]")
+        print("  -p path to an EFI executable")
+        print("  -d description for the boot option")
+        print("  -o output to file (XML property list)")
         exit(1)
 }
 

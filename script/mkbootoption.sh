@@ -27,7 +27,6 @@ cd "$(dirname "$0")"
 BOOTOPTION=./bootoption
 EFI_GLOBAL_GUID="8BE4DF61-93CA-11D2-AA0D-00E098032B8C"
 NVRAM=/usr/sbin/nvram
-PLIST="$TMPDIR/boot.plist"
 EMPTY_BOOT_VARIABLE_WITH_GUID="none"
 
 function usage {
@@ -41,7 +40,6 @@ function error {
         # error message exit_code
         echo
         printf "Error: $1 ($2)\n"
-        silent rm -f $PLIST
         usage
         exit 1
 }
@@ -57,21 +55,16 @@ function silent {
         "$@" > /dev/null 2>&1
 }
 
-# Check root
-
 if [ "$(id -u)" != "0" ]; then
         printf "Run it as root: sudo $(basename $0) $@"
         exit 1
 fi
-
-# Start
 
 if [ "$#" != "2" ]; then
         usage
         exit 1
 fi
 
-silent rm -f $PLIST
 DATA=$($BOOTOPTION -p "$1" -d "$2")
 on_error "Failed to generate NVRAM variable as formatted string" $?
 for i in $(seq 0 255); do
@@ -84,18 +77,16 @@ for i in $(seq 0 255); do
         fi
 done
 if [ $EMPTY_BOOT_VARIABLE_WITH_GUID = "none" ]; then
-        error "Couldn't find an empty boot variable to write to" 1
-fi
+        error "Couldn't find an empty boot variable to write to" 1; fi
 $NVRAM -d "$EMPTY_BOOT_VARIABLE_WITH_GUID"
 # Setting with -s option creates IONVRAM-FORCESYNCNOW
 # -PROPERTY - storing the name of our variable
 $NVRAM -s "$EMPTY_BOOT_VARIABLE_WITH_GUID=$DATA"
 on_error "Failed to set boot variable" $?
 # with -s as the only option, syncs the option named
-# in IONVRAM-FORCESYNCNOW-PROPERTY ?
+# in IONVRAM-FORCESYNCNOW-PROPERTY - any difference?
 $NVRAM -s
 on_error "Error running nvram force-sync option" $?
 echo "Variable $EMPTY_BOOT_VARIABLE_WITH_GUID was set."
 echo "You can check if it really exists in firmware settings..."
-silent rm -f $PLIST
 exit 0

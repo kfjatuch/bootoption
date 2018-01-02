@@ -26,6 +26,7 @@ var outputPath: String?
 var outputToFile: Bool = false
 var outputRawHex: Bool = false
 var testCount: Int = 54
+var key: String = "Boot"
 
 func printAppleNvramBytes(data: Data) {
         let strings = data.map { String(format: "%%%02x", $0) }
@@ -82,7 +83,7 @@ func main() {
         
         if outputToFile {
                 let data = efiLoadOption as NSData
-                let dictionary: NSDictionary = ["Boot": data]
+                let dictionary: NSDictionary = ["\(key)": data]
                 let url = URL(fileURLWithPath: outputPath!)
                 do {
                         try dictionary.write(to: url)
@@ -109,15 +110,16 @@ func main() {
 
 func usage() {
         let basename = NSString(string: CommandLine.arguments[0]).lastPathComponent
-        print("Usage: \(basename) -p path -d description [-o file] [-r]")
+        print("Usage: \(basename) -p path -d description [-o file [-k key]] [-r]")
         print("  -p path to an EFI executable")
         print("  -d description for the boot option")
         print("  -o output to file (XML property list)")
+        print("  -k dictionary key, defaults to Boot")
         print("  -r print raw hex instead of format string")
         exit(1)
 }
 
-while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:r"), option != -1 {
+while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:k:r"), option != -1 {
         switch UnicodeScalar(CUnsignedChar(option)) {
         case "p":
                 pathToEfiExecutable = String(cString: optarg)
@@ -126,6 +128,8 @@ while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:
         case "o":
                 outputPath = String(cString: optarg)
                 outputToFile = true
+        case "k":
+                key = String(cString: optarg)
         case "r":
                 outputRawHex = true
         default:

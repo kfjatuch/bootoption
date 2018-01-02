@@ -1,21 +1,22 @@
 #  bootoption
 
-A command line program that generates EFI boot load options for file media. Outputs data as an XML property list, raw hex or as a formatted string for use with Apple's nvram system command. These can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from the booted OS (during loader installation, for instance).
+A command line program that generates EFI boot load options for file media. Outputs data as an XML property list, raw hex or formatted string for use with Apple's nvram system command. These can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from the booted OS (during loader installation, for instance).
 
 ## Usage
 
 ```
-bootoption -p path -d description [-o file] [-r]
+bootoption -p path -d description [-o file [-k key]] [-r]
     -p path to an EFI executable
     -d description for the boot option
     -o output to file (XML property list)
+    -k dictionary key, defaults to Boot
     -r print raw hex instead of format string
 ```
 
 #### Example 1
 
 ```
-bootoption -p "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -o "/Volumes/EFI/boot.plist"
+bootoption -p "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -o "/Volumes/EFI/boot.plist" -k "Payload"
 ```
 ##### /Volumes/EFI/boot.plist:
 
@@ -24,7 +25,7 @@ bootoption -p "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -o "/Volumes/E
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-        <key>Boot</key>
+        <key>Payload</key>
         <data>
         AQAAAGYAQwBsAG8AdgBlAHIAAAAEASoAAQAAAAAIAAAAAAAAAEAGAAAAAADVqM8+f4xe
         SKkOqRfx+n2lAgIEBDgAXABFAEYASQBcAEMATABPAFYARQBSAFwAQwBMAE8AVgBFAFIA

@@ -24,11 +24,12 @@ var pathToEfiExecutable: String?
 var bootOptionDescription: String?
 var outputPath: String?
 var outputToFile: Bool = false
-var outputRawHex: Bool = false
+var outputFormatString: Bool = false
+var outputXml: Bool = false
 var testCount: Int = 54
 var key: String = "Boot"
 
-func printAppleNvramBytes(data: Data) {
+func printFormatString(data: Data) {
         let strings = data.map { String(format: "%%%02x", $0) }
         let outputString = strings.joined()
         print(outputString)
@@ -38,6 +39,23 @@ func printRawHex(data: Data) {
         let strings = data.map { String(format: "%02x", $0) }
         let outputString = strings.joined()
         print(outputString)
+}
+
+func printXml(data: Data) {
+        let dictionary: NSDictionary = ["\(key)": data]
+        var propertyList: Data
+        do {
+                propertyList = try PropertyListSerialization.data(fromPropertyList: dictionary, format: .xml, options: 0)
+        } catch {
+                print(error)
+                exit(1)
+        }
+        if let outputString = String.init(data: propertyList, encoding: .utf8) {
+                print(outputString)
+        } else {
+                print("Error printing serialized xml property list representation")
+                exit(1)
+        }
 }
 
 func main() {
@@ -99,10 +117,12 @@ func main() {
                 exit(1)
         }
         
-        if outputRawHex {
-                printRawHex(data: data)
+        if outputFormatString {
+                printFormatString(data: data)
+        } else if outputXml {
+                printXml(data: data)
         } else {
-                printAppleNvramBytes(data: data)
+                printRawHex(data: data)
         }
         exit(0)
 
@@ -110,28 +130,43 @@ func main() {
 
 func usage() {
         let basename = NSString(string: CommandLine.arguments[0]).lastPathComponent
-        print("Usage: \(basename) -p path -d description [-o file [-k key]] [-r]")
+        print("Usage: \(basename) -p path -d description [-o file [-k key] | -x [-k key] | -f]")
         print("  -p path to an EFI executable")
         print("  -d description for the boot option")
         print("  -o output to file (XML property list)")
         print("  -k dictionary key, defaults to Boot")
-        print("  -r print raw hex instead of format string")
+        print("  -x print XML instead of raw hex")
+        print("  -f print format string instead of raw hex")
         exit(1)
 }
 
-while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:k:r"), option != -1 {
+while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:k:xf"), option != -1 {
         switch UnicodeScalar(CUnsignedChar(option)) {
         case "p":
                 pathToEfiExecutable = String(cString: optarg)
         case "d":
                 bootOptionDescription = String(cString: optarg)
         case "o":
+                if outputXml || outputFormatString {
+                        print("Too many options")
+                        usage()
+                }
                 outputPath = String(cString: optarg)
                 outputToFile = true
         case "k":
                 key = String(cString: optarg)
-        case "r":
-                outputRawHex = true
+        case "x":
+                if outputToFile || outputFormatString {
+                        print("Too many options")
+                        usage()
+                }
+                outputXml = true
+        case "f":
+                if outputToFile || outputXml {
+                        print("Too many options")
+                        usage()
+                }
+                outputFormatString = true
         default:
                 usage()
         }

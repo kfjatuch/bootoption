@@ -1,16 +1,17 @@
 #  bootoption
 
-A command line program that generates EFI boot load options for file media. Outputs data as an XML property list, raw hex or formatted string for use with Apple's nvram system command. These can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from the booted OS (during loader installation, for instance).
+A command line program that generates EFI boot load options for file media. Outputs data as an XML property list, raw hex or formatted string. A stored representation of the variable data can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from the booted OS (for instance, generated during loader installation, stored and then added from an EFI context).
 
 ## Usage
 
 ```
-bootoption -p path -d description [-o file [-k key]] [-r]
+bootoption -p path -d description [-o file [-k key] | -x [-k key] | -f]
     -p path to an EFI executable
     -d description for the boot option
     -o output to file (XML property list)
     -k dictionary key, defaults to Boot
-    -r print raw hex instead of format string
+    -x print XML instead of raw hex
+    -f print format string instead of raw hex
 ```
 
 #### Example 1
@@ -40,7 +41,7 @@ The data element contains the base 64 encoded variable data conforming to the EF
 #### Example 2
 
 ```
-bootoption -p "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover"
+bootoption -p "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -f
 ```
 
 ##### Output:

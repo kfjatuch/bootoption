@@ -40,7 +40,7 @@ extension String {
         }
         
         func hexToData(swap: Bool = false) -> Data? {
-                var strings: [String] = []
+                var strings: [String] = Array()
                 let width: Int = 2
                 let max: Int = self.characters.count
                 if swap {
@@ -56,7 +56,7 @@ extension String {
                                 start += width; end = start + width
                         }
                 }
-                let bytes: [UInt8] = strings.map{UInt8(strtoul((String($0)), nil, 16))}
-                return bytes.withUnsafeBufferPointer{Data(buffer: $0)}
+                let bytes: [UInt8] = strings.map { UInt8(strtoul(String($0), nil, 16)) }
+                return bytes.withUnsafeBufferPointer { Data(buffer: $0) }
         }
 }

@@ -39,9 +39,9 @@ struct HardDriveMediaDevicePath {
         }
         
         let mountPoint: String
-        let type: Data = Data.init(bytes: [4])
-        let subType: Data = Data.init(bytes: [1])
-        let length: Data = Data.init(bytes: [42, 0])
+        let type = Data.init(bytes: [4])
+        let subType = Data.init(bytes: [1])
+        let length = Data.init(bytes: [42, 0])
         var partitionNumber = Data.init()
         var partitionStart = Data.init()
         var partitionSize = Data.init()
@@ -74,7 +74,8 @@ struct HardDriveMediaDevicePath {
                 for volume in volumes {
                         let unprefixedVolumeString: String = volume.absoluteString.replacingOccurrences(of: prefix, with: "")
                         let stringLength: Int = unprefixedVolumeString.characters.count
-                        let start = unprefixedVolumeString.index(unprefixedVolumeString.startIndex, offsetBy: 0), end = unprefixedVolumeString.index(unprefixedVolumeString.startIndex, offsetBy: stringLength)
+                        let start: String.Index = unprefixedVolumeString.index(unprefixedVolumeString.startIndex, offsetBy: 0)
+                        let end: String.Index = unprefixedVolumeString.index(unprefixedVolumeString.startIndex, offsetBy: stringLength)
                         let test: String = String(path[start..<end])
                         
                         /*
@@ -112,7 +113,7 @@ struct HardDriveMediaDevicePath {
 
                 /* Get the registry object for our partition */
 
-                let partitionProperties = RegistryEntry.init(fromPath: daMediaPath)
+                let partitionProperties: RegistryEntry = RegistryEntry.init(fromPath: daMediaPath)
                 
                 /* To do - Check disk is GPT */
                 
@@ -126,8 +127,8 @@ struct HardDriveMediaDevicePath {
                         fatalError("Failed to get registry values")
                 }
                 
-                let blockSize = ioPreferredBlockSize!
-                let uuid = ioUUID!
+                let blockSize: Int = ioPreferredBlockSize!
+                let uuid: String = ioUUID!
                 var idValue = UInt32(ioPartitionID!)
                 partitionNumber.append(UnsafeBufferPointer(start: &idValue, count: 1))
                 var startValue = UInt64(ioBase! / blockSize)
@@ -159,8 +160,8 @@ struct FilePathMediaDevicePath {
                 }
         }
         
-        let type: Data = Data.init(bytes: [4])
-        let subType: Data = Data.init(bytes: [4])
+        let type = Data.init(bytes: [4])
+        let subType = Data.init(bytes: [4])
         var path = Data.init()
         var length = Data.init()
         
@@ -168,14 +169,14 @@ struct FilePathMediaDevicePath {
                 
                 /* Path */
                 
-                let c = mountPoint.characters.count
-                let i = localPath.index(localPath.startIndex, offsetBy: c)
-                var efiPath = "/" + localPath[i...]
+                let c: Int = mountPoint.characters.count
+                let i: String.Index = localPath.index(localPath.startIndex, offsetBy: c)
+                var efiPath: String = "/" + localPath[i...]
                 efiPath = efiPath.uppercased().replacingOccurrences(of: "/", with: "\\")
                 if efiPath.containsOutlawedCharacters() {
                         fatalError("Forbidden character(s) found in path")
                 }
-                var pathData = efiPath.data(using: String.Encoding.utf16)!
+                var pathData: Data = efiPath.data(using: String.Encoding.utf16)!
                 pathData.removeFirst()
                 pathData.removeFirst()
                 pathData.append(contentsOf: [0, 0])

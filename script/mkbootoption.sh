@@ -6,7 +6,8 @@
 #
 #  mkbootoption.sh - script to add a boot option to firmware
 #  * note 1: hardware syncs unreliably even with 'native' nvram
-#  * note 2: allow unrestricted nvram access in CSR flags
+#  * note 2: nvram -s option may help with 1
+#  * note 3: unrestricted nvram should be set in CSR flags
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -89,8 +90,14 @@ if [ $EMPTY_BOOT_VARIABLE_WITH_GUID = "none" ]; then
         error "Couldn't find an empty boot variable" 1
 fi
 $NVRAM -d "$EMPTY_BOOT_VARIABLE_WITH_GUID"
-$NVRAM "$EMPTY_BOOT_VARIABLE_WITH_GUID=$DATA"
+# Setting with -s option creates IONVRAM-FORCESYNCNOW
+# -PROPERTY - storing the name of our variable
+$NVRAM -s "$EMPTY_BOOT_VARIABLE_WITH_GUID=$DATA"
 on_error "Failed to set boot variable" $?
+# with -s as the only option, syncs the option named
+# in IONVRAM-FORCESYNCNOW-PROPERTY ?
+$NVRAM -s
+on_error "NVRAM sync error" $?
 echo "Variable $EMPTY_BOOT_VARIABLE_WITH_GUID was set."
 echo "You can check if it really exists in firmware settings..."
 silent rm -f $PLIST

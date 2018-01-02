@@ -24,18 +24,19 @@ var pathToEfiExecutable: String?
 var bootOptionDescription: String?
 var outputPath: String?
 var outputToFile: Bool = false
+var outputRawHex: Bool = false
+var testCount: Int = 54
 
-func printAppleNvramBytes(data: Data) -> Bool {
-        if data.count > 32 {
-                var outputString: String = ""
-                for byte in data {
-                        let formattedByteString = String.init(format: "%%%02x", arguments: [byte as CVarArg])
-                        outputString.append(formattedByteString)
-                }
-                print(outputString)
-                return true
-        }
-        return false
+func printAppleNvramBytes(data: Data) {
+        let strings = data.map { String(format: "%%%02x", $0) }
+        let outputString = strings.joined()
+        print(outputString)
+}
+
+func printRawHex(data: Data) {
+        let strings = data.map { String(format: "%02x", $0) }
+        let outputString = strings.joined()
+        print(outputString)
 }
 
 func main() {
@@ -80,7 +81,6 @@ func main() {
         efiLoadOption.append(devicePathList)
         
         if outputToFile {
-        
                 let data = efiLoadOption as NSData
                 let dictionary: NSDictionary = ["Boot": data]
                 let url = URL(fileURLWithPath: outputPath!)
@@ -91,29 +91,33 @@ func main() {
                         exit(1)
                 }
                 exit(0)
-                
-        } else {
-                
-                let data = efiLoadOption as Data
-                if printAppleNvramBytes(data: data) {
-                        exit(0)
-                } else {
-                        exit(1)
-                }
-                
         }
+                
+        let data = efiLoadOption as Data
+        if data.count < testCount {
+                exit(1)
+        }
+        
+        if outputRawHex {
+                printRawHex(data: data)
+        } else {
+                printAppleNvramBytes(data: data)
+        }
+        exit(0)
+
 }
 
 func usage() {
         let basename = NSString(string: CommandLine.arguments[0]).lastPathComponent
-        print("Usage: \(basename) -p path -d description [-o file]")
+        print("Usage: \(basename) -p path -d description [-o file] [-r]")
         print("  -p path to an EFI executable")
         print("  -d description for the boot option")
         print("  -o output to file (XML property list)")
+        print("  -r print raw hex instead of format string")
         exit(1)
 }
 
-while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:"), option != -1 {
+while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:r"), option != -1 {
         switch UnicodeScalar(CUnsignedChar(option)) {
         case "p":
                 pathToEfiExecutable = String(cString: optarg)
@@ -122,6 +126,8 @@ while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:
         case "o":
                 outputPath = String(cString: optarg)
                 outputToFile = true
+        case "r":
+                outputRawHex = true
         default:
                 usage()
         }

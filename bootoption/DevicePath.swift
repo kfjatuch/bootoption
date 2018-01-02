@@ -68,7 +68,7 @@ struct HardDriveMediaDevicePath {
                 /*  Find a mounted volume path from our loader path */
 
                 var longestMatch: Int = 0
-                var mountedVolumePath: String?
+                var mountedVolumePath: String = ""
                 let prefix: String = "file://"
 
                 for volume in volumes {
@@ -88,7 +88,7 @@ struct HardDriveMediaDevicePath {
                         }
                 }
                 
-                mountPoint = mountedVolumePath!
+                mountPoint = mountedVolumePath
 
                 /*  Find DAMedia registry path */
 

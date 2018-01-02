@@ -22,7 +22,21 @@ import Foundation
 
 var pathToEfiExecutable: String?
 var bootOptionDescription: String?
-var outputFile: String?
+var outputPath: String?
+var outputToFile: Bool = false
+
+func appleNvramBytes(data: Data) -> Bool {
+        if data.count > 32 {
+                var outputString: String = ""
+                for byte in data {
+                        let formattedByteString = String.init(format: "%%%02x", arguments: [byte as CVarArg])
+                        outputString.append(formattedByteString)
+                }
+                print(outputString)
+                return true
+        }
+        return false
+}
 
 func main() {
         
@@ -65,14 +79,28 @@ func main() {
         efiLoadOption.append(description)
         efiLoadOption.append(devicePathList)
         
-        let data = efiLoadOption as NSData
-        let dictionary: NSDictionary = ["Boot": data]
-        let url = URL(fileURLWithPath: outputFile!)
-        do {
-                try dictionary.write(to: url)
-        } catch {
-                print(error)
-                exit(1)
+        if outputToFile {
+        
+                let data = efiLoadOption as NSData
+                let dictionary: NSDictionary = ["Boot": data]
+                let url = URL(fileURLWithPath: outputPath!)
+                do {
+                        try dictionary.write(to: url)
+                } catch {
+                        print(error)
+                        exit(1)
+                }
+                exit(0)
+                
+        } else {
+                
+                let data = efiLoadOption as Data
+                if appleNvramBytes(data: data) {
+                        exit(0)
+                } else {
+                        exit(1)
+                }
+                
         }
 }
 
@@ -92,13 +120,14 @@ while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:
         case "d":
                 bootOptionDescription = String(cString: optarg)
         case "o":
-                outputFile = String(cString: optarg)
+                outputPath = String(cString: optarg)
+                outputToFile = true
         default:
                 usage()
         }
 }
 
-if pathToEfiExecutable == nil || bootOptionDescription == nil || outputFile == nil {
+if pathToEfiExecutable == nil || bootOptionDescription == nil || (outputToFile == true && outputPath == nil) {
         usage()
 }
 

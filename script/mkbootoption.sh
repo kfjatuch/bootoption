@@ -24,7 +24,6 @@
 #
 
 cd "$(dirname "$0")"
-NVRAMBYTES=./nvrambytes
 BOOTOPTION=./bootoption
 EFI_GLOBAL_GUID="8BE4DF61-93CA-11D2-AA0D-00E098032B8C"
 NVRAM=/usr/sbin/nvram
@@ -73,10 +72,8 @@ if [ "$#" != "2" ]; then
 fi
 
 silent rm -f $PLIST
-$BOOTOPTION -p "$1" -d "$2" -o "$PLIST"
-on_error "Failed to create variable data" $?
-DATA=$($NVRAMBYTES "$PLIST")
-on_error "Failed to generate formatted string" $?
+DATA=$($BOOTOPTION -p "$1" -d "$2")
+on_error "Failed to generate NVRAM variable as formatted string" $?
 for i in $(seq 0 255); do
         EFI_VARIABLE_NAME=$(printf "Boot%04X\n" "$i")
         TEST="$EFI_GLOBAL_GUID:$EFI_VARIABLE_NAME"
@@ -87,7 +84,7 @@ for i in $(seq 0 255); do
         fi
 done
 if [ $EMPTY_BOOT_VARIABLE_WITH_GUID = "none" ]; then
-        error "Couldn't find an empty boot variable" 1
+        error "Couldn't find an empty boot variable to write to" 1
 fi
 $NVRAM -d "$EMPTY_BOOT_VARIABLE_WITH_GUID"
 # Setting with -s option creates IONVRAM-FORCESYNCNOW
@@ -97,7 +94,7 @@ on_error "Failed to set boot variable" $?
 # with -s as the only option, syncs the option named
 # in IONVRAM-FORCESYNCNOW-PROPERTY ?
 $NVRAM -s
-on_error "NVRAM sync error" $?
+on_error "Error running nvram force-sync option" $?
 echo "Variable $EMPTY_BOOT_VARIABLE_WITH_GUID was set."
 echo "You can check if it really exists in firmware settings..."
 silent rm -f $PLIST

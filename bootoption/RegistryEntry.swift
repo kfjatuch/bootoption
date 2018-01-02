@@ -23,7 +23,7 @@ import IOKit
 
 class RegistryEntry {
         
-        var registryEntry:io_registry_entry_t = io_registry_entry_t.init()
+        var registryEntry = io_registry_entry_t.init()
         
         init(fromPath path: String) {
                 registryEntry = IORegistryEntryFromPath(kIOMasterPortDefault, path)
@@ -33,7 +33,7 @@ class RegistryEntry {
         }
         
         private func value(fromKey key: String, type: CFTypeID) -> Any? {
-                let registryKey:CFString = key as CFString
+                let registryKey = key as CFString
                 let registryValue:Unmanaged<CFTypeRef>? = (IORegistryEntryCreateCFProperty(registryEntry, registryKey , kCFAllocatorDefault, 0))
                 guard (registryValue != nil) else {
                         return nil
@@ -48,14 +48,14 @@ class RegistryEntry {
         }
         
         func int(fromKey key: String) -> Int? {
-                guard let int:Int = value(fromKey: key, type: CFNumberGetTypeID()) as? Int else {
+                guard let int = value(fromKey: key, type: CFNumberGetTypeID()) as? Int else {
                         return nil
                 }
                 return int
         }
         
         func string(fromKey key: String) -> String? {
-                guard let string:String = value(fromKey: key, type: CFStringGetTypeID()) as? String else {
+                guard let string = value(fromKey: key, type: CFStringGetTypeID()) as? String else {
                         return nil
                 }
                 return string

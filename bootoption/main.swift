@@ -25,7 +25,7 @@ var bootOptionDescription: String?
 var outputPath: String?
 var outputToFile: Bool = false
 
-func appleNvramBytes(data: Data) -> Bool {
+func printAppleNvramBytes(data: Data) -> Bool {
         if data.count > 32 {
                 var outputString: String = ""
                 for byte in data {
@@ -95,7 +95,7 @@ func main() {
         } else {
                 
                 let data = efiLoadOption as Data
-                if appleNvramBytes(data: data) {
+                if printAppleNvramBytes(data: data) {
                         exit(0)
                 } else {
                         exit(1)

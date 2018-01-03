@@ -60,12 +60,15 @@ if [ "$(id -u)" != "0" ]; then
         exit 1
 fi
 
-if [ "$#" != "2" ]; then
+if [ "$#" == "2" ]; then
+        DATA=$($BOOTOPTION -p "$1" -d "$2" -f)
+elif [ "$#" == "3" ]; then
+        DATA=$($BOOTOPTION -p "$1" -d "$2" -u "$3" -f)
+else
         usage
         exit 1
 fi
 
-DATA=$($BOOTOPTION -p "$1" -d "$2" -f)
 on_error "Failed to generate NVRAM variable as formatted string" $?
 for i in $(seq 0 255); do
         EFI_VARIABLE_NAME=$(printf "Boot%04X\n" "$i")

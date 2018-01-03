@@ -28,6 +28,8 @@ var outputFormatString: Bool = false
 var outputXml: Bool = false
 var testCount: Int = 54
 var key: String = "Boot"
+var commandLine: String?
+var optionalData: Data?
 
 func printFormatString(data: Data) {
         let strings = data.map { String(format: "%%%02x", $0) }
@@ -92,6 +94,14 @@ func main() {
         var lengthValue = UInt16(devicePathList.count)
         devicePathListLength.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
         
+        /* Optional data */
+        
+        if commandLine != nil {
+                optionalData = commandLine!.data(using: String.Encoding.utf16)!
+                optionalData?.removeFirst()
+                optionalData?.removeFirst()
+        }
+        
         /* Boot option variable data */
         
         var efiLoadOption = Data.init()
@@ -99,6 +109,9 @@ func main() {
         efiLoadOption.append(devicePathListLength)
         efiLoadOption.append(description)
         efiLoadOption.append(devicePathList)
+        if (optionalData != nil) {
+                efiLoadOption.append(optionalData!)
+        }
         
         if outputToFile {
                 let data = efiLoadOption as NSData
@@ -131,13 +144,17 @@ func main() {
 
 func usage() {
         let basename = NSString(string: CommandLine.arguments[0]).lastPathComponent
-        print("Usage: \(basename) -p path -d description [-o file [-k key] | -x [-k key] | -f]")
-        print("  -p path to an EFI executable")
-        print("  -d description for the boot option")
-        print("  -o output to file (XML property list)")
-        print("  -k dictionary key, defaults to Boot")
-        print("  -x print XML instead of raw hex")
-        print("  -f print format string instead of raw hex")
+        print("Usage: \(basename) -p path -d description [-u unicode]")
+        print("              [-o file [-k key] | -x [-k key] | -f] ")
+        print("")
+        print("   -p   path to an EFI executable")
+        print("   -d   description for the boot option")
+        print("   -u   unicode string passed to loader")
+        print("   -o   output to file (XML property list)")
+        print("   -k   dictionary key, defaults to Boot")
+        print("   -x   print XML instead of raw hex")
+        print("   -f   print format string instead of raw hex")
+        print("")
         exit(1)
 }
 
@@ -146,7 +163,7 @@ func tooManyOptions() {
         usage()
 }
 
-while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:k:xf"), option != -1 {
+while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:u:o:k:xf"), option != -1 {
         switch UnicodeScalar(CUnsignedChar(option)) {
         case "p":
                 pathToEfiExecutable = String(cString: optarg)
@@ -170,6 +187,8 @@ while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:
                         tooManyOptions()
                 }
                 outputFormatString = true
+        case "u":
+                commandLine = String(cString: optarg)
         default:
                 usage()
         }

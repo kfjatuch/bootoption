@@ -5,9 +5,12 @@ A command line program that generates EFI boot load options for file media. Outp
 ## Usage
 
 ```
-bootoption -p path -d description [-o file [-k key] | -x [-k key] | -f]
+bootoption -p path -d description [-u unicode]
+        [-o file [-k key] | -x [-k key] | -f]
+
     -p path to an EFI executable
     -d description for the boot option
+    -u unicode string passed to loader
     -o output to file (XML property list)
     -k dictionary key, defaults to Boot
     -x print XML instead of raw hex

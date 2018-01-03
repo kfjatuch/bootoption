@@ -50,7 +50,8 @@ func printXml(data: Data) {
                 print(error)
                 exit(1)
         }
-        if let outputString = String.init(data: propertyList, encoding: .utf8) {
+        if let xml = String.init(data: propertyList, encoding: .utf8) {
+                let outputString = String(xml.characters.filter { !"\n\t\r".characters.contains($0) })
                 print(outputString)
         } else {
                 print("Error printing serialized xml property list representation")

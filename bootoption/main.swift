@@ -20,16 +20,51 @@
 
 import Foundation
 
-var pathToEfiExecutable: String?
-var bootOptionDescription: String?
-var outputPath: String?
-var outputToFile: Bool = false
-var outputFormatString: Bool = false
-var outputXml: Bool = false
 var testCount: Int = 54
-var key: String = "Boot"
-var commandLine: String?
 var optionalData: Data?
+
+let cli = CommandLine(invocation: "-l PATH -d LABEL [-u STRING] [-o FILE | -x | -n] [-k KEY]")
+
+let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
+let displayLabel = StringOption(shortFlag: "d", longFlag: "display", required: true, helpMessage: "display LABEL in firmware boot manager")
+let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
+let outputFile = StringOption(shortFlag: "o", longFlag: "output", helpMessage: "output to FILE as an XML property list")
+let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex")
+let outputFormatted = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print an nvram.c-style string instead of raw hex")
+let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY for option -o or -x")
+
+func parseOptions() {
+        
+        cli.addOptions(loaderPath, displayLabel, unicodeString, outputFile, outputXml, outputFormatted, keyForXml)
+        
+        do {
+                try cli.parse()
+        } catch {
+                cli.printUsage(error)
+                exit(EX_USAGE)
+        }
+
+        if outputXml.wasSet {
+                if outputFile.wasSet || outputFormatted.wasSet {
+                        cli.printUsage(CommandLine.ParseError.tooManyOptions)
+                        exit(EX_USAGE)
+                }
+        }
+
+        if outputFile.wasSet {
+                if outputXml.wasSet || outputFormatted.wasSet {
+                        cli.printUsage(CommandLine.ParseError.tooManyOptions)
+                        exit(EX_USAGE)
+                }
+        }
+
+        if outputFormatted.wasSet {
+                if outputFile.wasSet || outputXml.wasSet {
+                        cli.printUsage(CommandLine.ParseError.tooManyOptions)
+                        exit(EX_USAGE)
+                }
+        }
+}
 
 func printFormatString(data: Data) {
         let strings = data.map { String(format: "%%%02x", $0) }
@@ -44,7 +79,7 @@ func printRawHex(data: Data) {
 }
 
 func printXml(data: Data) {
-        let dictionary: NSDictionary = ["\(key)": data]
+        let dictionary: NSDictionary = ["\(keyForXml)": data]
         var propertyList: Data
         do {
                 propertyList = try PropertyListSerialization.data(fromPropertyList: dictionary, format: .xml, options: 0)
@@ -63,17 +98,22 @@ func printXml(data: Data) {
 
 func main() {
         
+        if displayLabel.value == nil || loaderPath.value == nil {
+                print("Error: Required variables should no longer be nil")
+                exit(1)
+        }
+        
         /* Attributes */
         
         let attributes = Data.init(bytes: [1, 0, 0, 0])
         
         /* Description */
         
-        if bootOptionDescription!.containsOutlawedCharacters() {
+        if displayLabel.value!.containsOutlawedCharacters() {
                 fatalError("Forbidden character(s) found in description")
         }
         
-        var description = bootOptionDescription!.data(using: String.Encoding.utf16)!
+        var description = displayLabel.value!.data(using: String.Encoding.utf16)!
         description.removeFirst()
         description.removeFirst()
         description.append(contentsOf: [0, 0])
@@ -81,8 +121,8 @@ func main() {
         /* Device path list */
         
         var devicePathList = Data.init()
-        let hardDrive = HardDriveMediaDevicePath(forFile: pathToEfiExecutable!)
-        let file = FilePathMediaDevicePath(path: pathToEfiExecutable!, mountPoint: hardDrive.mountPoint)
+        let hardDrive = HardDriveMediaDevicePath(forFile: loaderPath.value!)
+        let file = FilePathMediaDevicePath(path: loaderPath.value!, mountPoint: hardDrive.mountPoint)
         let end = EndDevicePath()
         devicePathList.append(hardDrive.data)
         devicePathList.append(file.data)
@@ -96,8 +136,8 @@ func main() {
         
         /* Optional data */
         
-        if commandLine != nil {
-                optionalData = commandLine!.data(using: String.Encoding.utf16)!
+        if unicodeString.value != nil {
+                optionalData = unicodeString.value!.data(using: String.Encoding.utf16)!
                 optionalData?.removeFirst()
                 optionalData?.removeFirst()
         }
@@ -113,10 +153,16 @@ func main() {
                 efiLoadOption.append(optionalData!)
         }
         
-        if outputToFile {
+        if outputFile.wasSet {
                 let data = efiLoadOption as NSData
-                let dictionary: NSDictionary = ["\(key)": data]
-                let url = URL(fileURLWithPath: outputPath!)
+                var keyString: String = ""
+                if keyForXml.wasSet {
+                        keyString = keyForXml.value!
+                } else {
+                        keyString = "Boot"
+                }
+                let dictionary: NSDictionary = ["\(keyString)": data]
+                let url = URL(fileURLWithPath: outputFile.value!)
                 do {
                         try dictionary.write(to: url)
                 } catch {
@@ -131,9 +177,9 @@ func main() {
                 exit(1)
         }
         
-        if outputFormatString {
+        if outputFormatted.value {
                 printFormatString(data: data)
-        } else if outputXml {
+        } else if outputXml.value {
                 printXml(data: data)
         } else {
                 printRawHex(data: data)
@@ -142,60 +188,5 @@ func main() {
 
 }
 
-func usage() {
-        let basename = NSString(string: CommandLine.arguments[0]).lastPathComponent
-        print("Usage: \(basename) -p path -d description [-u unicode]")
-        print("              [-o file [-k key] | -x [-k key] | -f] ")
-        print("")
-        print("   -p   path to an EFI executable")
-        print("   -d   description for the boot option")
-        print("   -u   unicode string passed to loader")
-        print("   -o   output to file (XML property list)")
-        print("   -k   dictionary key, defaults to Boot")
-        print("   -x   print XML instead of raw hex")
-        print("   -f   print format string instead of raw hex")
-        print("")
-        exit(1)
-}
-
-func tooManyOptions() {
-        print("Too many options")
-        usage()
-}
-
-while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:u:o:k:xf"), option != -1 {
-        switch UnicodeScalar(CUnsignedChar(option)) {
-        case "p":
-                pathToEfiExecutable = String(cString: optarg)
-        case "d":
-                bootOptionDescription = String(cString: optarg)
-        case "o":
-                if outputXml || outputFormatString {
-                        tooManyOptions()
-                }
-                outputPath = String(cString: optarg)
-                outputToFile = true
-        case "k":
-                key = String(cString: optarg)
-        case "x":
-                if outputToFile || outputFormatString {
-                        tooManyOptions()
-                }
-                outputXml = true
-        case "f":
-                if outputToFile || outputXml {
-                        tooManyOptions()
-                }
-                outputFormatString = true
-        case "u":
-                commandLine = String(cString: optarg)
-        default:
-                usage()
-        }
-}
-
-if pathToEfiExecutable == nil || bootOptionDescription == nil || (outputToFile == true && outputPath == nil) {
-        usage()
-}
-
+parseOptions()
 main()

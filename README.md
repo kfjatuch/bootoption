@@ -4,23 +4,55 @@ A command line program that generates EFI boot load options for file media. Outp
 
 ## Usage
 
-```
-bootoption -p path -d description [-u unicode]
-        [-o file [-k key] | -x [-k key] | -f]
 
-    -p path to an EFI executable
-    -d description for the boot option
-    -u unicode string passed to loader
-    -o output to file (XML property list)
-    -k dictionary key, defaults to Boot
-    -x print XML instead of raw hex
-    -f print format string instead of raw hex
-```
+<div style="font-family: Monospace; margin-bottom: 1em">
+bootoption -p <em>PATH</em> -d <em>LABEL</em> [ -u <em>STRING</em> ]<br />
+<span style="margin-left: 4em">&nbsp;</span>
+[ -o <em>FILENAME</em> | -x | -f ] [ -k <em>KEY</em> ]
+</div>
+<table style="margin-left: 2em;"">
+        <tr style="vertical-align: top">
+                <td style="width: 3em">-p</td>
+                <td style="width: 8.5em">--path</td>
+                <td><em style="font-family: Monospace">PATH</em> to an EFI loader</td>
+        </tr>
+        <tr style="vertical-align: top">
+                <td>-d</td>
+                <td>--description</td>
+                <td>description (boot manager display <em style="font-family: Monospace">LABEL</em>)</td>
+        </tr>
+        <tr style="vertical-align: top">
+                <td>-u</td>
+                <td>--unicode</td>
+                <td>unicode <em style="font-family: Monospace">STRING</em> passed to loader (command line arguments)</td>
+        </tr>
+        <tr style="vertical-align: top">
+                <td>-o</td>
+                <td>--output</td>
+                <td>output to <em style="font-family: Monospace">FILENAME</em> (XML property list)</td>
+        </tr>
+        <tr style="vertical-align: top">
+                <td>-x</td>
+                <td>--xml</td>
+                <td>print XML instead of raw hex</td>
+        </tr>
+        <tr style="vertical-align: top">
+                <td>-f</td>
+                <td>--format</td>
+                <td>print format string instead of raw hex</td>
+        </tr>
+        <tr style="vertical-align: top">
+                <td>-k</td>
+                <td>--key</td>
+                <td>specify <dict> <em style="font-family: Monospace">KEY</em> (XML property list, defaults to Boot)</td>
+        </tr>
+</table>
+
 
 #### Example 1
 
 ```
-bootoption -p "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -o "/Volumes/EFI/boot.plist" -k "Payload"
+bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -o "/Volumes/EFI/boot.plist" -k "Payload"
 ```
 ##### /Volumes/EFI/boot.plist:
 
@@ -44,7 +76,7 @@ The data element contains the base 64 encoded variable data conforming to the EF
 #### Example 2
 
 ```
-bootoption -p "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -f
+bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -f
 ```
 
 ##### Output:

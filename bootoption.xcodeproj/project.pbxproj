@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		4D2B86801FF98F3900C82104 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2B867F1FF98F3900C82104 /* Extensions.swift */; };
+		4D461F181FFD3A6200C82104 /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D461F141FFD398D00C82104 /* CommandLine.swift */; };
+		4D461F191FFD3A6200C82104 /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D461F151FFD398D00C82104 /* StringExtensions.swift */; };
+		4D461F1A1FFD3A6200C82104 /* Option.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D461F171FFD398D00C82104 /* Option.swift */; };
 		4DCE97811FFB84C600C82104 /* mkbootoption.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4D4B51CF1FFA87E000C82104 /* mkbootoption.sh */; };
 		4DD5EF771FF91DDF00C82104 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF741FF91DDE00C82104 /* main.swift */; };
 		4DD5EF781FF91DDF00C82104 /* DevicePath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF751FF91DDE00C82104 /* DevicePath.swift */; };
@@ -29,6 +32,9 @@
 
 /* Begin PBXFileReference section */
 		4D2B867F1FF98F3900C82104 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		4D461F141FFD398D00C82104 /* CommandLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandLine.swift; sourceTree = "<group>"; };
+		4D461F151FFD398D00C82104 /* StringExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
+		4D461F171FFD398D00C82104 /* Option.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Option.swift; sourceTree = "<group>"; };
 		4D4B51CF1FFA87E000C82104 /* mkbootoption.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = mkbootoption.sh; sourceTree = "<group>"; };
 		4DD5EF6A1FF91D8600C82104 /* bootoption */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = bootoption; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DD5EF741FF91DDE00C82104 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -48,6 +54,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4D461F131FFD398D00C82104 /* CommandLine */ = {
+			isa = PBXGroup;
+			children = (
+				4D461F141FFD398D00C82104 /* CommandLine.swift */,
+				4D461F151FFD398D00C82104 /* StringExtensions.swift */,
+				4D461F171FFD398D00C82104 /* Option.swift */,
+			);
+			path = CommandLine;
+			sourceTree = "<group>";
+		};
 		4D4B51CE1FFA875D00C82104 /* script */ = {
 			isa = PBXGroup;
 			children = (
@@ -59,6 +75,7 @@
 		4DD5EF611FF91D8600C82104 = {
 			isa = PBXGroup;
 			children = (
+				4D461F131FFD398D00C82104 /* CommandLine */,
 				4D4B51CE1FFA875D00C82104 /* script */,
 				4DD5EF7A1FF9238000C82104 /* README.md */,
 				4DD5EF6C1FF91D8600C82104 /* bootoption */,
@@ -144,6 +161,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4D461F191FFD3A6200C82104 /* StringExtensions.swift in Sources */,
+				4D461F181FFD3A6200C82104 /* CommandLine.swift in Sources */,
+				4D461F1A1FFD3A6200C82104 /* Option.swift in Sources */,
 				4DD5EF781FF91DDF00C82104 /* DevicePath.swift in Sources */,
 				4DD5EF771FF91DDF00C82104 /* main.swift in Sources */,
 				4DD5EF791FF91DDF00C82104 /* RegistryEntry.swift in Sources */,

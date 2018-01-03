@@ -17,7 +17,7 @@ bootoption -l <em>PATH</em> -d <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FI
         </tr>
         <tr>
                 <td>-d</td>
-                <td>--description</td>
+                <td>--display</td>
                 <td>display <em>LABEL</em> in firmware boot manager</td>
         </tr>
         <tr>

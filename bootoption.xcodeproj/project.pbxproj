@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		4D2B86801FF98F3900C82104 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2B867F1FF98F3900C82104 /* Extensions.swift */; };
-		4D5E21B21FFCD99200C82104 /* bootoption in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4DD5EF6A1FF91D8600C82104 /* bootoption */; };
 		4DCE97811FFB84C600C82104 /* mkbootoption.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4D4B51CF1FFA87E000C82104 /* mkbootoption.sh */; };
 		4DD5EF771FF91DDF00C82104 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF741FF91DDE00C82104 /* main.swift */; };
 		4DD5EF781FF91DDF00C82104 /* DevicePath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF751FF91DDE00C82104 /* DevicePath.swift */; };
@@ -16,16 +15,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		4D5E21B11FFCD98400C82104 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
-			dstPath = /usr/local/bin;
-			dstSubfolderSpec = 0;
-			files = (
-				4D5E21B21FFCD99200C82104 /* bootoption in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4DD5EF681FF91D8600C82104 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
@@ -106,7 +95,6 @@
 				4DD5EF661FF91D8600C82104 /* Sources */,
 				4DD5EF671FF91D8600C82104 /* Frameworks */,
 				4DD5EF681FF91D8600C82104 /* CopyFiles */,
-				4D5E21B11FFCD98400C82104 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -277,6 +265,9 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = /;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -289,6 +280,9 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = /;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;

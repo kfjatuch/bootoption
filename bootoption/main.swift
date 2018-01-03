@@ -140,6 +140,11 @@ func usage() {
         exit(1)
 }
 
+func tooManyOptions() {
+        print("Too many options")
+        usage()
+}
+
 while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:k:xf"), option != -1 {
         switch UnicodeScalar(CUnsignedChar(option)) {
         case "p":
@@ -148,8 +153,7 @@ while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:
                 bootOptionDescription = String(cString: optarg)
         case "o":
                 if outputXml || outputFormatString {
-                        print("Too many options")
-                        usage()
+                        tooManyOptions()
                 }
                 outputPath = String(cString: optarg)
                 outputToFile = true
@@ -157,14 +161,12 @@ while case let option = getopt(CommandLine.argc, CommandLine.unsafeArgv, "p:d:o:
                 key = String(cString: optarg)
         case "x":
                 if outputToFile || outputFormatString {
-                        print("Too many options")
-                        usage()
+                        tooManyOptions()
                 }
                 outputXml = true
         case "f":
                 if outputToFile || outputXml {
-                        print("Too many options")
-                        usage()
+                        tooManyOptions()
                 }
                 outputFormatString = true
         default:

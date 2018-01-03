@@ -1,6 +1,6 @@
 #  bootoption
 
-A command line program that generates EFI boot load options for file media. Outputs data as an XML property list, raw hex or formatted string. A stored representation of the variable data can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from the booted OS (for instance, generated during loader installation, stored and then added from an EFI context).
+A command line program that generates EFI boot load options for file media. Outputs data as an XML property list, raw hex or formatted string. A stored representation of the variable data can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from inside the operating system (for instance, generated during loader installation, stored and then added from an EFI context).
 
 ## Usage
 

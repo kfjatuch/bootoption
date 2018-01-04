@@ -61,9 +61,9 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 if [ "$#" == "2" ]; then
-        DATA=$($BOOTOPTION --loader "$1" --display "$2" --nvram)
+        DATA=$($BOOTOPTION --loader "$1" --label "$2" --nvram)
 elif [ "$#" == "3" ]; then
-        DATA=$($BOOTOPTION --loader "$1" --display "$2" --unicode "$3" --nvram)
+        DATA=$($BOOTOPTION --loader "$1" --label "$2" --unicode "$3" --nvram)
 else
         usage
         exit 1

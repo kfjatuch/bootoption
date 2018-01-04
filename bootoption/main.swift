@@ -198,6 +198,7 @@ func main() {
                         print(error)
                         exit(1)
                 }
+                print("Written to '\(outputFileDmpstore.value!)'")
                 exit(0)
         }
         

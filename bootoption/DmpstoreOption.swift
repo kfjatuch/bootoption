@@ -106,6 +106,7 @@ struct DmpstoreOption {
                 
                 /* store created */
                 self.created = self.chosen
+                print("Created a new '\(emptyBootOption!)' variable")
                 
         }
     

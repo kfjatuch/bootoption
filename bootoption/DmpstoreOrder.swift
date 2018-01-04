@@ -69,6 +69,6 @@ struct DmpstoreOrder {
                 self.data.append(buffer)
                 self.data.append(self.crc32)
                 
+                print("Created an updated 'BootOrder' variable")
         }
-        
 }

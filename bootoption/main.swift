@@ -23,19 +23,20 @@ import Foundation
 var testCount: Int = 54
 var optionalData: Data?
 
-let cli = CommandLine(invocation: "-l PATH -d LABEL [-u STRING] [-o FILE | -x | -n] [-k KEY]")
+let cli = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n          [-p FILE | -d FILE | -x | -n] [-k KEY]")
 
 let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
-let displayLabel = StringOption(shortFlag: "d", longFlag: "display", required: true, helpMessage: "display LABEL in firmware boot manager")
+let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
 let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-let outputFile = StringOption(shortFlag: "o", longFlag: "output", helpMessage: "output to FILE as an XML property list")
+let outputFilePlist = StringOption(shortFlag: "p", longFlag: "plist", helpMessage: "output to FILE as an XML property list")
+let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore")
 let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex")
-let outputFormatted = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print an nvram.c-style string instead of raw hex")
+let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex")
 let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY for option -o or -x")
 
 func parseOptions() {
         
-        cli.addOptions(loaderPath, displayLabel, unicodeString, outputFile, outputXml, outputFormatted, keyForXml)
+        cli.addOptions(loaderPath, displayLabel, unicodeString, outputFilePlist, outputFileDmpstore, outputXml, outputNvram, keyForXml)
         
         do {
                 try cli.parse()
@@ -45,21 +46,28 @@ func parseOptions() {
         }
 
         if outputXml.wasSet {
-                if outputFile.wasSet || outputFormatted.wasSet {
+                if outputFilePlist.wasSet || outputNvram.wasSet || outputFileDmpstore.wasSet {
                         cli.printUsage(CommandLine.ParseError.tooManyOptions)
                         exit(EX_USAGE)
                 }
         }
 
-        if outputFile.wasSet {
-                if outputXml.wasSet || outputFormatted.wasSet {
+        if outputFilePlist.wasSet {
+                if outputXml.wasSet || outputNvram.wasSet || outputFileDmpstore.wasSet {
                         cli.printUsage(CommandLine.ParseError.tooManyOptions)
                         exit(EX_USAGE)
                 }
         }
 
-        if outputFormatted.wasSet {
-                if outputFile.wasSet || outputXml.wasSet {
+        if outputNvram.wasSet {
+                if outputFilePlist.wasSet || outputXml.wasSet || outputFileDmpstore.wasSet {
+                        cli.printUsage(CommandLine.ParseError.tooManyOptions)
+                        exit(EX_USAGE)
+                }
+        }
+        
+        if outputFileDmpstore.wasSet {
+                if outputFilePlist.wasSet || outputXml.wasSet || outputNvram.wasSet {
                         cli.printUsage(CommandLine.ParseError.tooManyOptions)
                         exit(EX_USAGE)
                 }
@@ -153,7 +161,7 @@ func main() {
                 efiLoadOption.append(optionalData!)
         }
         
-        if outputFile.wasSet {
+        if outputFilePlist.wasSet {
                 let data = efiLoadOption as NSData
                 var keyString: String = ""
                 if keyForXml.wasSet {
@@ -162,7 +170,7 @@ func main() {
                         keyString = "Boot"
                 }
                 let dictionary: NSDictionary = ["\(keyString)": data]
-                let url = URL(fileURLWithPath: outputFile.value!)
+                let url = URL(fileURLWithPath: outputFilePlist.value!)
                 do {
                         try dictionary.write(to: url)
                 } catch {
@@ -171,19 +179,32 @@ func main() {
                 }
                 exit(0)
         }
-                
+        
         let data = efiLoadOption as Data
         if data.count < testCount {
                 exit(1)
         }
         
-        if outputFormatted.value {
+        if outputFileDmpstore.wasSet {
+                let dmpstore = Dmpstore(fromData: data)
+                let url = URL(fileURLWithPath: outputFileDmpstore.value!)
+                do {
+                        try dmpstore.data.write(to: url)
+                } catch {
+                        print(error)
+                        exit(1)
+                }
+                exit(0)
+        }
+        
+        if outputNvram.value {
                 printFormatString(data: data)
         } else if outputXml.value {
                 printXml(data: data)
         } else {
                 printRawHex(data: data)
         }
+
         exit(0)
 
 }

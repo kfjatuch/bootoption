@@ -15,6 +15,8 @@
 		4DD5EF771FF91DDF00C82104 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF741FF91DDE00C82104 /* main.swift */; };
 		4DD5EF781FF91DDF00C82104 /* DevicePath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF751FF91DDE00C82104 /* DevicePath.swift */; };
 		4DD5EF791FF91DDF00C82104 /* RegistryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */; };
+		4DE358BA1FFE17C000C82104 /* crc32.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE358B91FFE17C000C82104 /* crc32.swift */; };
+		4DE358BC1FFE214B00C82104 /* Dmpstore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE358BB1FFE214B00C82104 /* Dmpstore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -42,6 +44,8 @@
 		4DD5EF751FF91DDE00C82104 /* DevicePath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevicePath.swift; sourceTree = "<group>"; };
 		4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegistryEntry.swift; sourceTree = "<group>"; };
 		4DD5EF7A1FF9238000C82104 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		4DE358B91FFE17C000C82104 /* crc32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = crc32.swift; sourceTree = "<group>"; };
+		4DE358BB1FFE214B00C82104 /* Dmpstore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dmpstore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +81,7 @@
 		4DD5EF611FF91D8600C82104 = {
 			isa = PBXGroup;
 			children = (
+				4DE358B81FFE17A700C82104 /* crc32 */,
 				4D461F131FFD398D00C82104 /* CommandLine */,
 				4D4B51CE1FFA875D00C82104 /* script */,
 				4DD5EF7A1FF9238000C82104 /* README.md */,
@@ -97,11 +102,20 @@
 			isa = PBXGroup;
 			children = (
 				4DD5EF751FF91DDE00C82104 /* DevicePath.swift */,
+				4DE358BB1FFE214B00C82104 /* Dmpstore.swift */,
 				4DD5EF741FF91DDE00C82104 /* main.swift */,
 				4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */,
 				4D2B867F1FF98F3900C82104 /* Extensions.swift */,
 			);
 			path = bootoption;
+			sourceTree = "<group>";
+		};
+		4DE358B81FFE17A700C82104 /* crc32 */ = {
+			isa = PBXGroup;
+			children = (
+				4DE358B91FFE17C000C82104 /* crc32.swift */,
+			);
+			path = crc32;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -166,10 +180,12 @@
 				4D461F191FFD3A6200C82104 /* StringExtensions.swift in Sources */,
 				4D461F181FFD3A6200C82104 /* CommandLine.swift in Sources */,
 				4D461F1A1FFD3A6200C82104 /* Option.swift in Sources */,
+				4DE358BA1FFE17C000C82104 /* crc32.swift in Sources */,
 				4DD5EF781FF91DDF00C82104 /* DevicePath.swift in Sources */,
 				4DD5EF771FF91DDF00C82104 /* main.swift in Sources */,
 				4DD5EF791FF91DDF00C82104 /* RegistryEntry.swift in Sources */,
 				4D2B86801FF98F3900C82104 /* Extensions.swift in Sources */,
+				4DE358BC1FFE214B00C82104 /* Dmpstore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

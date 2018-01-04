@@ -61,4 +61,11 @@ class RegistryEntry {
                 return string
         }
         
+        func dataFrom(key: String) -> Data? {
+                guard let data:Data = value(fromKey: key, type: CFDataGetTypeID()) as? Data else {
+                        return nil
+                }
+                return data
+        }
+        
 }

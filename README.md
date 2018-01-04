@@ -84,7 +84,7 @@ The data element contains the base 64 encoded variable data conforming to the EF
 #### Store to EDK2 dmpstore format
 
 ```
-bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -d "/Volumes/EFI/vars.dmpstore"
+bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -d "/Volumes/USB-FAT32/vars.dmpstore"
 ````
 
 #### Output
@@ -92,7 +92,7 @@ bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -d "/Volumes/E
 ```
 Created a new 'Boot0005' variable
 Created an updated 'BootOrder' variable
-Written to '/Volumes/EFI/vars.dmpstore'
+Written to '/Volumes/USB-FAT32/vars.dmpstore'
 ```
 
 The resulting file can be read from the EFI shell. To load and set the variables:

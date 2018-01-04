@@ -56,7 +56,7 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [-p <em>FIL
 #### Example 1
 
 ```
-bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -o "/Volumes/EFI/boot.plist" -k "Payload"
+bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -p "/Volumes/EFI/boot.plist" -k "Payload"
 ```
 ##### /Volumes/EFI/boot.plist:
 
@@ -80,7 +80,7 @@ The data element contains the base 64 encoded variable data conforming to the EF
 #### Example 2
 
 ```
-bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -n
+bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -n
 ```
 
 ##### Output:

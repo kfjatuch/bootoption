@@ -1,14 +1,18 @@
 #  bootoption
 
-A command line program that generates EFI boot load options for file media. Outputs data as an XML property list, raw hex or formatted string. A stored representation of the variable data can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from inside the operating system (for instance, generated during loader installation, stored and then added from an EFI context).
+A command line program that generates EFI boot load options for file media. Supported output modes:
+
+- raw hex
+- XML
+- [EDK2 dmpstore](https://github.com/tianocore/edk2/blob/master/ShellPkg/Library/UefiShellDebug1CommandsLib/DmpStore.c) format
+- string formatted for [Apple's nvram system command](https://opensource.apple.com/source/system_cmds/system_cmds-790/nvram.tproj/nvram.c.auto.html)
+
+A stored representation of the variable data can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from inside the operating system (for instance, generated during loader installation, stored and then added from an EFI context).
 
 ## Usage
 
-
-<div style="font-family: Monospace; margin-bottom: 1em">
 bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [-p <em>FILE</em> | -d <em>FILE</em> | -x | -n ] [ -k <em>KEY</em> ]
-</div>
-<br />
+
 <table>
         <tr>
                 <td style="width: 3em">-l</td>
@@ -48,17 +52,17 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [-p <em>FIL
         <tr>
                 <td>-k</td>
                 <td>--key</td>
-                <td>use the named <em>KEY</em> for option -o or -x</td>
+                <td>use the named <em>KEY</em> for option -p or -x</td>
         </tr>
 </table>
 
 
-#### Example 1
+#### Store to XML property list
 
 ```
 bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -p "/Volumes/EFI/boot.plist" -k "Payload"
 ```
-##### /Volumes/EFI/boot.plist:
+#### /Volumes/EFI/boot.plist
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -77,27 +81,24 @@ bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -p "/Volumes/E
 
 The data element contains the base 64 encoded variable data conforming to the EFI_LOAD_OPTION structure, as defined in section 3.1.3 of the UEFI Specification 2.7.
 
-#### Example 2
+#### Store to EDK2 dmpstore format
 
 ```
-bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -n
-```
+bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -d "/Volumes/EFI/vars.dmpstore"
+````
 
-##### Output:
-
-```
-%01%00%00%00%66%00%43%00%6c%00%6f%00%76%00%65%00%72%00%00%00%04%01%2a%00%01%00%00%00%00%08%00%00%00%00%00%00%00%40%06%00%00%00%00%00%d5%a8%cf%3e%7f%8c%5e%48%a9%0e%a9%17%f1%fa%7d%a5%02%02%04%04%38%00%5c%00%45%00%46%00%49%00%5c%00%43%00%4c%00%4f%00%56%00%45%00%52%00%5c%00%43%00%4c%00%4f%00%56%00%45%00%52%00%58%00%36%00%34%00%2e%00%45%00%46%00%49%00%00%00%7f%ff%04%00
-```
-
-#### mkbootoption.sh
-
-An experimental and potentially dangerous shell script that will attempt to add a boot option to your EFI using Apple's nvram command. Usage:
+#### Output
 
 ```
-sudo ./mkbootoption.sh "path" "description"
-     required parameters:
-     path                  path to an EFI executable
-     description           description for the new boot menu entry
+Created a new 'Boot0005' variable
+Created an updated 'BootOrder' variable
+Written to '/Volumes/EFI/vars.dmpstore'
+```
+
+The resulting file can be read from the EFI shell. To load and set the variables:
+
+```
+FS0:\> dmpstore -l vars.dmpstore
 ```
 
 ## License

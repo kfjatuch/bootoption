@@ -20,13 +20,14 @@
 
 import Foundation
 
-struct Dmpstore {
+struct DmpstoreOption {
         
         static let nameSizeConstant: Int = 18
         
         var data = Data.init()
-        
-        let nameSize = Data.init(bytes: [UInt8(Dmpstore.nameSizeConstant), 0x0, 0x0, 0x0])
+        var chosen: Int?
+        var created: Int? = nil
+        let nameSize = Data.init(bytes: [UInt8(DmpstoreOption.nameSizeConstant), 0x0, 0x0, 0x0])
         var dataSize = Data.init()
         var name = Data.init()
         let guid = Data.init(bytes: [0x61, 0xdf, 0xe4, 0x8b, 0xca, 0x93, 0xd2, 0x11, 0xaa, 0xd, 0x0, 0xe0, 0x98, 0x3, 0x2b, 0x8c])
@@ -34,11 +35,11 @@ struct Dmpstore {
         var variableData = Data.init()
         var crc32 = Data.init()
         
-        init(fromData optionData: Data) {
+        init(fromData variable: Data) {
                 
                 var nvram = RegistryEntry.init(fromPath: "IODeviceTree:/options")
                 
-                func readGlobalNVRAM(variable: String) -> Data? {
+                func readGlobalVariable(variable: String) -> Data? {
                         let EFIGlobalGUID:String = "8BE4DF61-93CA-11D2-AA0D-00E098032B8C"
                         let nameWithGUID:String = EFIGlobalGUID + ":" + variable
                         return nvram.dataFrom(key: nameWithGUID)
@@ -48,7 +49,7 @@ struct Dmpstore {
                         var counter = 0
                         for n in 0x0 ..< 0xFF {
                                 let name = "Boot" + String(format:"%04X", n)
-                                if let _: Data = readGlobalNVRAM(variable: name) {
+                                if let _: Data = readGlobalVariable(variable: name) {
                                         continue
                                 } else {
                                         counter += 1
@@ -56,6 +57,7 @@ struct Dmpstore {
                                                 /* choose the 3rd empty Boot variable */
                                                 continue
                                         } else {
+                                                self.chosen = n as Int
                                                 return name
                                         }
                                 }
@@ -63,7 +65,7 @@ struct Dmpstore {
                         return nil
                 }
                 
-                var dataSizeValue = UInt32(optionData.count)
+                var dataSizeValue = UInt32(variable.count)
                 /* store dataSize */
                 self.dataSize.append(UnsafeBufferPointer(start: &dataSizeValue, count: 1))
                 
@@ -75,14 +77,14 @@ struct Dmpstore {
                 nameData.removeFirst()
                 nameData.removeFirst()
                 nameData.append(contentsOf: [0, 0])
-                if nameData.count != Dmpstore.nameSizeConstant {
-                        fatalError("nameSize isn't \(Dmpstore.nameSizeConstant)")
+                if nameData.count != DmpstoreOption.nameSizeConstant {
+                        fatalError("nameSize isn't \(DmpstoreOption.nameSizeConstant)")
                 }
                 /* store name data */
                 self.name = nameData
                 
                 /* store variable data */
-                self.variableData.append(optionData)
+                self.variableData.append(variable)
                 
                 var buffer = Data.init()
                 buffer.append(self.nameSize)
@@ -101,6 +103,9 @@ struct Dmpstore {
                 /* store dmpstore data */
                 self.data.append(buffer)
                 self.data.append(self.crc32)
+                
+                /* store created */
+                self.created = self.chosen
                 
         }
     

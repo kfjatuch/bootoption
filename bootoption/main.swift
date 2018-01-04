@@ -186,10 +186,14 @@ func main() {
         }
         
         if outputFileDmpstore.wasSet {
-                let dmpstore = Dmpstore(fromData: data)
+                let dmpstoreOption = DmpstoreOption(fromData: data)
+                let dmpstoreOrder = DmpstoreOrder(adding: dmpstoreOption.created)
+                var buffer = Data.init()
+                buffer.append(dmpstoreOption.data)
+                buffer.append(dmpstoreOrder.data)
                 let url = URL(fileURLWithPath: outputFileDmpstore.value!)
                 do {
-                        try dmpstore.data.write(to: url)
+                        try buffer.write(to: url)
                 } catch {
                         print(error)
                         exit(1)

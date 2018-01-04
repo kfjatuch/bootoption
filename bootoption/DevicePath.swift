@@ -117,11 +117,11 @@ struct HardDriveMediaDevicePath {
                 
                 /* To do - Check disk is GPT */
                 
-                let ioPreferredBlockSize: Int? = partitionProperties.int(fromKey: "Preferred Block Size")
-                let ioPartitionID: Int? = partitionProperties.int(fromKey: "Partition ID")
-                let ioBase: Int? = partitionProperties.int(fromKey: "Base")
-                let ioSize: Int? = partitionProperties.int(fromKey: "Size")
-                let ioUUID: String? = partitionProperties.string(fromKey: "UUID")
+                let ioPreferredBlockSize: Int? = partitionProperties.int(forKey: "Preferred Block Size")
+                let ioPartitionID: Int? = partitionProperties.int(forKey: "Partition ID")
+                let ioBase: Int? = partitionProperties.int(forKey: "Base")
+                let ioSize: Int? = partitionProperties.int(forKey: "Size")
+                let ioUUID: String? = partitionProperties.string(forKey: "UUID")
                 
                 if (ioPreferredBlockSize == nil || ioPartitionID == nil || ioBase == nil || ioSize == nil || ioUUID == nil) {
                         fatalError("Failed to get registry values")

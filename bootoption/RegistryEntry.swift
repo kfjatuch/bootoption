@@ -32,7 +32,7 @@ class RegistryEntry {
                 }
         }
         
-        private func value(fromKey key: String, type: CFTypeID) -> Any? {
+        private func value(forKey key: String, type: CFTypeID) -> Any? {
                 let registryKey = key as CFString
                 let registryValue:Unmanaged<CFTypeRef>? = (IORegistryEntryCreateCFProperty(registryEntry, registryKey , kCFAllocatorDefault, 0))
                 guard (registryValue != nil) else {
@@ -47,22 +47,22 @@ class RegistryEntry {
                 return value
         }
         
-        func int(fromKey key: String) -> Int? {
-                guard let int = value(fromKey: key, type: CFNumberGetTypeID()) as? Int else {
+        func int(forKey key: String) -> Int? {
+                guard let int = value(forKey: key, type: CFNumberGetTypeID()) as? Int else {
                         return nil
                 }
                 return int
         }
         
-        func string(fromKey key: String) -> String? {
-                guard let string = value(fromKey: key, type: CFStringGetTypeID()) as? String else {
+        func string(forKey key: String) -> String? {
+                guard let string = value(forKey: key, type: CFStringGetTypeID()) as? String else {
                         return nil
                 }
                 return string
         }
         
-        func dataFrom(key: String) -> Data? {
-                guard let data:Data = value(fromKey: key, type: CFDataGetTypeID()) as? Data else {
+        func data(forKey key: String) -> Data? {
+                guard let data:Data = value(forKey: key, type: CFDataGetTypeID()) as? Data else {
                         return nil
                 }
                 return data

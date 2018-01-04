@@ -29,7 +29,7 @@ struct Dmpstore {
         static func readGlobalVariable(variable: String) -> Data? {
                 let EFIGlobalGUID: String = "8BE4DF61-93CA-11D2-AA0D-00E098032B8C"
                 let nameWithGUID: String = "\(EFIGlobalGUID):\(variable)"
-                return nvram.dataFrom(key: nameWithGUID)
+                return nvram.data(forKey: nameWithGUID)
         }
         
         struct Option {

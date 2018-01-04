@@ -6,7 +6,7 @@ A command line program that generates EFI boot load options for file media. Outp
 
 
 <div style="font-family: Monospace; margin-bottom: 1em">
-bootoption -l <em>PATH</em> -d <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FILE</em> | -x | -n ] [ -k <em>KEY</em> ]
+bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [-p <em>FILE</em> | -d <em>FILE</em> | -x | -n ] [ -k <em>KEY</em> ]
 </div>
 <br />
 <table>
@@ -16,8 +16,8 @@ bootoption -l <em>PATH</em> -d <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FI
                 <td>the <em>PATH</em> to an EFI loader executable</td>
         </tr>
         <tr>
-                <td>-d</td>
-                <td>--display</td>
+                <td>-L</td>
+                <td>--label</td>
                 <td>display <em>LABEL</em> in firmware boot manager</td>
         </tr>
         <tr>
@@ -26,9 +26,14 @@ bootoption -l <em>PATH</em> -d <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FI
                 <td>an optional <em>STRING</em> passed to the loader command line</td>
         </tr>
         <tr>
-                <td>-o</td>
-                <td>--output</td>
+                <td>-p</td>
+                <td>--plist</td>
                 <td>output to <em>FILE</em> as an XML property list</td>
+        </tr>
+        <tr>
+                <td>-d</td>
+                <td>--dmpstore</td>
+                <td>output to <em>FILE</em> for use with EDK2 dmpstore</td>
         </tr>
         <tr>
                 <td>-x</td>
@@ -38,7 +43,7 @@ bootoption -l <em>PATH</em> -d <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FI
         <tr>
                 <td>-n</td>
                 <td>--nvram</td>
-                <td>print an nvram.c-style string instead of raw hex</td>
+                <td>print Apple nvram style string instead of raw hex</td>
         </tr>
         <tr>
                 <td>-k</td>

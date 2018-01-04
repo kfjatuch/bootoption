@@ -52,7 +52,7 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [-p <em>FIL
         <tr>
                 <td>-k</td>
                 <td>--key</td>
-                <td>use the named <em>KEY</em> for option -p or -x</td>
+                <td>use the named <em>KEY</em> for options -p or -x</td>
         </tr>
 </table>
 

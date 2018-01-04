@@ -32,7 +32,7 @@ let outputFilePlist = StringOption(shortFlag: "p", longFlag: "plist", helpMessag
 let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore")
 let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex")
 let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex")
-let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY for option -o or -x")
+let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY for options -p or -x")
 
 func parseOptions() {
         

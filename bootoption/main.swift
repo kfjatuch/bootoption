@@ -186,8 +186,8 @@ func main() {
         }
         
         if outputFileDmpstore.wasSet {
-                let dmpstoreOption = DmpstoreOption(fromData: data)
-                let dmpstoreOrder = DmpstoreOrder(adding: dmpstoreOption.created)
+                let dmpstoreOption = Dmpstore.Option(fromData: data)
+                let dmpstoreOrder = Dmpstore.Order(adding: dmpstoreOption.created)
                 var buffer = Data.init()
                 buffer.append(dmpstoreOption.data)
                 buffer.append(dmpstoreOrder.data)

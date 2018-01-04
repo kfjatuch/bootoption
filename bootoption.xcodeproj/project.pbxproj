@@ -11,13 +11,12 @@
 		4D461F181FFD3A6200C82104 /* CommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D461F141FFD398D00C82104 /* CommandLine.swift */; };
 		4D461F191FFD3A6200C82104 /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D461F151FFD398D00C82104 /* StringExtensions.swift */; };
 		4D461F1A1FFD3A6200C82104 /* Option.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D461F171FFD398D00C82104 /* Option.swift */; };
-		4D88289B1FFE4AFA00C82104 /* DmpstoreOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D88289A1FFE4AFA00C82104 /* DmpstoreOrder.swift */; };
 		4DCE97811FFB84C600C82104 /* mkbootoption.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4D4B51CF1FFA87E000C82104 /* mkbootoption.sh */; };
 		4DD5EF771FF91DDF00C82104 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF741FF91DDE00C82104 /* main.swift */; };
 		4DD5EF781FF91DDF00C82104 /* DevicePath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF751FF91DDE00C82104 /* DevicePath.swift */; };
 		4DD5EF791FF91DDF00C82104 /* RegistryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */; };
 		4DE358BA1FFE17C000C82104 /* crc32.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE358B91FFE17C000C82104 /* crc32.swift */; };
-		4DE358BC1FFE214B00C82104 /* DmpstoreOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE358BB1FFE214B00C82104 /* DmpstoreOption.swift */; };
+		4DE358BC1FFE214B00C82104 /* Dmpstore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE358BB1FFE214B00C82104 /* Dmpstore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,14 +40,13 @@
 		4D461F171FFD398D00C82104 /* Option.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Option.swift; sourceTree = "<group>"; };
 		4D461F1B1FFD7EBA00C82104 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4D4B51CF1FFA87E000C82104 /* mkbootoption.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = mkbootoption.sh; sourceTree = "<group>"; };
-		4D88289A1FFE4AFA00C82104 /* DmpstoreOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DmpstoreOrder.swift; sourceTree = "<group>"; };
 		4DD5EF6A1FF91D8600C82104 /* bootoption */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = bootoption; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DD5EF741FF91DDE00C82104 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		4DD5EF751FF91DDE00C82104 /* DevicePath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevicePath.swift; sourceTree = "<group>"; };
 		4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegistryEntry.swift; sourceTree = "<group>"; };
 		4DD5EF7A1FF9238000C82104 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4DE358B91FFE17C000C82104 /* crc32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = crc32.swift; sourceTree = "<group>"; };
-		4DE358BB1FFE214B00C82104 /* DmpstoreOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DmpstoreOption.swift; sourceTree = "<group>"; };
+		4DE358BB1FFE214B00C82104 /* Dmpstore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dmpstore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,8 +104,7 @@
 			isa = PBXGroup;
 			children = (
 				4DD5EF751FF91DDE00C82104 /* DevicePath.swift */,
-				4DE358BB1FFE214B00C82104 /* DmpstoreOption.swift */,
-				4D88289A1FFE4AFA00C82104 /* DmpstoreOrder.swift */,
+				4DE358BB1FFE214B00C82104 /* Dmpstore.swift */,
 				4DD5EF741FF91DDE00C82104 /* main.swift */,
 				4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */,
 				4D2B867F1FF98F3900C82104 /* Extensions.swift */,
@@ -188,10 +185,9 @@
 				4DE358BA1FFE17C000C82104 /* crc32.swift in Sources */,
 				4DD5EF781FF91DDF00C82104 /* DevicePath.swift in Sources */,
 				4DD5EF771FF91DDF00C82104 /* main.swift in Sources */,
-				4D88289B1FFE4AFA00C82104 /* DmpstoreOrder.swift in Sources */,
 				4DD5EF791FF91DDF00C82104 /* RegistryEntry.swift in Sources */,
 				4D2B86801FF98F3900C82104 /* Extensions.swift in Sources */,
-				4DE358BC1FFE214B00C82104 /* DmpstoreOption.swift in Sources */,
+				4DE358BC1FFE214B00C82104 /* Dmpstore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

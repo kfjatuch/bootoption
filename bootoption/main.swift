@@ -28,10 +28,10 @@ let commandLine = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n       
 let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
 let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
 let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-let outputFilePlist = StringOption(shortFlag: "p", longFlag: "plist", helpMessage: "output to FILE as an XML property list")
-let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore")
-let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex")
-let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex")
+let outputFilePlist = StringOption(shortFlag: "p", longFlag: "plist", helpMessage: "output to FILE as an XML property list", precludes: "dxn")
+let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore", precludes: "pxn")
+let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "pdn")
+let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex", precludes: "pdx")
 let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY for options -p or -x")
 
 func parseOptions() {
@@ -39,39 +39,12 @@ func parseOptions() {
         commandLine.addOptions(loaderPath, displayLabel, unicodeString, outputFilePlist, outputFileDmpstore, outputXml, outputNvram, keyForXml)
         
         do {
-                try commandLine.parse()
+                try commandLine.parse(strict: true)
         } catch {
                 commandLine.printUsage(error)
                 exit(EX_USAGE)
         }
-
-        if outputXml.wasSet {
-                if outputFilePlist.wasSet || outputNvram.wasSet || outputFileDmpstore.wasSet {
-                        commandLine.printUsage(CommandLine.ParseError.tooManyOptions)
-                        exit(EX_USAGE)
-                }
-        }
-
-        if outputFilePlist.wasSet {
-                if outputXml.wasSet || outputNvram.wasSet || outputFileDmpstore.wasSet {
-                        commandLine.printUsage(CommandLine.ParseError.tooManyOptions)
-                        exit(EX_USAGE)
-                }
-        }
-
-        if outputNvram.wasSet {
-                if outputFilePlist.wasSet || outputXml.wasSet || outputFileDmpstore.wasSet {
-                        commandLine.printUsage(CommandLine.ParseError.tooManyOptions)
-                        exit(EX_USAGE)
-                }
-        }
         
-        if outputFileDmpstore.wasSet {
-                if outputFilePlist.wasSet || outputXml.wasSet || outputNvram.wasSet {
-                        commandLine.printUsage(CommandLine.ParseError.tooManyOptions)
-                        exit(EX_USAGE)
-                }
-        }
 }
 
 func printFormatString(data: Data) {

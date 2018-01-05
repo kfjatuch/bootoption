@@ -54,6 +54,7 @@ public class CommandLine {
         private var _arguments: [String]
         private var _options: [Option] = [Option]()
         private var _maxFlagDescriptionWidth: Int = 0
+        private var _precluded: String = ""
         private var _usedFlags: Set<String> {
                 var usedFlags = Set<String>(minimumCapacity: _options.count * 2)
                 
@@ -154,18 +155,21 @@ public class CommandLine {
                 /** Thrown if an unrecognized argument is passed to `parse()` in strict mode */
                 case invalidArgument(String)
                 
+                /** Thrown if an option's use is precluded by a previously parsed option */
+                case tooManyOptions()
+                
                 /** Thrown if the value for an Option is invalid (e.g. a string is passed to an IntOption) */
                 case invalidValueForOption(Option, [String])
                 
                 /** Thrown if an Option with required: true is missing */
                 case missingRequiredOptions([Option])
                 
-                case tooManyOptions
-                
                 public var description: String {
                         switch self {
                         case let .invalidArgument(arg):
                                 return "Invalid argument: \(arg)"
+                        case .tooManyOptions:
+                                return "Some options preclude the use of others."
                         case let .invalidValueForOption(opt, vals):
                                 let joined: String = vals.joined(separator: " ")
                                 return "Invalid value(s) for option \(opt.shortFlag!): \(joined)"
@@ -173,8 +177,6 @@ public class CommandLine {
                                 let mapped: Array = opts.map { return "-\($0.shortFlag!)" }
                                 let joined: String = mapped.joined(separator: ", ")
                                 return "Missing required option(s): \(joined)"
-                        case .tooManyOptions:
-                                return "Options [-o], [-x], [-n] may not be used together."
                         }
                 }
         }
@@ -330,6 +332,16 @@ public class CommandLine {
                         
                         var flagMatched = false
                         for option in _options where option.flagMatch(String(flag)) {
+                                
+                                /* preclude */
+                                if let c = option.shortFlag?.characters.first {
+                                        if self._precluded.characters.contains(c) {
+                                                throw ParseError.tooManyOptions()
+                                        }
+                                        self._precluded.append(option.precludes)
+                                }
+
+                        
                                 let vals = self._getFlagValues(idx, attachedArg)
                                 guard option.setValue(vals) else {
                                         throw ParseError.invalidValueForOption(option, vals)
@@ -351,6 +363,15 @@ public class CommandLine {
                                 let flagCharactersEnumerator = flag.characters.enumerated()
                                 for (i, c) in flagCharactersEnumerator {
                                         for option in _options where option.flagMatch(String(c)) {
+                                                
+                                                /* preclude */
+                                                if let c = option.shortFlag?.characters.first {
+                                                        if self._precluded.characters.contains(c) {
+                                                                throw ParseError.tooManyOptions()
+                                                        }
+                                                        self._precluded.append(option.precludes)
+                                                }
+                                                
                                                 /* Values are allowed at the end of the concatenated flags, e.g.
                                                  * -xvf <file1> <file2>
                                                  */

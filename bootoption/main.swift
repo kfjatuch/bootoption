@@ -23,7 +23,7 @@ import Foundation
 var testCount: Int = 54
 var optionalData: Data?
 
-let cli = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n          [-p FILE | -d FILE | -x | -n] [-k KEY]")
+let commandLine = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n          [-p FILE | -d FILE | -x | -n] [-k KEY]")
 
 let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
 let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
@@ -36,39 +36,39 @@ let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use 
 
 func parseOptions() {
         
-        cli.addOptions(loaderPath, displayLabel, unicodeString, outputFilePlist, outputFileDmpstore, outputXml, outputNvram, keyForXml)
+        commandLine.addOptions(loaderPath, displayLabel, unicodeString, outputFilePlist, outputFileDmpstore, outputXml, outputNvram, keyForXml)
         
         do {
-                try cli.parse()
+                try commandLine.parse()
         } catch {
-                cli.printUsage(error)
+                commandLine.printUsage(error)
                 exit(EX_USAGE)
         }
 
         if outputXml.wasSet {
                 if outputFilePlist.wasSet || outputNvram.wasSet || outputFileDmpstore.wasSet {
-                        cli.printUsage(CommandLine.ParseError.tooManyOptions)
+                        commandLine.printUsage(CommandLine.ParseError.tooManyOptions)
                         exit(EX_USAGE)
                 }
         }
 
         if outputFilePlist.wasSet {
                 if outputXml.wasSet || outputNvram.wasSet || outputFileDmpstore.wasSet {
-                        cli.printUsage(CommandLine.ParseError.tooManyOptions)
+                        commandLine.printUsage(CommandLine.ParseError.tooManyOptions)
                         exit(EX_USAGE)
                 }
         }
 
         if outputNvram.wasSet {
                 if outputFilePlist.wasSet || outputXml.wasSet || outputFileDmpstore.wasSet {
-                        cli.printUsage(CommandLine.ParseError.tooManyOptions)
+                        commandLine.printUsage(CommandLine.ParseError.tooManyOptions)
                         exit(EX_USAGE)
                 }
         }
         
         if outputFileDmpstore.wasSet {
                 if outputFilePlist.wasSet || outputXml.wasSet || outputNvram.wasSet {
-                        cli.printUsage(CommandLine.ParseError.tooManyOptions)
+                        commandLine.printUsage(CommandLine.ParseError.tooManyOptions)
                         exit(EX_USAGE)
                 }
         }

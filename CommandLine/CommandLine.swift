@@ -17,8 +17,8 @@
 
 import Foundation
 
-let shortOptionPrefix = "-"
-let longOptionPrefix = "--"
+let shortPrefix = "-"
+let longPrefix = "--"
 
 /* Stop parsing arguments when an ArgumentStopper (--) is detected. This is a GNU getopt
  * convention; cf. https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html
@@ -218,7 +218,7 @@ public class CommandLine {
                                         continue
                                 }
                                 
-                                if _arguments[i].hasPrefix(shortOptionPrefix) && Int(_arguments[i]) == nil &&
+                                if _arguments[i].hasPrefix(shortPrefix) && Int(_arguments[i]) == nil &&
                                         _arguments[i].toDouble() == nil {
                                         break
                                 }
@@ -310,12 +310,12 @@ public class CommandLine {
                                 break
                         }
                         
-                        if !arg.hasPrefix(shortOptionPrefix) {
+                        if !arg.hasPrefix(shortPrefix) {
                                 continue
                         }
                         
-                        let skipChars = arg.hasPrefix(longOptionPrefix) ?
-                                longOptionPrefix.characters.count : shortOptionPrefix.characters.count
+                        let skipChars = arg.hasPrefix(longPrefix) ?
+                                longPrefix.characters.count : shortPrefix.characters.count
                         let flagWithArg = arg[arg.index(arg.startIndex, offsetBy: skipChars)..<arg.endIndex]
                         
                         /* The argument contained nothing but ShortOptionPrefix or LongOptionPrefix */
@@ -347,7 +347,7 @@ public class CommandLine {
                         
                         /* Flags that do not take any arguments can be concatenated */
                         let flagLength = flag.characters.count
-                        if !flagMatched && !arg.hasPrefix(longOptionPrefix) {
+                        if !flagMatched && !arg.hasPrefix(longPrefix) {
                                 let flagCharactersEnumerator = flag.characters.enumerated()
                                 for (i, c) in flagCharactersEnumerator {
                                         for option in _options where option.flagMatch(String(c)) {

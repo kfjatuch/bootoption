@@ -32,28 +32,27 @@ public class Option {
         public var claimedValues: Int { return 0 }
         
         public var flagDescription: String {
-                switch (shortFlag, longFlag) {
-                case let (sf?, lf?):
-                        return "\(shortOptionPrefix)\(sf)   \(longOptionPrefix)\(lf)"
-                case (nil, let lf?):
-                        return "\(longOptionPrefix)\(lf)"
-                case (let sf?, nil):
-                        return "\(shortOptionPrefix)\(sf)"
-                default:
-                        return ""
+                var string: String = ""
+                if shortFlag != nil && longFlag != nil {
+                        string.append("\(shortPrefix)\(shortFlag!)")
+                        string.append("   ")
+                        string.append("\(longPrefix)\(longFlag!)")
+                } else if longFlag != nil {
+                        string.append("\(longPrefix)\(longFlag!)")
+                } else if shortFlag != nil {
+                        string.append("\(shortPrefix)\(shortFlag!)")
                 }
+                return string
         }
         
         internal init(_ shortFlag: String?, _ longFlag: String?, _ required: Bool, _ helpMessage: String) {
-                if let sf = shortFlag {
-                        assert(sf.characters.count == 1, "Short flag must be a single character")
-                        assert(Int(sf) == nil && sf.toDouble() == nil, "Short flag cannot be a numeric value")
+                if shortFlag != nil {
+                        assert(shortFlag!.characters.count == 1, "Short flag must be a single character")
+                        assert(Int(shortFlag!) == nil && shortFlag!.toDouble() == nil, "Short flag cannot be a numeric value")
                 }
-                
-                if let lf = longFlag {
-                        assert(Int(lf) == nil && lf.toDouble() == nil, "Long flag cannot be a numeric value")
+                if longFlag != nil {
+                        assert(Int(longFlag!) == nil && longFlag!.toDouble() == nil, "Long flag cannot be a numeric value")
                 }
-                
                 self.shortFlag = shortFlag
                 self.longFlag = longFlag
                 self.helpMessage = helpMessage

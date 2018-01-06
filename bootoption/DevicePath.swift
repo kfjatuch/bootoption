@@ -83,7 +83,7 @@ struct HardDriveMediaDevicePath {
                          *  and also the longest mounted volume path that is also a string match
                          */
                         
-                        if test == unprefixedVolumeString && stringLength > longestMatch {
+                        if test.uppercased() == unprefixedVolumeString.uppercased() && stringLength > longestMatch {
                                 mountedVolumePath = unprefixedVolumeString
                                 longestMatch = stringLength
                         }

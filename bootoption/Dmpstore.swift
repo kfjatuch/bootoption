@@ -26,7 +26,6 @@ struct Dmpstore {
         struct Option {
                 static let nameSizeConstant: Int = 18
                 var data = Data.init()
-                var chosen: Int?
                 var created: Int? = nil
                 let nameSize = Data.init(bytes: [UInt8(Dmpstore.Option.nameSizeConstant), 0x0, 0x0, 0x0])
                 var dataSize = Data.init()
@@ -75,7 +74,7 @@ struct Dmpstore {
                         self.data.append(self.crc32)
                         
                         /* store created */
-                        self.created = self.chosen
+                        self.created = emptyBootOption
                         print("Created a new '\(name)' variable")
                 }
         }

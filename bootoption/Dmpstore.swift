@@ -21,11 +21,9 @@
 import Foundation
 
 struct Dmpstore {
-        
         static let crc = CRC32()
         
         struct Option {
-                
                 static let nameSizeConstant: Int = 18
                 var data = Data.init()
                 var chosen: Int?
@@ -39,9 +37,6 @@ struct Dmpstore {
                 var crc32 = Data.init()
                 
                 init(fromData variable: Data) {
-                        
-
-                        
                         var dataSizeValue = UInt32(variable.count)
                         /* store dataSize */
                         self.dataSize.append(UnsafeBufferPointer(start: &dataSizeValue, count: 1))
@@ -86,7 +81,6 @@ struct Dmpstore {
         }
         
         struct Order {
-                
                 var data = Data.init()
                 let nameSize = Data.init(bytes: [0x14, 0x0, 0x0, 0x0])
                 var dataSize = Data.init()
@@ -97,7 +91,6 @@ struct Dmpstore {
                 var crc32 = Data.init()
                 
                 init(adding: Int?) {
-                        
                         if adding == nil {
                                 fatalError("Option to add is nil")
                         }

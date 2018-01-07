@@ -25,6 +25,8 @@ var optionalData: Data?
 let nvram = Nvram()
 let commandLine = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n[--create | -d FILE | -p FILE | -n | -x] [-k KEY]")
 
+/* Command line options */
+
 let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
 let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
 let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
@@ -35,6 +37,8 @@ let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "pr
 let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY for options -p or -x")
 let setNvram = BoolOption(shortFlag: "c", longFlag: "create", helpMessage: "save an option to NVRAM and add it to the BootOrder", precludes: "dpxn")
 
+/* Command line parsing */
+
 func parseOptions() {
         commandLine.addOptions(loaderPath, displayLabel, unicodeString, outputFilePlist, outputFileDmpstore, outputXml, outputNvram, keyForXml, setNvram)
         do {
@@ -44,6 +48,8 @@ func parseOptions() {
                 exit(EX_USAGE)
         }
 }
+
+/* Printed output functions */
 
 func printFormatString(data: Data) {
         let strings = data.map { String(format: "%%%02x", $0) }
@@ -75,8 +81,9 @@ func printXml(data: Data) {
         }
 }
 
+/* main function */
+
 func main() {
-        
         if displayLabel.value == nil || loaderPath.value == nil {
                 print("Error: Required variables should no longer be nil")
                 exit(1)
@@ -132,6 +139,8 @@ func main() {
                 efiLoadOption.append(optionalData!)
         }
         
+        /* Output to property list file */
+        
         if outputFilePlist.wasSet {
                 let data = efiLoadOption as NSData
                 var keyString: String = ""
@@ -156,6 +165,8 @@ func main() {
                 exit(1)
         }
         
+        /* Set in NVRAM */
+        
         if setNvram.value {
                 if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
                         let name = nvram.bootOptionName(for: n)
@@ -166,6 +177,8 @@ func main() {
                         exit(1)
                 }
         }
+        
+        /* Output to dmpstore format file */
         
         if outputFileDmpstore.wasSet {
                 let dmpstoreOption = Dmpstore.Option(fromData: data)
@@ -184,6 +197,8 @@ func main() {
                 exit(0)
         }
         
+        /* Printed output */
+        
         if outputNvram.value {
                 printFormatString(data: data)
         } else if outputXml.value {
@@ -191,9 +206,7 @@ func main() {
         } else {
                 printRawHex(data: data)
         }
-
         exit(0)
-
 }
 
 parseOptions()

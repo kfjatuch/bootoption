@@ -32,7 +32,7 @@ class Nvram {
         }
         
         func getEmptyBootOption(leavingSpace: Bool = false) -> Int? {
-                var counter = 0
+                var counter: Int = 0
                 for n: Int in 0x0 ..< 0xFF {
                         if let _: Data = nvram.getBootOption(n) {
                                 continue
@@ -43,7 +43,8 @@ class Nvram {
                                         /*
                                          *  leave space for firmware to add a few removable
                                          *  entries or other devices at subsequent boot -
-                                         *  only necessary when writing a 'BootOrder' to disk
+                                         *  only used when writing a 'BootOrder' to disk
+                                         *  and probably not needed at all
                                          */
                                         counter += 1
                                         /*  arbitrarily choose the 3rd empty variable */
@@ -58,7 +59,7 @@ class Nvram {
                 return nil
         }
         
-        func nvramSyncNow(withNamedVariable key: String, useForceSync: Bool = false) {
+        func nvramSyncNow(withNamedVariable key: String, useForceSync: Bool = true) {
                 if (useForceSync) {
                         if !self.options.setStringValue(forProperty: ioNvramForceSyncNowPropertyKey, value: key) {
                                 print("Error setting ioNvramForceSyncNowPropertyKey value")
@@ -82,7 +83,7 @@ class Nvram {
         }
         
         private func addToStartOfBootOrder(_ n: Int) -> Bool {
-                guard getBootOption(n) != nil else {
+                guard self.getBootOption(n) != nil else {
                         print("Couldn't get BootXXXX data (addToStartOfBootOrder)")
                         return false
                 }
@@ -118,7 +119,7 @@ class Nvram {
                 /* sync now */
                 self.nvramSyncNow(withNamedVariable: nameWithGuid)
                 if addToBootOrder {
-                        if !addToStartOfBootOrder(n) {
+                        if !self.addToStartOfBootOrder(n) {
                                 return nil
                         }
                 }

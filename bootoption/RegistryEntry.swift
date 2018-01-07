@@ -58,28 +58,28 @@ class RegistryEntry {
         }
 
         func getIntValue(forProperty key: String) -> Int? {
-                guard let int = getValue(forProperty: key, type: typeId.number) as? Int else {
+                guard let int = self.getValue(forProperty: key, type: typeId.number) as? Int else {
                         return nil
                 }
                 return int
         }
         
         func getStringValue(forProperty key: String) -> String? {
-                guard let string = getValue(forProperty: key, type: typeId.string) as? String else {
+                guard let string = self.getValue(forProperty: key, type: typeId.string) as? String else {
                         return nil
                 }
                 return string
         }
         
         func getDataValue(forProperty key: String) -> Data? {
-                guard let data = getValue(forProperty: key, type: typeId.data) as? Data else {
+                guard let data = self.getValue(forProperty: key, type: typeId.data) as? Data else {
                         return nil
                 }
                 return data
         }
         
         func getBoolValue(forProperty key: String) -> Bool? {
-                guard let bool = getValue(forProperty: key, type: typeId.bool) as? Bool else {
+                guard let bool = self.getValue(forProperty: key, type: typeId.bool) as? Bool else {
                         return nil
                 }
                 return bool
@@ -112,7 +112,7 @@ class RegistryEntry {
         
         func setIntValue(forProperty key: String, value: Int) -> Bool {
                 let type = typeId.number
-                if setValue(forProperty: key, value: value as CFNumber, type: type) {
+                if self.setValue(forProperty: key, value: value as CFNumber, type: type) {
                         return true
                 }
                 return false
@@ -120,7 +120,7 @@ class RegistryEntry {
         
         func setStringValue(forProperty key: String, value: String) -> Bool {
                 let type = typeId.string
-                if setValue(forProperty: key, value: value as CFString, type: type) {
+                if self.setValue(forProperty: key, value: value as CFString, type: type) {
                         return true
                 }
                 return false
@@ -128,7 +128,7 @@ class RegistryEntry {
         
         func setDataValue(forProperty key: String, value: Data) -> Bool {
                 let type = typeId.data
-                if setValue(forProperty: key, value: value as CFData, type: type) {
+                if self.setValue(forProperty: key, value: value as CFData, type: type) {
                         return true
                 }
                 return false
@@ -136,7 +136,7 @@ class RegistryEntry {
         
         func setBoolValue(forKey key: String, value: Bool) -> Bool {
                 let type = typeId.bool
-                if setValue(forProperty: key, value: value as CFBoolean, type: type) {
+                if self.setValue(forProperty: key, value: value as CFBoolean, type: type) {
                         return true
                 }
                 return false

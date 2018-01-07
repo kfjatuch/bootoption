@@ -30,9 +30,9 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create 
                 <td>an optional <em>STRING</em> passed to the loader command line</td>
         </tr>
         <tr>
-                <td>-p</td>
-                <td>--plist</td>
-                <td>output to <em>FILE</em> as an XML property list</td>
+                <td>-c</td>
+                <td>--create</td>
+                <td>save an option to NVRAM and add it to the BootOrder</td>
         </tr>
         <tr>
                 <td>-d</td>
@@ -40,9 +40,9 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create 
                 <td>output to <em>FILE</em> for use with EDK2 dmpstore</td>
         </tr>
         <tr>
-                <td>-x</td>
-                <td>--xml</td>
-                <td>print an XML serialization instead of raw hex</td>
+                <td>-p</td>
+                <td>--plist</td>
+                <td>output to <em>FILE</em> as an XML property list</td>
         </tr>
         <tr>
                 <td>-n</td>
@@ -50,14 +50,14 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create 
                 <td>print Apple nvram style string instead of raw hex</td>
         </tr>
         <tr>
+                <td>-x</td>
+                <td>--xml</td>
+                <td>print an XML serialization instead of raw hex</td>
+        </tr>
+        <tr>
                 <td>-k</td>
                 <td>--key</td>
                 <td>use the named <em>KEY</em> for options -p or -x</td>
-        </tr>
-        <tr>
-        <td>-c</td>
-        <td>--create</td>
-        <td>save an option to NVRAM and add it to the BootOrder</td>
         </tr>
 </table>
 

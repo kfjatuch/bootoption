@@ -30,17 +30,17 @@ let commandLine = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n[--crea
 let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
 let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
 let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-let outputFilePlist = StringOption(shortFlag: "p", longFlag: "plist", helpMessage: "output to FILE as an XML property list", precludes: "dxns")
+let create = BoolOption(shortFlag: "c", longFlag: "create", helpMessage: "save an option to NVRAM and add it to the BootOrder", precludes: "dpxn")
 let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore", precludes: "pxns")
-let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "pdns")
+let outputFilePlist = StringOption(shortFlag: "p", longFlag: "plist", helpMessage: "output to FILE as an XML property list", precludes: "dxns")
 let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex", precludes: "pdxs")
+let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "pdns")
 let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY for options -p or -x")
-let setNvram = BoolOption(shortFlag: "c", longFlag: "create", helpMessage: "save an option to NVRAM and add it to the BootOrder", precludes: "dpxn")
 
 /* Command line parsing */
 
 func parseOptions() {
-        commandLine.addOptions(loaderPath, displayLabel, unicodeString, outputFilePlist, outputFileDmpstore, outputXml, outputNvram, keyForXml, setNvram)
+        commandLine.addOptions(loaderPath, displayLabel, unicodeString, create, outputFileDmpstore, outputFilePlist, outputNvram, outputXml, keyForXml)
         do {
                 try commandLine.parse(strict: true)
         } catch {
@@ -167,7 +167,7 @@ func main() {
         
         /* Set in NVRAM */
         
-        if setNvram.value {
+        if create.value {
                 if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
                         let name = nvram.bootOptionName(for: n)
                         print("Set variable: \(name)")

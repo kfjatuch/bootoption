@@ -11,7 +11,7 @@ A stored representation of the variable data can be used to work around situatio
 
 ## Usage
 
-bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [-p <em>FILE</em> | -d <em>FILE</em> | -x | -n ] [ -k <em>KEY</em> ]
+bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create | -d <em>FILE</em> | -p <em>FILE</em> | -n | -x ] [ -k <em>KEY</em> ]
 
 <table>
         <tr>
@@ -53,6 +53,11 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [-p <em>FIL
                 <td>-k</td>
                 <td>--key</td>
                 <td>use the named <em>KEY</em> for options -p or -x</td>
+        </tr>
+        <tr>
+        <td>-c</td>
+        <td>--create</td>
+        <td>save an option to NVRAM and add it to the BootOrder</td>
         </tr>
 </table>
 
@@ -100,6 +105,15 @@ The resulting file can be read from the EFI shell. To load and set the variables
 ```
 FS0:\> dmpstore -l vars.dmpstore
 ```
+
+
+#### Create the boot option in NVRAM and add it to the boot order
+
+```
+sudo bootoption --create -l "/Volumes/EFI/shell.efi" -L "EFI Shell"
+```
+
+The --create option requires working hardware NVRAM - for instance, emulated NVRAM will not work, and the Clover RC scripts do not currently save the relevant data.
 
 ## License
 

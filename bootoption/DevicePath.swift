@@ -1,7 +1,7 @@
 /*
  * File: DevicePath.swift
  *
- * bootoption © vulgo 2017 - A program to create / save an EFI boot
+ * bootoption © vulgo 2017-2018 - A program to create / save an EFI boot
  * option - so that it might be added to the firmware menu later
  *
  * This program is free software: you can redistribute it and/or modify
@@ -117,11 +117,11 @@ struct HardDriveMediaDevicePath {
                 
                 /* To do - Check disk is GPT */
                 
-                let ioPreferredBlockSize: Int? = partitionProperties.int(forKey: "Preferred Block Size")
-                let ioPartitionID: Int? = partitionProperties.int(forKey: "Partition ID")
-                let ioBase: Int? = partitionProperties.int(forKey: "Base")
-                let ioSize: Int? = partitionProperties.int(forKey: "Size")
-                let ioUUID: String? = partitionProperties.string(forKey: "UUID")
+                let ioPreferredBlockSize: Int? = partitionProperties.getIntValue(forProperty: "Preferred Block Size")
+                let ioPartitionID: Int? = partitionProperties.getIntValue(forProperty: "Partition ID")
+                let ioBase: Int? = partitionProperties.getIntValue(forProperty: "Base")
+                let ioSize: Int? = partitionProperties.getIntValue(forProperty: "Size")
+                let ioUUID: String? = partitionProperties.getStringValue(forProperty: "UUID")
                 
                 if (ioPreferredBlockSize == nil || ioPartitionID == nil || ioBase == nil || ioSize == nil || ioUUID == nil) {
                         fatalError("Failed to get registry values")

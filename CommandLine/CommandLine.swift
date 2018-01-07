@@ -192,7 +192,6 @@ public class CommandLine {
         public init(arguments: [String] = Swift.CommandLine.arguments, invocation: String?) {
                 
                 self._arguments = arguments
-                
                 if invocation != nil {
                         self.invocation = invocation!
                 } else {
@@ -305,7 +304,7 @@ public class CommandLine {
                 
                 /* Nuke executable name */
                 strays[0] = ""
-                
+
                 let argumentsEnumerator = _arguments.enumerated()
                 for (idx, arg) in argumentsEnumerator {
                         if arg == argumentStopper {

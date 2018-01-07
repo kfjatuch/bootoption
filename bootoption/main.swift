@@ -1,7 +1,7 @@
 /*
  * File: main.swift
  *
- * bootoption © vulgo 2017 - A program to create / save an EFI boot
+ * bootoption © vulgo 2017-2018 - A program to create / save an EFI boot
  * option - so that it might be added to the firmware menu later
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,29 +22,27 @@ import Foundation
 
 var testCount: Int = 54
 var optionalData: Data?
-
-let commandLine = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n          [-p FILE | -d FILE | -x | -n] [-k KEY]")
+let nvram = Nvram()
+let commandLine = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n[--create | -d FILE | -p FILE | -n | -x] [-k KEY]")
 
 let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
 let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
 let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-let outputFilePlist = StringOption(shortFlag: "p", longFlag: "plist", helpMessage: "output to FILE as an XML property list", precludes: "dxn")
-let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore", precludes: "pxn")
-let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "pdn")
-let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex", precludes: "pdx")
+let outputFilePlist = StringOption(shortFlag: "p", longFlag: "plist", helpMessage: "output to FILE as an XML property list", precludes: "dxns")
+let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore", precludes: "pxns")
+let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "pdns")
+let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex", precludes: "pdxs")
 let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY for options -p or -x")
+let setNvram = BoolOption(shortFlag: "c", longFlag: "create", helpMessage: "save an option to NVRAM and add it to the BootOrder", precludes: "dpxn")
 
 func parseOptions() {
-        
-        commandLine.addOptions(loaderPath, displayLabel, unicodeString, outputFilePlist, outputFileDmpstore, outputXml, outputNvram, keyForXml)
-        
+        commandLine.addOptions(loaderPath, displayLabel, unicodeString, outputFilePlist, outputFileDmpstore, outputXml, outputNvram, keyForXml, setNvram)
         do {
                 try commandLine.parse(strict: true)
         } catch {
                 commandLine.printUsage(error)
                 exit(EX_USAGE)
         }
-        
 }
 
 func printFormatString(data: Data) {
@@ -156,6 +154,17 @@ func main() {
         let data = efiLoadOption as Data
         if data.count < testCount {
                 exit(1)
+        }
+        
+        if setNvram.value {
+                if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
+                        let name = nvram.bootOptionName(for: n)
+                        print("Set variable: \(name)")
+                        exit(0)
+                } else {
+                        print("--set was not a success")
+                        exit(1)
+                }
         }
         
         if outputFileDmpstore.wasSet {

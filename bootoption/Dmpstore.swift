@@ -1,7 +1,7 @@
 /*
  * File: Dmpstore.swift
  *
- * bootoption © vulgo 2017 - A program to create / save an EFI boot
+ * bootoption © vulgo 2017-2018 - A program to create / save an EFI boot
  * option - so that it might be added to the firmware menu later
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,15 +22,7 @@ import Foundation
 
 struct Dmpstore {
         
-        static let nvram = RegistryEntry.init(fromPath: "IODeviceTree:/options")
-        
         static let crc = CRC32()
-        
-        static func readGlobalVariable(variable: String) -> Data? {
-                let EFIGlobalGUID: String = "8BE4DF61-93CA-11D2-AA0D-00E098032B8C"
-                let nameWithGUID: String = "\(EFIGlobalGUID):\(variable)"
-                return nvram.data(forKey: nameWithGUID)
-        }
         
         struct Option {
                 
@@ -48,35 +40,16 @@ struct Dmpstore {
                 
                 init(fromData variable: Data) {
                         
-                        func getEmptyBootOption() -> String? {
-                                var counter = 0
-                                for n in 0x0 ..< 0xFF {
-                                        let name = "Boot" + String(format:"%04X", n)
-                                        if let _: Data = readGlobalVariable(variable: name) {
-                                                continue
-                                        } else {
-                                                counter += 1
-                                                if counter < 3 {
-                                                        /* choose the 3rd empty Boot variable */
-                                                        continue
-                                                } else {
-                                                        self.chosen = n as Int
-                                                        return name
-                                                }
-                                        }
-                                }
-                                return nil
-                        }
+
                         
                         var dataSizeValue = UInt32(variable.count)
                         /* store dataSize */
                         self.dataSize.append(UnsafeBufferPointer(start: &dataSizeValue, count: 1))
-                        
-                        let emptyBootOption = getEmptyBootOption()
-                        if emptyBootOption == nil {
+                        guard let emptyBootOption: Int = nvram.getEmptyBootOption(leavingSpace: true) else {
                                 fatalError("emptyBootOption is nil")
                         }
-                        var nameData = emptyBootOption!.data(using: String.Encoding.utf16)!
+                        let name = nvram.bootOptionName(for: emptyBootOption)
+                        var nameData = name.data(using: String.Encoding.utf16)!
                         nameData.removeFirst()
                         nameData.removeFirst()
                         nameData.append(contentsOf: [0, 0])
@@ -108,7 +81,7 @@ struct Dmpstore {
                         
                         /* store created */
                         self.created = self.chosen
-                        print("Created a new '\(emptyBootOption!)' variable")
+                        print("Created a new '\(name)' variable")
                 }
         }
         
@@ -128,13 +101,8 @@ struct Dmpstore {
                         if adding == nil {
                                 fatalError("Option to add is nil")
                         }
-                        
-                        func getBootOrder() -> Data? {
-                                let bootOrder = readGlobalVariable(variable: "BootOrder")
-                                return bootOrder
-                        }
-                        
-                        guard let bootOrder: Data = getBootOrder() else {
+
+                        guard let bootOrder: Data = nvram.getBootOrder() else {
                                 fatalError("Couldn't get boot order from nvram")
                         }
                         

@@ -161,10 +161,8 @@ func main() {
                 }
                 let dictionary: NSDictionary = ["\(keyString)": data]
                 let url = URL(fileURLWithPath: outputFilePlist.value!)
-                do {
-                        try dictionary.write(to: url)
-                } catch {
-                        print(error)
+                if !dictionary.write(toFile: url.path, atomically: false) {
+                        print("Error writing to file")
                         exit(1)
                 }
                 exit(0)

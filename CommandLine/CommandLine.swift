@@ -164,6 +164,9 @@ public class CommandLine {
                 /** Thrown if an Option with required: true is missing */
                 case missingRequiredOptions([Option])
                 
+                /** Manual required options error */
+                case missingRequiredOptionsManual()
+                
                 public var description: String {
                         switch self {
                         case let .invalidArgument(arg):
@@ -177,6 +180,8 @@ public class CommandLine {
                                 let mapped: Array = opts.map { return "-\($0.shortFlag!)" }
                                 let joined: String = mapped.joined(separator: ", ")
                                 return "Missing required option(s): \(joined)"
+                        case .missingRequiredOptionsManual():
+                                return "Missing required option(s):"
                         }
                 }
         }

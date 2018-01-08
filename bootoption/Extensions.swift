@@ -59,4 +59,79 @@ extension String {
                 let bytes: [UInt8] = strings.map { UInt8(strtoul(String($0), nil, 16)) }
                 return bytes.withUnsafeBufferPointer { Data(buffer: $0) }
         }
+        
+        func leftPadding(toLength: Int, withPad character: Character) -> String {
+                let newLength = self.characters.count
+                if newLength < toLength {
+                        return String(repeatElement(character, count: toLength - newLength)) + self
+                } else {
+                        let i:String.Index = index(self.startIndex, offsetBy: newLength - toLength)
+                        return String(self[i...])
+                }
+        }
+}
+
+
+
+
+extension Int {
+        func times(f: () -> ()) {
+                if self > 0 {
+                        for _ in 0..<self {
+                                f()
+                        }
+                }
+        }
+        func times(f: @autoclosure () -> ()) {
+                if self > 0 {
+                        for _ in 0..<self {
+                                f()
+                        }
+                }
+        }
+}
+
+
+
+
+@discardableResult func remove64BitInt(from: inout Data) -> UInt64 {
+        var buffer = Data.init()
+        8.times {
+               buffer.append(from.remove(at: 0))
+        }
+        return buffer.withUnsafeBytes{$0.pointee}
+
+}
+
+@discardableResult func remove32BitInt(from: inout Data) -> UInt32 {
+        var buffer = Data.init()
+        4.times {
+                buffer.append(from.remove(at: 0))
+        }
+        return buffer.withUnsafeBytes{$0.pointee}
+        
+}
+
+@discardableResult func remove16BitInt(from: inout Data) -> UInt16 {
+        var buffer = Data.init()
+        2.times {
+                buffer.append(from.remove(at: 0))
+        }
+        return buffer.withUnsafeBytes{$0.pointee}
+}
+
+@discardableResult func remove8BitInt(from: inout Data) -> UInt8 {
+        return from.remove(at: 0)
+}
+
+/*
+ *   Data return type
+ */
+
+@discardableResult func remove(from: inout Data, bytes: Int) -> Data {
+        var buffer = Data.init()
+        Int(bytes).times {
+                buffer.append(from.remove(at: 0))
+        }
+        return buffer
 }

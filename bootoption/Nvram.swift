@@ -77,6 +77,21 @@ class Nvram {
                 return self.options.getDataValue(forProperty: nameWithGuid)
         }
         
+        func getBootCurrent() -> Data? {
+                let nameWithGuid = "\(efiGlobalGuid):BootCurrent"
+                return self.options.getDataValue(forProperty: nameWithGuid)
+        }
+        
+        func getBootNext() -> Data? {
+                let nameWithGuid = "\(efiGlobalGuid):BootNext"
+                return self.options.getDataValue(forProperty: nameWithGuid)
+        }
+        
+        func getTimeout() -> Data? {
+                let nameWithGuid = "\(efiGlobalGuid):Timeout"
+                return self.options.getDataValue(forProperty: nameWithGuid)
+        }
+        
         func getBootOrder() -> Data? {
                 let nameWithGuid: String = "\(efiGlobalGuid):BootOrder"
                 return self.options.getDataValue(forProperty: nameWithGuid)

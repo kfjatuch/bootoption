@@ -52,7 +52,9 @@ private struct StderrOutputStream: TextOutputStream {
 public class CommandLine {
         var invocation: String
         private var _arguments: [String]
-        private var _options: [Option] = [Option]()
+        private var _options: [Option] = Array()
+        private var _verbs: [String] = Array()
+        public var verb: String = ""
         private var _maxFlagDescriptionWidth: Int = 0
         private var _precluded: String = ""
         private var _usedFlags: Set<String> {
@@ -274,6 +276,20 @@ public class CommandLine {
         }
         
         /**
+         * Adds one or more verb strings to the command line.
+         *
+         * - parameter verbs: The verbs to add.
+         */
+        public func addVerbs(_ verbs: String...) {
+                let uv = _verbs
+                for v in verbs {
+                        let verb = v
+                        assert(!uv.contains(verb), "Verb '\(verb)' already in use")
+                        _verbs.append(verb.lowercased())
+                }
+        }
+        
+        /**
          * Sets the command line Options. Any existing options will be overwritten.
          *
          * - parameter options: An array containing the options to set.
@@ -291,6 +307,27 @@ public class CommandLine {
         public func setOptions(_ options: Option...) {
                 _options = [Option]()
                 addOptions(options)
+        }
+        
+        /**
+         *
+         *  parseVerb()
+         *
+         *  See if a valid verb was specified and if yes set self.verb
+         */
+        
+        public func parseVerb() {
+                if _arguments.count < 2 {
+                        printUsage()
+                        exit(EX_USAGE)
+                }
+                let verb = _arguments[1].lowercased()
+                if _verbs.contains(verb) {
+                        self.verb = verb
+                } else {
+                        printUsage()
+                        exit(EX_USAGE)
+                }
         }
         
         /**

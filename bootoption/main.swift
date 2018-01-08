@@ -23,24 +23,47 @@ import Foundation
 var testCount: Int = 54
 var optionalData: Data?
 let nvram = Nvram()
-let commandLine = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n[--create | -d FILE | -n | -x [-k KEY]]")
-
-/* Command line options */
-
-let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", helpMessage: "the PATH to an EFI loader executable")
-let displayLabel = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
-let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-let create = BoolOption(shortFlag: "c", longFlag: "create", helpMessage: "save an option to NVRAM and add it to the BootOrder", precludes: "dpxn")
-let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore", precludes: "pxns")
-let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex", precludes: "pdxs")
-let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "pdns")
-let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY with option -x")
-let beVerbose = BoolOption(shortFlag: "v", longFlag: "verbose", helpMessage: "")
+var commandLine = CommandLine(invocation: "VERB [options] where VERB is as follows:")
 
 /* Command line parsing */
 
-func parseOptions() {
-        commandLine.addOptions(loaderPath, displayLabel, unicodeString, create, outputFileDmpstore, outputNvram, outputXml, keyForXml, beVerbose)
+func parseVerb() {
+        enum verbs {
+                static let list = "list"
+                static let make = "make"
+                static let set = "set"
+        }
+        commandLine.addVerbs(verbs.list, verbs.make, verbs.set)
+        commandLine.parseVerb()
+        switch commandLine.verb {
+        case verbs.make:
+                make()
+        case verbs.list:
+                list()
+        case verbs.set:
+                set()
+        default:
+                commandLine.printUsage()
+                exit(EX_USAGE)
+        }
+
+}
+
+/* verb: list */
+
+func list() {
+        let menu = BootMenu()
+        print(menu.string)
+        exit(0)
+}
+
+func set() {
+        commandLine = CommandLine(invocation: "set -l PATH -L LABEL [-u STRING]")
+        let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
+        let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
+        let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
+        
+        commandLine.addOptions(loaderPath, displayLabel, unicodeString)
         do {
                 try commandLine.parse(strict: true)
         } catch {
@@ -49,52 +72,64 @@ func parseOptions() {
         }
 }
 
-/* Printed output functions */
+func make() {
+        
+        commandLine = CommandLine(invocation: "make -l PATH -L LABEL [-u STRING]\n[--create | -d FILE | -n | -x [-k KEY]]")
+        
+        /* Command line options */
+        
+        let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
+        let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
+        let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
+        let create = BoolOption(shortFlag: "c", longFlag: "create", helpMessage: "save an option to NVRAM and add it to the BootOrder", precludes: "dpxn")
+        let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore", precludes: "pxns")
+        let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex", precludes: "pdxs")
+        let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "pdns")
+        let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY with option -x")
 
-func printFormatString(data: Data) {
-        let strings = data.map { String(format: "%%%02x", $0) }
-        let outputString = strings.joined()
-        print(outputString)
-}
-
-func printRawHex(data: Data) {
-        let strings = data.map { String(format: "%02x", $0) }
-        let outputString = strings.joined()
-        print(outputString)
-}
-
-func printXml(data: Data) {
-        let dictionary: NSDictionary = ["\(keyForXml)": data]
-        var propertyList: Data
+        commandLine.addOptions(loaderPath, displayLabel, unicodeString, create, outputFileDmpstore, outputNvram, outputXml, keyForXml)
         do {
-                propertyList = try PropertyListSerialization.data(fromPropertyList: dictionary, format: .xml, options: 0)
+                try commandLine.parse(strict: true)
         } catch {
-                print(error)
-                exit(1)
+                commandLine.printUsage(error)
+                exit(EX_USAGE)
         }
-        if let xml = String.init(data: propertyList, encoding: .utf8) {
-                let outputString = String(xml.characters.filter { !"\n\t\r".characters.contains($0) })
+        
+        /* Printed output functions */
+        
+        func printFormatString(data: Data) {
+                let strings = data.map { String(format: "%%%02x", $0) }
+                let outputString = strings.joined()
                 print(outputString)
-        } else {
-                print("Error printing serialized xml property list representation")
-                exit(1)
         }
-}
-
-/* main function */
-
-func main() {
         
-        /* Print boot menu */
+        func printRawHex(data: Data) {
+                let strings = data.map { String(format: "%02x", $0) }
+                let outputString = strings.joined()
+                print(outputString)
+        }
         
-        if beVerbose.value {
-                let menu = BootMenu()
-                print(menu.string)
-                exit(0)
+        func printXml(data: Data) {
+                let key: String = keyForXml.value ?? "Boot"
+                let dictionary: NSDictionary = ["\(key)": data]
+                var propertyList: Data
+                do {
+                        propertyList = try PropertyListSerialization.data(fromPropertyList: dictionary, format: .xml, options: 0)
+                } catch {
+                        print(error)
+                        exit(1)
+                }
+                if let xml = String.init(data: propertyList, encoding: .utf8) {
+                        let outputString = String(xml.characters.filter { !"\n\t\r".characters.contains($0) })
+                        print(outputString)
+                } else {
+                        print("Error printing serialized xml property list representation")
+                        exit(1)
+                }
         }
         
         if displayLabel.value == nil || loaderPath.value == nil {
-                commandLine.printUsage(CommandLine.ParseError.missingRequiredOptionsManual())
+                print("Required options should no longer be nil")
                 exit(1)
         }
         
@@ -197,5 +232,5 @@ func main() {
         exit(0)
 }
 
-parseOptions()
-main()
+parseVerb()
+

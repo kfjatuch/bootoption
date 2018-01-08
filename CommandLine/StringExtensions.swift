@@ -23,22 +23,23 @@
 #endif
 
 internal extension String {
-        /* Retrieves locale-specified decimal separator from the environment
-         * using localeconv(3).
+        
+        /*
+         *  Retrieves locale-specified decimal separator from the environment using localeconv(3).
          */
-        private func _localDecimalPoint() -> Character {
+        
+        func _localDecimalPoint() -> Character {
                 guard let locale = localeconv(), let decimalPoint = locale.pointee.decimal_point else {
                         return "."
                 }
-                
                 return Character(UnicodeScalar(UInt8(bitPattern: decimalPoint.pointee)))
         }
         
-        /**
-         * Attempts to parse the string value into a Double.
-         *
-         * - returns: A Double if the string can be parsed, nil otherwise.
+        /*
+         *  Attempts to parse the string value into a Double.
+         *  - returns: A Double if the string can be parsed, nil otherwise.
          */
+        
         func toDouble() -> Double? {
                 let decimalPoint = String(self._localDecimalPoint())
                 guard decimalPoint == "." || self.range(of: ".") == nil else { return nil }
@@ -46,18 +47,13 @@ internal extension String {
                 return Double(localeSelf)
         }
         
-        /**
-         * Splits a string into an array of string components.
-         *
-         * - parameter by:        The character to split on.
-         * - parameter maxSplits: The maximum number of splits to perform. If 0, all possible splits are made.
-         *
-         * - returns: An array of string components.
+        /*
+         *  Splits a string into an array of string components.
          */
+        
         func split(by: Character, maxSplits: Int = 0) -> [String] {
                 var s = [String]()
                 var numSplits = 0
-                
                 var curIdx = self.startIndex
                 for i in self.characters.indices {
                         let c = self[i]
@@ -67,22 +63,16 @@ internal extension String {
                                 numSplits += 1
                         }
                 }
-                
                 if curIdx != self.endIndex {
                         s.append(String(self[curIdx..<self.endIndex]))
                 }
-                
                 return s
         }
         
-        /**
+        /*
          * Pads a string to the specified width.
-         *
-         * - parameter toWidth: The width to pad the string to.
-         * - parameter by: The character to use for padding.
-         *
-         * - returns: A new string, padded to the given width.
          */
+        
         func padded(toWidth width: Int, with padChar: Character = " ") -> String {
                 var s = self
                 var currentLength = self.characters.count

@@ -23,7 +23,7 @@ import Foundation
 var testCount: Int = 54
 var optionalData: Data?
 let nvram = Nvram()
-var commandLine = CommandLine(invocation: "VERB [options] where VERB is as follows:")
+var commandLine = CommandLine(invocationHelpText: "VERB [options] where VERB is as follows:")
 
 /* Command line parsing */
 
@@ -35,7 +35,7 @@ func parseVerb() {
         }
         commandLine.addVerbs(verbs.list, verbs.make, verbs.set)
         commandLine.parseVerb()
-        switch commandLine.verb {
+        switch commandLine.activeVerb {
         case verbs.make:
                 make()
         case verbs.list:
@@ -58,26 +58,21 @@ func list() {
 }
 
 func set() {
-        commandLine = CommandLine(invocation: "set -l PATH -L LABEL [-u STRING]")
         let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
         let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
         let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
         
-        commandLine.addOptions(loaderPath, displayLabel, unicodeString)
+        commandLine.invocationHelpText = "set -l PATH -L LABEL [-u STRING]"
+        commandLine.setOptions(loaderPath, displayLabel, unicodeString)
         do {
                 try commandLine.parse(strict: true)
         } catch {
-                commandLine.printUsage(error)
+                commandLine.printUsage(error: error)
                 exit(EX_USAGE)
         }
 }
 
 func make() {
-        
-        commandLine = CommandLine(invocation: "make -l PATH -L LABEL [-u STRING]\n[--create | -d FILE | -n | -x [-k KEY]]")
-        
-        /* Command line options */
-        
         let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
         let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
         let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
@@ -86,12 +81,13 @@ func make() {
         let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex", precludes: "pdxs")
         let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "pdns")
         let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY with option -x")
-
-        commandLine.addOptions(loaderPath, displayLabel, unicodeString, create, outputFileDmpstore, outputNvram, outputXml, keyForXml)
+        
+        commandLine.invocationHelpText = "make -l PATH -L LABEL [-u STRING]\n[--create | -d FILE | -n | -x [-k KEY]]"
+        commandLine.setOptions(loaderPath, displayLabel, unicodeString, create, outputFileDmpstore, outputNvram, outputXml, keyForXml)
         do {
                 try commandLine.parse(strict: true)
         } catch {
-                commandLine.printUsage(error)
+                commandLine.printUsage(error: error)
                 exit(EX_USAGE)
         }
         

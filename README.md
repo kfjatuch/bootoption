@@ -11,7 +11,37 @@ A stored representation of the variable data can be used to work around situatio
 
 ## Usage
 
-bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create | -d <em>FILE</em> | -n | -x [ -k <em>KEY</em> ] ]
+bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one from the following:
+
+- <strong>LIST</strong>&nbsp;&nbsp;print the current entries from the firmware boot menu
+- <strong>SET</strong>&nbsp;&nbsp;create a new entry and add it to the boot order
+- <strong>MAKE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
+
+#### Set
+
+bootoption set --loader <em>PATH</em> --label <em>LABEL</em> [ --unicode <em>STRING</em> ]
+
+<table>
+        <tr>
+                <td style="width: 3em">-l</td>
+                        <td style="width: 8.5em">--loader</td>
+                        <td>the <em>PATH</em> to an EFI loader executable</td>
+        </tr>
+        <tr>
+                        <td>-L</td>
+                        <td>--label</td>
+                        <td>display <em>LABEL</em> in firmware boot manager</td>
+        </tr>
+        <tr>
+                        <td>-u</td>
+                        <td>--unicode</td>
+                        <td>an optional <em>STRING</em> passed to the loader command line</td>
+        </tr>
+</table>
+
+#### Make
+
+bootoption make --l <em>PATH</em> --L <em>LABEL</em> [ --u <em>STRING</em> ] [ -o <em>FILE</em> | a | x [ -k <em>KEY</em> ] ]
 
 <table>
         <tr>
@@ -30,19 +60,14 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create 
                 <td>an optional <em>STRING</em> passed to the loader command line</td>
         </tr>
         <tr>
-                <td>-c</td>
-                <td>--create</td>
-                <td>save an option to NVRAM and add it to the BootOrder</td>
+                <td>-o</td>
+                <td>--output</td>
+                <td>write to <em>FILE</em> for use with EDK2 dmpstore</td>
         </tr>
         <tr>
-                <td>-d</td>
-                <td>--dmpstore</td>
-                <td>output to <em>FILE</em> for use with EDK2 dmpstore</td>
-        </tr>
-        <tr>
-                <td>-n</td>
-                <td>--nvram</td>
-                <td>print Apple nvram style string instead of raw hex</td>
+                <td>-a</td>
+                <td>--apple</td>
+                <td>print Apple nvram-style string instead of raw hex</td>
         </tr>
         <tr>
                 <td>-x</td>
@@ -52,7 +77,7 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create 
         <tr>
                 <td>-k</td>
                 <td>--key</td>
-                <td>use the named <em>KEY</em> for options -p or -x</td>
+                <td>specify named <em>KEY</em>, for use with option -x</td>
         </tr>
 </table>
 
@@ -60,7 +85,7 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create 
 #### Store to XML property list
 
 ```
-bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -x -k "Payload" > /Volumes/EFI/boot.plist
+bootoption make -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -x -k "Payload" > /Volumes/EFI/boot.plist
 ```
 #### /Volumes/EFI/boot.plist
 
@@ -84,7 +109,7 @@ The data element contains the base 64 encoded variable data conforming to the EF
 #### Store to EDK2 dmpstore format
 
 ```
-bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -d "/Volumes/USB-FAT32/vars.dmpstore"
+bootoption make -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -o "/Volumes/USB-FAT32/vars.dmpstore"
 ````
 
 #### Output
@@ -105,10 +130,10 @@ FS0:\> dmpstore -l vars.dmpstore
 #### Create the boot option in NVRAM and add it to the boot order
 
 ```
-sudo bootoption --create -l "/Volumes/EFI/shell.efi" -L "EFI Shell"
+sudo bootoption set -l "/Volumes/EFI/shell.efi" -L "EFI Shell"
 ```
 
-The --create option requires working hardware NVRAM - for instance, emulated NVRAM will not work, and the Clover RC scripts do not currently save the relevant data.
+Set requires working hardware NVRAM - for instance, emulated NVRAM will not work, and the Clover RC scripts do not currently save the relevant data.
 
 ## License
 

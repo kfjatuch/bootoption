@@ -25,12 +25,12 @@ func make() {
         let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
         let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
         let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-        let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore", precludes: "xn")
-        let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex", precludes: "dx")
+        let outputFileDmpstore = StringOption(shortFlag: "o", longFlag: "output", helpMessage: "write to FILE for use with EDK2 dmpstore", precludes: "xn")
+        let outputNvram = BoolOption(shortFlag: "a", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "dx")
         let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "dn")
-        let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY with option -x")
+        let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
         
-        commandLine.invocationHelpText = "make -l PATH -L LABEL [-u STRING] [-d FILE | -n | -x [-k KEY]]"
+        commandLine.invocationHelpText = "make -l PATH -L LABEL [-u STRING] [-o FILE | -a | -x [-k KEY]]"
         commandLine.setOptions(loaderPath, displayLabel, unicodeString, outputFileDmpstore, outputNvram, outputXml, keyForXml)
         do {
                 try commandLine.parse(strict: true)

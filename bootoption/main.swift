@@ -23,14 +23,14 @@ import Foundation
 var testCount: Int = 54
 var optionalData: Data?
 let nvram = Nvram()
-var commandLine = CommandLine(invocationHelpText: "VERB [options] where VERB is as follows:")
+var commandLine = CommandLine(invocationHelpText: "VERB [options] where VERB is one from the following:")
 
 /* Command line parsing */
 
 func parseVerb() {
-        let listVerb = Verb(withName: "list", helpMessage: "lists the options in the boot menu")
-        let setVerb = Verb(withName: "set", helpMessage: "sets a new option in the firmware menu")
-        let makeVerb = Verb(withName: "make", helpMessage: "generates a load option for output in various formats")
+        let listVerb = Verb(withName: "list", helpMessage: "print the current entries from the firmware boot menu")
+        let setVerb = Verb(withName: "set", helpMessage: "create a new entry and add it to the boot order")
+        let makeVerb = Verb(withName: "make", helpMessage: "print or save boot variable data in different formats")
         commandLine.addVerbs(listVerb, setVerb, makeVerb)
         commandLine.parseVerb()
         switch commandLine.activeVerb {
@@ -40,6 +40,10 @@ func parseVerb() {
                 set()
         case makeVerb.name:
                 make()
+        case commandLine.getVersionVerb():
+                version()
+        case commandLine.getHelpVerb():
+                help()
         default:
                 commandLine.printUsage()
                 exit(EX_USAGE)

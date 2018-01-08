@@ -27,6 +27,10 @@ class CommandLine {
         struct command {
                 static var options: [Option] = Array()
                 static var verbs: [Verb] = Array()
+                static let helpFlag = "--help"
+                static let helpVerb = "help"
+                static let versionFlag = "--version"
+                static let versionVerb = "version"
         }
         var invocationHelpText: String
         var rawArguments: [String]
@@ -42,6 +46,14 @@ class CommandLine {
                         }
                 }
                 return flags
+        }
+        
+        func getVersionVerb() -> String {
+                return command.versionVerb
+        }
+        
+        func getHelpVerb() -> String {
+                return command.helpVerb
         }
         
         /* If supplied, this function will be called when printing usage messages. */

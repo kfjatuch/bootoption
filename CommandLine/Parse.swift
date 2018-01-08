@@ -54,7 +54,7 @@ extension CommandLine {
                         exit(EX_USAGE)
                 }
                 let verb = rawArguments[1].lowercased()
-                if command.verbs.contains(verb) {
+                if command.verbs.contains(where: { $0.name.uppercased() == verb.uppercased() } ) {
                         self.activeVerb = verb
                 } else {
                         printUsage()

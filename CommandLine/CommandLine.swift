@@ -26,12 +26,13 @@ class CommandLine {
         
         struct command {
                 static var options: [Option] = Array()
-                static var verbs: [String] = Array()
+                static var verbs: [Verb] = Array()
         }
         var invocationHelpText: String
         var rawArguments: [String]
         var activeVerb: String = ""
         var storedFlagDescriptionWidth: Int = 0
+        var storedVerbWidth: Int = 0
         var precludedOptions: String = ""
         var usedFlags: Set<String> {
                 var flags = Set<String>(minimumCapacity: command.options.count * 2)
@@ -111,10 +112,10 @@ class CommandLine {
          *  - parameter verbs: The verbs to add.
          */
         
-        func addVerbs(_ verbs: String...) {
+        func addVerbs(_ verbs: Verb...) {
                 for verb in verbs {
-                        assert(!command.verbs.contains(verb), "Verb '\(verb)' already in use")
-                        command.verbs.append(verb.lowercased())
+                        assert(!command.verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
+                        command.verbs.append(verb)
                 }
         }
         

@@ -41,6 +41,13 @@ extension CommandLine {
                 return self.storedFlagDescriptionWidth
         }
         
+        var verbWidth: Int {
+                if self.storedVerbWidth == 0 {
+                        self.storedVerbWidth = command.verbs.map { $0.name.characters.count }.sorted().last ?? 0
+                }
+                return self.storedVerbWidth
+        }
+        
         /*
          *  The type of output being supplied to an output formatter.
          *  - seealso: `formatOutput`
@@ -52,6 +59,9 @@ extension CommandLine {
                 
                 /* An error message: 'Missing required option --extract' */
                 case error
+                
+                /* A verb e.g. VERB  help text */
+                case verb
                 
                 /* An Option's flagDescription: e.g. -h, --help: */
                 case optionFlag
@@ -72,6 +82,8 @@ extension CommandLine {
                         return "\(string)\n"
                 case .optionFlag:
                         return "  \(string.padded(toWidth: flagDescriptionWidth + 3))"
+                case .verb:
+                        return "  \(string.padded(toWidth: verbWidth + 3))"
                 case .optionHelp:
                         return "\(string)\n"
                 }
@@ -87,9 +99,16 @@ extension CommandLine {
                 format = formatOutput ?? defaultFormat
                 let name = NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent
                 print(format("Usage: \(name) \(self.invocationHelpText)", .about), terminator: "", to: &to)
-                for opt in command.options {
-                        print(format(opt.flagDescription, .optionFlag), terminator: "", to: &to)
-                        print(format(opt.helpMessage, .optionHelp), terminator: "", to: &to)
+                if self.activeVerb.isEmpty {
+                        for verb in command.verbs {
+                                print(format(verb.name.uppercased(), .verb), terminator: "", to: &to)
+                                print(format(verb.helpMessage, .optionHelp), terminator: "", to: &to)
+                        }
+                } else {
+                        for opt in command.options {
+                                print(format(opt.flagDescription, .optionFlag), terminator: "", to: &to)
+                                print(format(opt.helpMessage, .optionHelp), terminator: "", to: &to)
+                        }
                 }
         }
         

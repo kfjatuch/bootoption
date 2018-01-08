@@ -23,7 +23,7 @@ import Foundation
 var testCount: Int = 54
 var optionalData: Data?
 let nvram = Nvram()
-let commandLine = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n[--create | -d FILE | -p FILE | -n | -x] [-k KEY]")
+let commandLine = CommandLine(invocation: "-l PATH -L LABEL [-u STRING]\n[--create | -d FILE | -n | -x [-k KEY]]")
 
 /* Command line options */
 
@@ -32,16 +32,15 @@ let displayLabel = StringOption(shortFlag: "L", longFlag: "label", helpMessage: 
 let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
 let create = BoolOption(shortFlag: "c", longFlag: "create", helpMessage: "save an option to NVRAM and add it to the BootOrder", precludes: "dpxn")
 let outputFileDmpstore = StringOption(shortFlag: "d", longFlag: "dmpstore", helpMessage: "output to FILE for use with EDK2 dmpstore", precludes: "pxns")
-let outputFilePlist = StringOption(shortFlag: "p", longFlag: "plist", helpMessage: "output to FILE as an XML property list", precludes: "dxns")
 let outputNvram = BoolOption(shortFlag: "n", longFlag: "nvram", helpMessage: "print Apple nvram style string instead of raw hex", precludes: "pdxs")
 let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "pdns")
-let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY for options -p or -x")
+let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "use the named KEY with option -x")
 let beVerbose = BoolOption(shortFlag: "v", longFlag: "verbose", helpMessage: "")
 
 /* Command line parsing */
 
 func parseOptions() {
-        commandLine.addOptions(loaderPath, displayLabel, unicodeString, create, outputFileDmpstore, outputFilePlist, outputNvram, outputXml, keyForXml, beVerbose)
+        commandLine.addOptions(loaderPath, displayLabel, unicodeString, create, outputFileDmpstore, outputNvram, outputXml, keyForXml, beVerbose)
         do {
                 try commandLine.parse(strict: true)
         } catch {
@@ -147,25 +146,6 @@ func main() {
         efiLoadOption.append(devicePathList)
         if (optionalData != nil) {
                 efiLoadOption.append(optionalData!)
-        }
-        
-        /* Output to property list file */
-        
-        if outputFilePlist.wasSet {
-                let data = efiLoadOption as NSData
-                var keyString: String = ""
-                if keyForXml.wasSet {
-                        keyString = keyForXml.value!
-                } else {
-                        keyString = "Boot"
-                }
-                let dictionary: NSDictionary = ["\(keyString)": data]
-                let url = URL(fileURLWithPath: outputFilePlist.value!)
-                if !dictionary.write(toFile: url.path, atomically: false) {
-                        print("Error writing to file")
-                        exit(1)
-                }
-                exit(0)
         }
         
         let data = efiLoadOption as Data

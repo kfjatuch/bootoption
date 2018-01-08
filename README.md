@@ -11,7 +11,7 @@ A stored representation of the variable data can be used to work around situatio
 
 ## Usage
 
-bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create | -d <em>FILE</em> | -p <em>FILE</em> | -n | -x ] [ -k <em>KEY</em> ]
+bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create | -d <em>FILE</em> | -n | -x [ -k <em>KEY</em> ] ]
 
 <table>
         <tr>
@@ -40,11 +40,6 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create 
                 <td>output to <em>FILE</em> for use with EDK2 dmpstore</td>
         </tr>
         <tr>
-                <td>-p</td>
-                <td>--plist</td>
-                <td>output to <em>FILE</em> as an XML property list</td>
-        </tr>
-        <tr>
                 <td>-n</td>
                 <td>--nvram</td>
                 <td>print Apple nvram style string instead of raw hex</td>
@@ -65,7 +60,7 @@ bootoption -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ --create 
 #### Store to XML property list
 
 ```
-bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -p "/Volumes/EFI/boot.plist" -k "Payload"
+bootoption -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -x -k "Payload" > /Volumes/EFI/boot.plist
 ```
 #### /Volumes/EFI/boot.plist
 

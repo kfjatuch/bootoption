@@ -34,16 +34,17 @@ func set() {
                 exit(EX_USAGE)
         }
         
-        /* Set in NVRAM
-         
-         if create.value {
-         if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
-         let name = nvram.bootOptionName(for: n)
-         print("Set variable: \(name)")
-         exit(0)
-         } else {
-         print("--set was not a success")
-         exit(1)
-         }
-         } */
+        /* Set in NVRAM */
+        
+        let data = getVariableData(loader: loaderPath.value!, label: displayLabel.value!, unicode: unicodeString.value)
+
+        if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
+                let name = nvram.bootOptionName(for: n)
+                print("Set variable: \(name)")
+                exit(0)
+        } else {
+                print("--set was not a success")
+                exit(1)
+        }
+
 }

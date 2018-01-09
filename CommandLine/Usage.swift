@@ -36,7 +36,7 @@ extension CommandLine {
         
         var flagDescriptionWidth: Int {
                 if self.storedFlagDescriptionWidth == 0 {
-                        self.storedFlagDescriptionWidth = command.options.map { $0.flagDescription.characters.count }.sorted().last ?? 0
+                        self.storedFlagDescriptionWidth = command.options.map { $0.optionDescription.characters.count }.sorted().last ?? 0
                 }
                 return self.storedFlagDescriptionWidth
         }
@@ -106,7 +106,7 @@ extension CommandLine {
                         }
                 } else {
                         for opt in command.options {
-                                print(format(opt.flagDescription, .optionFlag), terminator: "", to: &to)
+                                print(format(opt.optionDescription, .optionFlag), terminator: "", to: &to)
                                 print(format(opt.helpMessage, .optionHelp), terminator: "", to: &to)
                         }
                 }

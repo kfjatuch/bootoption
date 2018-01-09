@@ -37,10 +37,10 @@ extension CommandLine {
                         case let .invalidValueForOption(opt, vals):
                                 CommandLog.error("Parse error: Invalid value")
                                 let joined: String = vals.joined(separator: " ")
-                                return "Invalid value(s) for option \(opt.shortFlag ?? opt.longFlag ?? ""): \(joined)"
+                                return "Invalid value(s) for option \(opt.shortDescription): \(joined)"
                         case let .missingRequiredOptions(opts):
                                 CommandLog.error("Parse error: Missing required options")
-                                let mapped: Array = opts.map { return "-\($0.shortFlag ?? $0.longFlag ?? "")" }
+                                let mapped: Array = opts.map { return $0.shortDescription }
                                 let joined: String = mapped.joined(separator: ", ")
                                 return "Missing required option(s): \(joined)"
                         }

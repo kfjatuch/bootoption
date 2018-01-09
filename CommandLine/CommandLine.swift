@@ -96,7 +96,7 @@ class CommandLine {
                         assert(!flags.contains(flag), "Flag '\(flag)' already in use")
                 }
                 command.options.append(option)
-                CommandLog.info("Added option '%{public}@' to command line", args: String(option.longFlag ?? option.shortFlag ?? "none"))
+                CommandLog.info("Added option '%{public}@' to command line", args: String(option.logDescription))
                 self.storedFlagDescriptionWidth = 0
         }
         

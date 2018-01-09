@@ -19,20 +19,42 @@
  * The base class for a command-line option.
  */
 public class Option {
-        public let shortFlag: String?
-        public let longFlag: String?
-        public let required: Bool
-        public let helpMessage: String
-        public let precludes: String
+        let shortFlag: String?
+        let longFlag: String?
+        let required: Bool
+        let helpMessage: String
+        let precludes: String
         
         /** True if the option was set when parsing command-line arguments */
-        public var wasSet: Bool {
+        var wasSet: Bool {
                 return false
         }
         
-        public var claimedValues: Int { return 0 }
+        var claimedValues: Int {
+                return 0
+        }
         
-        public var flagDescription: String {
+        var shortDescription: String {
+                if shortFlag != nil {
+                        return String("\(shortPrefix)\(shortFlag!)")
+                } else if longFlag != nil {
+                        return String("\(longPrefix)\(longFlag!)")
+                } else {
+                        return String("")
+                }
+        }
+        
+        var logDescription: String {
+                if longFlag != nil {
+                        return longFlag!
+                } else if shortFlag != nil {
+                        return shortFlag!
+                } else {
+                        return String("")
+                }
+        }
+        
+        var optionDescription: String {
                 var string: String = ""
                 if shortFlag != nil && longFlag != nil {
                         string.append("\(shortPrefix)\(shortFlag!)")
@@ -62,17 +84,17 @@ public class Option {
         }
         
         /** Initializes a new Option that has both long and short flags. */
-        public convenience init(shortFlag: String, longFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
+        convenience init(shortFlag: String, longFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
                 self.init(shortFlag, longFlag, required, helpMessage, precludes)
         }
         
         /** Initializes a new Option that has only a short flag. */
-        public convenience init(shortFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
+        convenience init(shortFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
                 self.init(shortFlag, nil, required, helpMessage, precludes)
         }
         
         /** Initializes a new Option that has only a long flag. */
-        public convenience init(longFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
+        convenience init(longFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
                 self.init(nil, longFlag, required, helpMessage, precludes)
         }
         
@@ -89,7 +111,7 @@ public class Option {
  * A boolean option. The presence of either the short or long flag will set the value to true;
  * absence of the flag(s) is equivalent to false.
  */
-public class BoolOption: Option {
+class BoolOption: Option {
         private var _value: Bool = false
         
         public var value: Bool {
@@ -107,7 +129,7 @@ public class BoolOption: Option {
 }
 
 /**  An option that accepts a positive or negative integer value. */
-public class IntOption: Option {
+class IntOption: Option {
         private var _value: Int?
         
         public var value: Int? {
@@ -140,7 +162,7 @@ public class IntOption: Option {
  * An option that represents an integer counter. Each time the short or long flag is found
  * on the command-line, the counter will be incremented.
  */
-public class CounterOption: Option {
+class CounterOption: Option {
         private var _value: Int = 0
         
         public var value: Int {
@@ -162,7 +184,7 @@ public class CounterOption: Option {
 }
 
 /**  An option that accepts a positive or negative floating-point value. */
-public class DoubleOption: Option {
+class DoubleOption: Option {
         private var _value: Double?
         
         public var value: Double? {
@@ -192,7 +214,7 @@ public class DoubleOption: Option {
 }
 
 /**  An option that accepts a string value. */
-public class StringOption: Option {
+class StringOption: Option {
         private var _value: String? = nil
         
         public var value: String? {
@@ -218,7 +240,7 @@ public class StringOption: Option {
 }
 
 /**  An option that accepts one or more string values. */
-public class MultiStringOption: Option {
+class MultiStringOption: Option {
         private var _value: [String]?
         
         public var value: [String]? {
@@ -248,7 +270,7 @@ public class MultiStringOption: Option {
 }
 
 /** An option that represents an enum value. */
-public class EnumOption<T:RawRepresentable>: Option where T.RawValue == String {
+class EnumOption<T:RawRepresentable>: Option where T.RawValue == String {
         private var _value: T?
         public var value: T? {
                 return _value

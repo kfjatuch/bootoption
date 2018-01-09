@@ -41,11 +41,10 @@ func set() {
 
         if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
                 let name = nvram.bootOptionName(for: n)
-                print("Set variable: \(name)")
+                Log.info("Set new boot variable %{public}@ in NVRAM", args: String(name))
                 exit(0)
         } else {
                 print("Error: Couldn't set variables in NVRAM")
                 exit(1)
         }
-
 }

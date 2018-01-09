@@ -59,7 +59,7 @@ class BootMenu {
         var options: [Option] = Array()
 
         init() {
-                Log.info("BootMenu.init: Initialising boot menu")
+                Log.info("Initialising boot menu")
                 /* BootOrder */
                 if let bootOrderArray: [UInt16] = nvram.getBootOrderArray() {
                         bootOrder = bootOrderArray
@@ -89,7 +89,6 @@ class BootMenu {
         }
         
         var string: String {
-                Log.info("Creating stored string for output by 'list'")
                 var string = String()
                 var current = String()
                 var next = String()
@@ -136,6 +135,7 @@ class BootMenu {
                         string.append("\n")
                 }
                 string.removeLast()
+                Log.info("Boot menu initialised")
                 return string
         }
 }

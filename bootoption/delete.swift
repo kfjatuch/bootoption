@@ -79,14 +79,19 @@ func delete() {
                         }
                         /* set the new bootorder */
                         if !nvram.setBootOrder(data: newBootOrder) {
-                                 Log.error("Error setting new boot order")
+                                Log.error("Error setting new boot order")
+                        } else {
+                                /* delete the entry variable */
+                                Log.info("Boot order was updated")
+                                Log.def("Boot variable requires reading to confirm deletion")
+                                nvram.deleteBootOption(Int(optionNumber))
                         }
+                } else {
+                        /* variable is not in the boot order, delete it */
+                        Log.info("Variable not found in boot order")
+                        Log.def("Variable requires reading to confirm deletion")
+                        nvram.deleteBootOption(Int(optionNumber))
                 }
-                /* delete the entry variable */
-                nvram.deleteBootOption(Int(optionNumber))
-
         }
-        
-        
 }
 

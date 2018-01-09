@@ -62,8 +62,11 @@ func make() {
                 var propertyList: Data
                 do {
                         propertyList = try PropertyListSerialization.data(fromPropertyList: dictionary, format: .xml, options: 0)
-                } catch {
-                        print(error)
+                } catch let error as NSError {
+                        let errorDescription = error.localizedDescription
+                        let errorCode = error.code
+                        print(errorDescription)
+                        Log.error("Error serializing to XML (%{public}@)", args: String(errorCode))
                         exit(1)
                 }
                 if let xml = String.init(data: propertyList, encoding: .utf8) {
@@ -97,11 +100,13 @@ func make() {
                 let url = URL(fileURLWithPath: outputOption.value!)
                 do {
                         try buffer.write(to: url)
-                } catch {
-                        Log.error("Error writing to output file")
+                } catch let error as NSError {
+                        let errorDescription = error.localizedDescription
+                        let errorCode = error.code
+                        print(errorDescription)
+                        Log.error("Error writing output file (%{public}@)", args: String(errorCode))
                         exit(1)
                 }
-                print("Written to '\(outputOption.value!)'")
                 exit(0)
         }
         
@@ -114,6 +119,5 @@ func make() {
         } else {
                 printRawHex(data: data)
         }
-        Log.info("make function finished, exitting")
         exit(0)
 }

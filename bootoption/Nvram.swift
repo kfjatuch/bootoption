@@ -59,9 +59,8 @@ class Nvram {
                 return nil
         }
         
-        func deleteVariable(key: String) -> kern_return_t {
-                let result = self.options.setStringValue(forProperty: kIONVRAMDeletePropertyKey, value: key)
-                return result
+        func deleteVariable(key: String) {
+                let _ = self.options.setStringValue(forProperty: kIONVRAMDeletePropertyKey, value: key)
         }
         
         func nvramSyncNow(withNamedVariable key: String, useForceSync: Bool = true) -> kern_return_t {
@@ -147,7 +146,6 @@ class Nvram {
                 let nameWithGuid: String = "\(efiGlobalGuid):BootOrder"
                 var result = self.options.setDataValue(forProperty: nameWithGuid, value: data)
                 if result != KERN_SUCCESS {
-                        Log.info("Error setting BootOrder")
                         return false
                 }
                 /* sync now */
@@ -189,10 +187,7 @@ class Nvram {
         func deleteBootOption(_ n: Int) {
                 let name: String = bootOptionName(for: n)
                 let nameWithGuid = "\(efiGlobalGuid):\(name)"
-                let result = deleteVariable(key: nameWithGuid)
-                if result != KERN_SUCCESS {
-                        Log.info("Error deleting a boot option")
-                }
+                deleteVariable(key: nameWithGuid)
         }
         
 

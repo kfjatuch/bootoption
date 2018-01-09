@@ -108,7 +108,7 @@ class RegistryEntry {
                         Log.error("No provision for provided type")
                 }
                 if result != KERN_SUCCESS {
-                        Log.error("Setting IORegistry property was unsuccessful (%{public}X)", args: Int(result))
+                        Log.error("Error setting value for property (%{public}X)", args: Int(result))
                 }
                 return result
         }

@@ -53,15 +53,18 @@ struct HardDriveMediaDevicePath {
                 let fileManager: FileManager = FileManager()
                 
                 guard fileManager.fileExists(atPath: path) else {
-                        fatalError("File not found")
+                        Log.error("Loader not found at specified path")
+                        exit(EX_IOERR)
                 }
                 
                 guard let session:DASession = DASessionCreate(kCFAllocatorDefault) else {
-                        fatalError("Failed to create DASession")
+                        Log.error("Failed to create DASession")
+                        exit(EX_IOERR)
                 }
                 
                 guard var volumes:[URL] = fileManager.mountedVolumeURLs(includingResourceValuesForKeys: nil) else {
-                        fatalError("Failed to get mounted volume URLs")
+                        Log.error("Failed to get mounted volume URLs")
+                        exit(EX_IOERR)
                 }
                 volumes = volumes.filter { $0.isFileURL }
 
@@ -96,19 +99,24 @@ struct HardDriveMediaDevicePath {
                 let cfMountPoint: CFString = mountPoint as CFString
                 
                 guard let url: CFURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfMountPoint, CFURLPathStyle(rawValue: 0)!, true) else {
-                        fatalError("Failed to create CFURL for mount point")
+                        Log.error("Failed to create CFURL for mount point")
+                        exit(EX_IOERR)
                 }
                 guard let disk: DADisk = DADiskCreateFromVolumePath(kCFAllocatorDefault, session, url) else {
-                        fatalError("Failed to create DADisk from volume URL")
+                        Log.error("Failed to create DADisk from volume URL")
+                        exit(EX_IOERR)
                 }
                 guard let cfDescription: CFDictionary = DADiskCopyDescription(disk) else {
-                        fatalError("Failed to get volume description CFDictionary")
+                        Log.error("Failed to get volume description CFDictionary")
+                        exit(EX_IOERR)
                 }
                 guard let description: [String: Any] = cfDescription as? Dictionary else {
-                        fatalError("Failed to get volume description as Dictionary")
+                        Log.error("Failed to get volume description as Dictionary")
+                        exit(EX_IOERR)
                 }
                 guard let daMediaPath = description["DAMediaPath"] as? String else {
-                        fatalError("Failed to get DAMediaPath as String")
+                        Log.error("Failed to get DAMediaPath as String")
+                        exit(EX_IOERR)
                 }
 
                 /* Get the registry object for our partition */
@@ -124,7 +132,8 @@ struct HardDriveMediaDevicePath {
                 let ioUUID: String? = partitionProperties.getStringValue(forProperty: "UUID")
                 
                 if (ioPreferredBlockSize == nil || ioPartitionID == nil || ioBase == nil || ioSize == nil || ioUUID == nil) {
-                        fatalError("Failed to get registry values")
+                        Log.error("Failed to get registry values")
+                        exit(EX_IOERR)
                 }
                 
                 let blockSize: Int = ioPreferredBlockSize!
@@ -174,7 +183,8 @@ struct FilePathMediaDevicePath {
                 var efiPath: String = "/" + localPath[i...]
                 efiPath = efiPath.uppercased().replacingOccurrences(of: "/", with: "\\")
                 if efiPath.containsOutlawedCharacters() {
-                        fatalError("Forbidden character(s) found in path")
+                        Log.error("Forbidden character(s) found in path")
+                        exit(EX_IOERR)
                 }
                 var pathData: Data = efiPath.data(using: String.Encoding.utf16)!
                 pathData.removeFirst()

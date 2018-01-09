@@ -21,7 +21,6 @@
 import Foundation
 
 func version() {
-        let versionString = "0.2.0"
         print(versionString)
         exit(0)
 }

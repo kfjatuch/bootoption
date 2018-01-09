@@ -20,9 +20,11 @@
 
 import Foundation
 
+let versionString = "0.2.0"
 var testCount: Int = 54
 var optionalData: Data?
 let nvram = Nvram()
+Log.info("*** Starting bootoption version %{public}@", args: String(versionString))
 var commandLine = CommandLine(invocationHelpText: "VERB [options] where VERB is one from the following:")
 
 /* Command line parsing */
@@ -48,20 +50,22 @@ func parseVerb() {
         case commandLine.getHelpVerb():
                 help()
         default:
-                commandLine.printUsage()
                 exit(EX_USAGE)
         }
 }
 
 func getVariableData(loader: String, label: String, unicode: String?) -> Data {
+
         /* Attributes */
         
+        Log.info("Generating attributes")
         let attributes = Data.init(bytes: [1, 0, 0, 0])
         
         /* Description */
         
+        Log.info("Generating description")
         if label.containsOutlawedCharacters() {
-                fatalError("Forbidden character(s) found in description")
+                Log.error("Forbidden character(s) found in description")
         }
         
         var description = label.data(using: String.Encoding.utf16)!
@@ -71,6 +75,7 @@ func getVariableData(loader: String, label: String, unicode: String?) -> Data {
         
         /* Device path list */
         
+        Log.info("Generating device path list")
         var devicePathList = Data.init()
         let hardDrive = HardDriveMediaDevicePath(forFile: loader)
         let file = FilePathMediaDevicePath(path: loader, mountPoint: hardDrive.mountPoint)
@@ -81,6 +86,7 @@ func getVariableData(loader: String, label: String, unicode: String?) -> Data {
         
         /* Device path list length */
         
+        Log.info("Generating device path list length")
         var devicePathListLength = Data.init()
         var lengthValue = UInt16(devicePathList.count)
         devicePathListLength.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
@@ -88,13 +94,17 @@ func getVariableData(loader: String, label: String, unicode: String?) -> Data {
         /* Optional data */
         
         if unicode != nil {
+                Log.info("Generating optional data")
                 optionalData = unicode!.data(using: String.Encoding.utf16)!
                 optionalData?.removeFirst()
                 optionalData?.removeFirst()
+        } else {
+                Log.info("Not generating optional data, none specified")
         }
         
         /* Boot option variable data */
         
+        Log.info("Generating EFI_LOAD_OPTION structured buffer")
         var efiLoadOption = Data.init()
         efiLoadOption.append(attributes)
         efiLoadOption.append(devicePathListLength)

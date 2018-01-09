@@ -21,12 +21,13 @@
 import Foundation
 
 func set() {
-        let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
-        let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
-        let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-        
+
+        Log.info("Setting up command line")
+        let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
+        let labelOption = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
+        let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
         commandLine.invocationHelpText = "set -l PATH -L LABEL [-u STRING]"
-        commandLine.setOptions(loaderPath, displayLabel, unicodeString)
+        commandLine.setOptions(loaderOption, labelOption, unicodeOption)
         do {
                 try commandLine.parse(strict: true)
         } catch {
@@ -36,14 +37,14 @@ func set() {
         
         /* Set in NVRAM */
         
-        let data = getVariableData(loader: loaderPath.value!, label: displayLabel.value!, unicode: unicodeString.value)
+        let data = getVariableData(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
 
         if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
                 let name = nvram.bootOptionName(for: n)
                 print("Set variable: \(name)")
                 exit(0)
         } else {
-                print("--set was not a success")
+                print("Error: Couldn't set variables in NVRAM")
                 exit(1)
         }
 

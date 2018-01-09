@@ -21,10 +21,11 @@
 import Foundation
 
 func delete() {
-        let bootVariableName = StringOption(longFlag: "variable", required: true, helpMessage: "the NAME of the variable to delete")
-        
+
+        Log.info("Setting up command line")
+        let variableOption = StringOption(longFlag: "variable", required: true, helpMessage: "the NAME of the variable to delete")
         commandLine.invocationHelpText = "delete --variable NAME"
-        commandLine.setOptions(bootVariableName)
+        commandLine.setOptions(variableOption)
         do {
                 try commandLine.parse(strict: true)
         } catch {
@@ -35,10 +36,12 @@ func delete() {
         func invalidArgument(_ string: String) {
                 var out = CommandLine.StderrOutputStream.stream
                 print("Invalid name for BootXXXX variable: \(string)", to: &out)
+                Log.error("Invalid variable name supplied for delete")
                 commandLine.printUsage()
+                exit(EX_USAGE)
         }
         
-        if let choice: String = bootVariableName.value {
+        if let choice: String = variableOption.value {
                 guard choice.characters.count == 8 && choice.uppercased().hasPrefix("BOOT") else {
                         invalidArgument(choice)
                         exit(EX_USAGE)
@@ -76,7 +79,7 @@ func delete() {
                         }
                         /* set the new bootorder */
                         if !nvram.setBootOrder(data: newBootOrder) {
-                                 print("Error setting boot order")
+                                 Log.error("Error setting new boot order")
                         }
                 }
                 /* delete the entry variable */

@@ -35,7 +35,9 @@ class RegistryEntry {
         init(fromPath path: String) {
                 registryEntry = IORegistryEntryFromPath(kIOMasterPortDefault, path)
                 guard registryEntry != 0 else {
-                        fatalError("RegistryEntry: Error getting registry entry from path")
+                        print("Error: Failed to get registry entry from path")
+                        Log.error("RegistryEntry: Error getting registry entry from path")
+                        exit(EX_IOERR)
                 }
         }
   
@@ -50,6 +52,7 @@ class RegistryEntry {
                                 let expected = CFCopyTypeIDDescription(type) as String
                                 let instead = CFCopyTypeIDDescription(valueType) as String
                                 print("RegistryEntry value(key:type:): Expected '\(expected)' type for '\(key)' Instead: '\(instead)'")
+                                Log.error("CFType mismatch")
                                 return nil
                         }
                         return value
@@ -89,7 +92,7 @@ class RegistryEntry {
          *  Set properties
          */
         
-        private func setValue(forProperty key: String, value: Any, type: CFTypeID) -> Bool {
+        private func setValue(forProperty key: String, value: Any, type: CFTypeID) -> kern_return_t {
                 var result: kern_return_t
                 switch type {
                 case typeId.number:
@@ -102,44 +105,36 @@ class RegistryEntry {
                         result = IORegistryEntrySetCFProperty(registryEntry, key as CFString, value as! CFBoolean)
                 default:
                         result = -1
-                        print("No provision for provided type")
+                        Log.error("No provision for provided type")
                 }
-                if result == KERN_SUCCESS {
-                        return true
+                if result != KERN_SUCCESS {
+                        Log.error("Setting IORegistry property was unsuccessful (%{public}X)", args: Int(result))
                 }
-                return false
+                return result
         }
         
-        func setIntValue(forProperty key: String, value: Int) -> Bool {
+        func setIntValue(forProperty key: String, value: Int) -> kern_return_t {
                 let type = typeId.number
-                if self.setValue(forProperty: key, value: value as CFNumber, type: type) {
-                        return true
-                }
-                return false
+                let result = self.setValue(forProperty: key, value: value as CFNumber, type: type)
+                return result
         }
         
-        func setStringValue(forProperty key: String, value: String) -> Bool {
+        func setStringValue(forProperty key: String, value: String) -> kern_return_t {
                 let type = typeId.string
-                if self.setValue(forProperty: key, value: value as CFString, type: type) {
-                        return true
-                }
-                return false
+                let result = self.setValue(forProperty: key, value: value as CFString, type: type)
+                return result
         }
         
-        func setDataValue(forProperty key: String, value: Data) -> Bool {
+        func setDataValue(forProperty key: String, value: Data) -> kern_return_t {
                 let type = typeId.data
-                if self.setValue(forProperty: key, value: value as CFData, type: type) {
-                        return true
-                }
-                return false
+                let result = self.setValue(forProperty: key, value: value as CFData, type: type)
+                return result
         }
         
-        func setBoolValue(forKey key: String, value: Bool) -> Bool {
+        func setBoolValue(forKey key: String, value: Bool) -> kern_return_t {
                 let type = typeId.bool
-                if self.setValue(forProperty: key, value: value as CFBoolean, type: type) {
-                        return true
-                }
-                return false
+                let result = self.setValue(forProperty: key, value: value as CFBoolean, type: type)
+                return result
                 
         }
         

@@ -29,13 +29,17 @@ extension CommandLine {
                 var description: String {
                         switch self {
                         case let .invalidArgument(arg):
+                                CommandLog.error("Parse error: Invalid argument")
                                 return "Invalid argument: \(arg)"
                         case .tooManyOptions:
+                                CommandLog.error("Parse error: Too many options")
                                 return "Some options preclude the use of others."
                         case let .invalidValueForOption(opt, vals):
+                                CommandLog.error("Parse error: Invalid value")
                                 let joined: String = vals.joined(separator: " ")
                                 return "Invalid value(s) for option \(opt.shortFlag ?? opt.longFlag ?? ""): \(joined)"
                         case let .missingRequiredOptions(opts):
+                                CommandLog.error("Parse error: Missing required options")
                                 let mapped: Array = opts.map { return "-\($0.shortFlag ?? $0.longFlag ?? "")" }
                                 let joined: String = mapped.joined(separator: ", ")
                                 return "Missing required option(s): \(joined)"
@@ -49,7 +53,9 @@ extension CommandLine {
          */
         
         func parseVerb() {
+                CommandLog.info("Parsing command line verb...")
                 if rawArguments.count < 2 {
+                        CommandLog.info("Nothing to parse, printing usage")
                         printUsage()
                         exit(EX_USAGE)
                 }
@@ -61,9 +67,11 @@ extension CommandLine {
                 } else if command.verbs.contains(where: { $0.name.uppercased() == verb.uppercased() } ) {
                         self.activeVerb = verb
                 } else {
+                        CommandLog.error("Found invalid verb '%{public}@'", args: String(verb))
                         printUsage()
                         exit(EX_USAGE)
                 }
+                CommandLog.info("Active verb is '%{public}@'", args: String(self.activeVerb))
         }
         
         /*
@@ -102,6 +110,8 @@ extension CommandLine {
          */
         
         func parse(strict: Bool = false) throws {
+                
+                Log.info("Parsing command line options...")
                 var raw = rawArguments
                 raw[0] = ""
                 raw[1] = ""

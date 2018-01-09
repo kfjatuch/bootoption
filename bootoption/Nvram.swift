@@ -59,21 +59,18 @@ class Nvram {
                 return nil
         }
         
-        func deleteVariable(key: String) {
-                if !self.options.setStringValue(forProperty: kIONVRAMDeletePropertyKey, value: key) {
-                        print("Error setting kIONVRAMDeletePropertyKey value")
-                }
+        func deleteVariable(key: String) -> kern_return_t {
+                let result = self.options.setStringValue(forProperty: kIONVRAMDeletePropertyKey, value: key)
+                return result
         }
         
-        func nvramSyncNow(withNamedVariable key: String, useForceSync: Bool = true) {
+        func nvramSyncNow(withNamedVariable key: String, useForceSync: Bool = true) -> kern_return_t {
                 if (useForceSync) {
-                        if !self.options.setStringValue(forProperty: ioNvramForceSyncNowPropertyKey, value: key) {
-                                print("Error setting ioNvramForceSyncNowPropertyKey value")
-                        }
+                        let result = self.options.setStringValue(forProperty: ioNvramForceSyncNowPropertyKey, value: key)
+                        return result
                 } else {
-                        if !self.options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: key) {
-                                print("Error setting kIONVRAMSyncNowPropertyKey value")
-                        }
+                        let result = self.options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: key)
+                        return result
                 }
         }
         
@@ -121,11 +118,11 @@ class Nvram {
         
         private func addToStartOfBootOrder(_ n: Int) -> Bool {
                 guard self.getBootOption(n) != nil else {
-                        print("Couldn't get BootXXXX data (addToStartOfBootOrder)")
+                        Log.info("Couldn't get BootXXXX data (addToStartOfBootOrder)")
                         return false
                 }
                 guard let bootOrder: Data = getBootOrder() else {
-                        print("Error getting BootOrder (addToStartOfBootOrder")
+                        Log.info("Error getting BootOrder (addToStartOfBootOrder")
                         return false
                 }
                 var newOption = UInt16(n)
@@ -133,41 +130,56 @@ class Nvram {
                 data.append(UnsafeBufferPointer(start: &newOption, count: 1))
                 data.append(bootOrder)
                 let nameWithGuid: String = "\(efiGlobalGuid):BootOrder"
-                if !self.options.setDataValue(forProperty: nameWithGuid, value: data) {
-                        print("Error setting BootOrder (addToStartOfBootOrder)")
+                var result = self.options.setDataValue(forProperty: nameWithGuid, value: data)
+                if result != KERN_SUCCESS {
+                        Log.info("Error adding to start of BootOrder")
                         return false
                 }
                 /* sync now */
-                self.nvramSyncNow(withNamedVariable: nameWithGuid)
+                result = self.nvramSyncNow(withNamedVariable: nameWithGuid)
+                if result != KERN_SUCCESS {
+                        Log.info("Error syncing BootOrder (addToStartOfBootOrder)")
+                }
                 return true  
         }
         
         func setBootOrder(data: Data) -> Bool {
                 let nameWithGuid: String = "\(efiGlobalGuid):BootOrder"
-                if !self.options.setDataValue(forProperty: nameWithGuid, value: data) {
-                        print("Error setting BootOrder (setBootOrder)")
+                var result = self.options.setDataValue(forProperty: nameWithGuid, value: data)
+                if result != KERN_SUCCESS {
+                        Log.info("Error setting BootOrder")
                         return false
                 }
                 /* sync now */
-                self.nvramSyncNow(withNamedVariable: nameWithGuid)
+                result = self.nvramSyncNow(withNamedVariable: nameWithGuid)
+                if result != KERN_SUCCESS {
+                        Log.info("Error syncing BootOrder (setBootOrder)")
+                        return false
+                }
                 return true
         }
         
         func createNewBootOption(withData data: Data, addToBootOrder: Bool = false) -> Int? {
                 guard let n: Int = self.getEmptyBootOption() else {
-                        print("Couldn't find an empty boot variable (createNewBootOption")
+                        Log.info("Couldn't find an empty boot variable (createNewBootOption")
                         return nil
                 }
                 let name: String = bootOptionName(for: n)
                 let nameWithGuid = "\(efiGlobalGuid):\(name)"
-                if !self.options.setDataValue(forProperty: nameWithGuid, value: data) {
-                        print("Failed to create new boot option from data (createNewBootOption)")
+                let addResult = self.options.setDataValue(forProperty: nameWithGuid, value: data)
+                if addResult != KERN_SUCCESS {
+                        Log.info("Error creating new boot option")
                         return nil
                 }
                 /* sync now */
-                self.nvramSyncNow(withNamedVariable: nameWithGuid)
-                if addToBootOrder {
+                let syncResult = self.nvramSyncNow(withNamedVariable: nameWithGuid)
+                if syncResult != KERN_SUCCESS {
+                        Log.info("Error syncing new boot option")
+                        return nil
+                }
+                if addResult == KERN_SUCCESS {
                         if !self.addToStartOfBootOrder(n) {
+                                Log.info("addToStartOfBootOrder returned false (createNewBootOption)")
                                 return nil
                         }
                 }
@@ -177,7 +189,10 @@ class Nvram {
         func deleteBootOption(_ n: Int) {
                 let name: String = bootOptionName(for: n)
                 let nameWithGuid = "\(efiGlobalGuid):\(name)"
-                self.deleteVariable(key: nameWithGuid)
+                let result = deleteVariable(key: nameWithGuid)
+                if result != KERN_SUCCESS {
+                        Log.info("Error deleting a boot option")
+                }
         }
         
 

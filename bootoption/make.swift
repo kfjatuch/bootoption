@@ -21,17 +21,17 @@
 import Foundation
 
 func make() {
-        
-        let loaderPath = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
-        let displayLabel = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
-        let unicodeString = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-        let outputFileDmpstore = StringOption(shortFlag: "o", longFlag: "output", helpMessage: "write to FILE for use with EDK2 dmpstore", precludes: "xn")
-        let outputNvram = BoolOption(shortFlag: "a", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "dx")
-        let outputXml = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "dn")
-        let keyForXml = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
-        
+
+        Log.info("Setting up command line")
+        let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
+        let labelOption = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
+        let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
+        let outputOption = StringOption(shortFlag: "o", longFlag: "output", helpMessage: "write to FILE for use with EDK2 dmpstore", precludes: "xn")
+        let appleOption = BoolOption(shortFlag: "a", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "dx")
+        let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "dn")
+        let keyOption = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
         commandLine.invocationHelpText = "make -l PATH -L LABEL [-u STRING] [-o FILE | -a | -x [-k KEY]]"
-        commandLine.setOptions(loaderPath, displayLabel, unicodeString, outputFileDmpstore, outputNvram, outputXml, keyForXml)
+        commandLine.setOptions(loaderOption, labelOption, unicodeOption, outputOption, appleOption, xmlOption, keyOption)
         do {
                 try commandLine.parse(strict: true)
         } catch {
@@ -42,19 +42,22 @@ func make() {
         /* Printed output functions */
         
         func printFormatString(data: Data) {
+                Log.info("Printing format string")
                 let strings = data.map { String(format: "%%%02x", $0) }
                 let outputString = strings.joined()
                 print(outputString)
         }
         
         func printRawHex(data: Data) {
+                Log.info("Printing raw hex")
                 let strings = data.map { String(format: "%02x", $0) }
                 let outputString = strings.joined()
                 print(outputString)
         }
         
         func printXml(data: Data) {
-                let key: String = keyForXml.value ?? "Boot"
+                Log.info("Printing XML")
+                let key: String = keyOption.value ?? "Boot"
                 let dictionary: NSDictionary = ["\(key)": data]
                 var propertyList: Data
                 do {
@@ -72,43 +75,45 @@ func make() {
                 }
         }
         
-        if displayLabel.value == nil || loaderPath.value == nil {
-                print("Required options should no longer be nil")
+        if labelOption.value == nil || loaderOption.value == nil {
+                Log.error("Required options should no longer be nil")
                 exit(1)
         }
         
-        let data: Data = getVariableData(loader: loaderPath.value!, label: displayLabel.value!, unicode: unicodeString.value)
+        let data: Data = getVariableData(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
         if data.count < testCount {
+                Log.error("Variable data is too little to be valid")
                 exit(1)
         }
         
         /* Output to dmpstore format file */
         
-        if outputFileDmpstore.wasSet {
+        if outputOption.wasSet {
                 let dmpstoreOption = Dmpstore.Option(fromData: data)
                 let dmpstoreOrder = Dmpstore.Order(adding: dmpstoreOption.created)
                 var buffer = Data.init()
                 buffer.append(dmpstoreOption.data)
                 buffer.append(dmpstoreOrder.data)
-                let url = URL(fileURLWithPath: outputFileDmpstore.value!)
+                let url = URL(fileURLWithPath: outputOption.value!)
                 do {
                         try buffer.write(to: url)
                 } catch {
-                        print(error)
+                        Log.error("Error writing to output file")
                         exit(1)
                 }
-                print("Written to '\(outputFileDmpstore.value!)'")
+                print("Written to '\(outputOption.value!)'")
                 exit(0)
         }
         
         /* Printed output */
         
-        if outputNvram.value {
+        if appleOption.value {
                 printFormatString(data: data)
-        } else if outputXml.value {
+        } else if xmlOption.value {
                 printXml(data: data)
         } else {
                 printRawHex(data: data)
         }
+        Log.info("make function finished, exitting")
         exit(0)
 }

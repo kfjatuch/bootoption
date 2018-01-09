@@ -34,9 +34,9 @@ extension CommandLine {
                                 return "Some options preclude the use of others."
                         case let .invalidValueForOption(opt, vals):
                                 let joined: String = vals.joined(separator: " ")
-                                return "Invalid value(s) for option \(opt.shortFlag!): \(joined)"
+                                return "Invalid value(s) for option \(opt.shortFlag ?? opt.longFlag ?? ""): \(joined)"
                         case let .missingRequiredOptions(opts):
-                                let mapped: Array = opts.map { return "-\($0.shortFlag!)" }
+                                let mapped: Array = opts.map { return "-\($0.shortFlag ?? $0.longFlag ?? "")" }
                                 let joined: String = mapped.joined(separator: ", ")
                                 return "Missing required option(s): \(joined)"
                         }
@@ -103,7 +103,8 @@ extension CommandLine {
         
         func parse(strict: Bool = false) throws {
                 var raw = rawArguments
-                raw.removeFirst()
+                raw[0] = ""
+                raw[1] = ""
                 
                 let argumentsEnumerator = rawArguments.enumerated()
                 for (index, string) in argumentsEnumerator {
@@ -131,16 +132,17 @@ extension CommandLine {
                         let attachedArgument: String? = splitFlag.count == 2 ? String(splitFlag[1]) : nil
                         var flagMatched = false
                         for option in command.options where option.flagMatch(String(flag)) {
-                                
+
                                 /* Preclude */
                                 
                                 if let c = option.shortFlag?.characters.first {
+                                        
                                         if self.precludedOptions.characters.contains(c) {
                                                 throw ParseError.tooManyOptions()
                                         }
+                                        
                                         self.precludedOptions.append(option.precludes)
                                 }
-                                
                                 
                                 let values = self.getFlagValues(index, attachedArgument)
                                 guard option.setValue(values) else {
@@ -154,6 +156,7 @@ extension CommandLine {
                                 }
                                 
                                 flagMatched = true
+
                                 break
                         }
                         

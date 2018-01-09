@@ -16,6 +16,7 @@ bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one fr
 - <strong>LIST</strong>&nbsp;&nbsp;print the current entries from the firmware boot menu
 - <strong>SET</strong>&nbsp;&nbsp;create a new entry and add it to the boot order
 - <strong>MAKE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
+- <strong>DELETE</strong>&nbsp;&nbsp;remove an entry from the firmware boot menu
 
 #### Set
 
@@ -41,7 +42,7 @@ bootoption set --loader <em>PATH</em> --label <em>LABEL</em> [ --unicode <em>STR
 
 #### Make
 
-bootoption make --l <em>PATH</em> --L <em>LABEL</em> [ --u <em>STRING</em> ] [ -o <em>FILE</em> | a | x [ -k <em>KEY</em> ] ]
+bootoption make -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FILE</em> | -a | -x [ -k <em>KEY</em> ] ]
 
 <table>
         <tr>

@@ -32,6 +32,7 @@ class CommandLine {
                 static let versionFlag = "--version"
                 static let versionVerb = "version"
         }
+        
         var invocationHelpText: String
         var rawArguments: [String]
         var activeVerb: String = ""

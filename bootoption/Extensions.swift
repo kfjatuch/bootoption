@@ -33,6 +33,18 @@ extension String {
                 return false
         }
         
+        func containsNonHexCharacters() -> Bool {
+                let allowed: Set<Character> = Set("abcdefABCDEF1234567890".characters)
+                for char in self.characters {
+                        if allowed.contains(char) {
+                                continue
+                        } else {
+                                return true
+                        }
+                }
+                return false
+        }
+        
         func subString(from: Int, to: Int) -> String {
                 let start: String.Index = self.index(self.startIndex, offsetBy: from)
                 let end: String.Index = self.index(self.startIndex, offsetBy: to)

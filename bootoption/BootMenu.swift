@@ -52,7 +52,7 @@ class BootMenu {
                 }
         }
         
-        var bootOrder: [UInt16] = Array()
+        var bootOrder: [UInt16]?
         var bootCurrent: UInt16?
         var bootNext: UInt16?
         var timeout: UInt16?
@@ -60,12 +60,8 @@ class BootMenu {
 
         init() {
                 /* BootOrder */
-                if var bootOrderBuffer: Data = nvram.getBootOrder() {
-                        let bootOrderBufferSize: Int = bootOrderBuffer.count
-                        for _ in 1 ... (bootOrderBufferSize / 2) {
-                                let optionNumber: UInt16 = remove16BitInt(from: &bootOrderBuffer)
-                                bootOrder.append(optionNumber)
-                        }
+                if let bootOrderArray: [UInt16] = nvram.getBootOrderArray() {
+                        bootOrder = bootOrderArray
                 }
                 /* BootCurrent */
                 if var bootCurrentBuffer: Data = nvram.getBootCurrent() {
@@ -82,7 +78,7 @@ class BootMenu {
                 /* Get data for options we can find */
                 for n in 0x0 ..< 0xFF {
                         if let data: Data = nvram.getBootOption(n) {
-                                let order: Int? = self.bootOrder.index(of: UInt16(n))
+                                let order: Int? = self.bootOrder?.index(of: UInt16(n))
                                 options.append(Option.init(name: nvram.bootOptionName(for: n), data: data, order: order))
                         }
                         

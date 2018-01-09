@@ -31,13 +31,16 @@ func parseVerb() {
         let listVerb = Verb(withName: "list", helpMessage: "print the current entries from the firmware boot menu")
         let setVerb = Verb(withName: "set", helpMessage: "create a new entry and add it to the boot order")
         let makeVerb = Verb(withName: "make", helpMessage: "print or save boot variable data in different formats")
-        commandLine.addVerbs(listVerb, setVerb, makeVerb)
+        let deleteVerb = Verb(withName: "delete", helpMessage: "remove an entry from the firmware boot menu")
+        commandLine.addVerbs(listVerb, setVerb, makeVerb, deleteVerb)
         commandLine.parseVerb()
         switch commandLine.activeVerb {
         case listVerb.name:
                 list()
         case setVerb.name:
                 set()
+        case deleteVerb.name:
+                delete()
         case makeVerb.name:
                 make()
         case commandLine.getVersionVerb():
@@ -104,7 +107,6 @@ func getVariableData(loader: String, label: String, unicode: String?) -> Data {
         return efiLoadOption as Data
         
 }
-
 
 parseVerb()
 

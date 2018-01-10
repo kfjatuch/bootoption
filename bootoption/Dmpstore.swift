@@ -21,6 +21,7 @@
 import Foundation
 
 struct Dmpstore {
+        
         static let crc = CRC32()
         
         struct Option {

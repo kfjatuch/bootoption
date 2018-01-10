@@ -21,6 +21,8 @@
 import Foundation
 
 func efiLoadOption(loader: String, label: String, unicode: String?) -> Data {
+
+        var optionalData: Data?
         
         /* Attributes */
         

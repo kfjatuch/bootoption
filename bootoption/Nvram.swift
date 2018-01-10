@@ -34,7 +34,7 @@ class Nvram {
         func getEmptyBootOption(leavingSpace: Bool = false) -> Int? {
                 var counter: Int = 0
                 for n: Int in 0x0 ..< 0xFF {
-                        if let _: Data = nvram.getBootOption(n) {
+                        if let _: Data = self.getBootOption(n) {
                                 continue
                         } else {
                                 if !leavingSpace {
@@ -101,7 +101,7 @@ class Nvram {
         
         func getBootOrderArray() -> [UInt16]? {
                 var bootOrder: [UInt16] = Array()
-                if var bootOrderBuffer: Data = nvram.getBootOrder() {
+                if var bootOrderBuffer: Data = self.getBootOrder() {
                         let bootOrderBufferSize: Int = bootOrderBuffer.count
                         for _ in 1 ... (bootOrderBufferSize / 2) {
                                 let optionNumber: UInt16 = remove16BitInt(from: &bootOrderBuffer)
@@ -117,11 +117,11 @@ class Nvram {
         
         private func addToStartOfBootOrder(_ n: Int) -> Bool {
                 guard self.getBootOption(n) != nil else {
-                        Log.info("Couldn't get BootXXXX data (addToStartOfBootOrder)")
+                        Log.def("Couldn't get BootXXXX data (addToStartOfBootOrder)")
                         return false
                 }
                 guard let bootOrder: Data = getBootOrder() else {
-                        Log.info("Error getting BootOrder (addToStartOfBootOrder")
+                        Log.def("Error getting BootOrder (addToStartOfBootOrder")
                         return false
                 }
                 var newOption = UInt16(n)
@@ -131,13 +131,13 @@ class Nvram {
                 let nameWithGuid: String = "\(efiGlobalGuid):BootOrder"
                 var result = self.options.setDataValue(forProperty: nameWithGuid, value: data)
                 if result != KERN_SUCCESS {
-                        Log.info("Error adding to start of BootOrder")
+                        Log.def("Error adding to start of BootOrder")
                         return false
                 }
                 /* sync now */
                 result = self.nvramSyncNow(withNamedVariable: nameWithGuid)
                 if result != KERN_SUCCESS {
-                        Log.info("Error syncing BootOrder (addToStartOfBootOrder)")
+                        Log.def("Error syncing BootOrder (addToStartOfBootOrder)")
                 }
                 return true  
         }
@@ -151,7 +151,7 @@ class Nvram {
                 /* sync now */
                 result = self.nvramSyncNow(withNamedVariable: nameWithGuid)
                 if result != KERN_SUCCESS {
-                        Log.info("Error syncing BootOrder (setBootOrder)")
+                        Log.def("Error syncing BootOrder (setBootOrder)")
                         return false
                 }
                 return true
@@ -159,25 +159,25 @@ class Nvram {
         
         func createNewBootOption(withData data: Data, addToBootOrder: Bool = false) -> Int? {
                 guard let n: Int = self.getEmptyBootOption() else {
-                        Log.info("Couldn't find an empty boot variable (createNewBootOption")
+                        Log.def("Couldn't find an empty boot variable (createNewBootOption")
                         return nil
                 }
                 let name: String = bootOptionName(for: n)
                 let nameWithGuid = "\(efiGlobalGuid):\(name)"
                 let addResult = self.options.setDataValue(forProperty: nameWithGuid, value: data)
                 if addResult != KERN_SUCCESS {
-                        Log.info("Error creating new boot option")
+                        Log.def("Error creating new boot option")
                         return nil
                 }
                 /* sync now */
                 let syncResult = self.nvramSyncNow(withNamedVariable: nameWithGuid)
                 if syncResult != KERN_SUCCESS {
-                        Log.info("Error syncing new boot option")
+                        Log.def("Error syncing new boot option")
                         return nil
                 }
                 if addResult == KERN_SUCCESS {
                         if !self.addToStartOfBootOrder(n) {
-                                Log.info("addToStartOfBootOrder returned false (createNewBootOption)")
+                                Log.def("addToStartOfBootOrder returned false (createNewBootOption)")
                                 return nil
                         }
                 }
@@ -187,7 +187,7 @@ class Nvram {
         func deleteBootOption(_ n: Int) {
                 let name: String = bootOptionName(for: n)
                 let nameWithGuid = "\(efiGlobalGuid):\(name)"
-                deleteVariable(key: nameWithGuid)
+                self.deleteVariable(key: nameWithGuid)
         }
         
 

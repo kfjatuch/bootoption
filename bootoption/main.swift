@@ -25,13 +25,16 @@ let programName = "bootoption"
 let copyright = "Copyright © 2017-2018 vulgo"
 let license = "GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law."
 Log.info("*** Starting bootoption version %{public}@", args: String(versionString))
-var commandLine = CommandLine(invocationHelpText: "VERB [options] where VERB is one from the following:", version: versionString, programName: programName, copyright: copyright, license: license)
 
-var testCount: Int = 54
-var optionalData: Data?
+/* Nvram */
+
 let nvram = Nvram()
 
-/* Command line parsing */
+/* Initialise command line */
+
+var commandLine = CommandLine(invocationHelpText: "VERB [options] where VERB is one from the following:", version: versionString, programName: programName, copyright: copyright, license: license)
+
+/* Command line verb parsing */
 
 func parseCommandLineVerb() {
         let listVerb = Verb(withName: "list", helpMessage: "print the current entries from the firmware boot menu")

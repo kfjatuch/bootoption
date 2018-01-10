@@ -125,7 +125,7 @@ class BootMenu {
                         string.append(separator)
                         string.append(option.name)
                         string.append(separator)
-                        string.append(option.description.padded(toWidth: 28))
+                        string.append(option.description.padding(toLength: 28, withPad: " ", startingAt: 0))
                         if !option.enabled {
                                 string.append(" *D")
                         }

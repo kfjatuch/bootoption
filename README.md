@@ -134,7 +134,7 @@ FS0:\> dmpstore -l vars.dmpstore
 sudo bootoption set -l "/Volumes/EFI/shell.efi" -L "EFI Shell"
 ```
 
-Set requires working hardware NVRAM - for instance, emulated NVRAM will not work, and the Clover RC scripts do not currently save the relevant data.
+Set requires working hardware NVRAM - for instance, emulated NVRAM will not work.
 
 ## License
 

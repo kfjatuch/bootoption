@@ -24,20 +24,19 @@ func delete() {
 
         Log.info("Setting up command line")
         let variableOption = StringOption(longFlag: "variable", required: true, helpMessage: "the NAME of the variable to delete")
-        commandLine.invocationHelpText = "delete --variable NAME"
+        commandLine.invocationHelpMessage = "delete --variable NAME"
         commandLine.setOptions(variableOption)
         do {
                 try commandLine.parse(strict: true)
         } catch {
-                commandLine.printUsage(error: error)
+                commandLine.printUsageToStandardError(withError: error)
                 exit(EX_USAGE)
         }
         
         func invalidArgument(_ string: String) {
-                var out = CommandLine.StderrOutputStream.stream
-                print("Invalid name for BootXXXX variable: \(string)", to: &out)
+                print("Invalid name for BootXXXX variable: \(string)", to: &standardError)
                 Log.error("Invalid variable name supplied for delete")
-                commandLine.printUsage()
+                commandLine.printUsageToStandardError()
                 exit(EX_USAGE)
         }
         

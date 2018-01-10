@@ -20,7 +20,19 @@
 
 import Foundation
 
+extension FileHandle : TextOutputStream {
+        public func write(_ string: String) {
+                guard let data = string.data(using: .utf8) else { return }
+                self.write(data)
+        }
+}
+
 extension String {
+
+        func toDouble() -> Double? {
+                return NumberFormatter().number(from: self)?.doubleValue
+        }
+        
         func containsOutlawedCharacters() -> Bool {
                 let allowed: Set<Character> = Set("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLKMNOPQRSTUVWXYZ1234567890+-=(),.!_\\".characters)
                 for char in self.characters {
@@ -81,6 +93,7 @@ extension String {
                         return String(self[i...])
                 }
         }
+        
 }
 
 

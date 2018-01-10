@@ -30,12 +30,12 @@ func make() {
         let appleOption = BoolOption(shortFlag: "a", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "dx")
         let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "dn")
         let keyOption = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
-        commandLine.invocationHelpText = "make -l PATH -L LABEL [-u STRING] [-o FILE | -a | -x [-k KEY]]"
+        commandLine.invocationHelpMessage = "make -l PATH -L LABEL [-u STRING] [-o FILE | -a | -x [-k KEY]]"
         commandLine.setOptions(loaderOption, labelOption, unicodeOption, outputOption, appleOption, xmlOption, keyOption)
         do {
                 try commandLine.parse(strict: true)
         } catch {
-                commandLine.printUsage(error: error)
+                commandLine.printUsageToStandardError(withError: error)
                 exit(EX_USAGE)
         }
         

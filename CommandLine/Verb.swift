@@ -18,6 +18,7 @@
 /**
  * The base class for a command-line verb.
  */
+
 struct Verb {
         var name: String
         var helpMessage: String

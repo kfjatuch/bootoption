@@ -56,19 +56,19 @@ extension CommandLine {
                 CommandLog.info("Parsing command line verb...")
                 if rawArguments.count < 2 {
                         CommandLog.info("Nothing to parse, printing usage")
-                        printUsage()
+                        printUsageToStandardError()
                         exit(EX_USAGE)
                 }
                 let verb = rawArguments[1].lowercased()
-                if verb == command.helpFlag {
+                if verb == self.helpLongOption {
                         self.activeVerb = "help"
-                } else if verb == command.versionFlag {
+                } else if verb == self.versionLongOption {
                         self.activeVerb = "version"
-                } else if command.verbs.contains(where: { $0.name.uppercased() == verb.uppercased() } ) {
+                } else if self.verbs.contains(where: { $0.name.uppercased() == verb.uppercased() } ) {
                         self.activeVerb = verb
                 } else {
                         CommandLog.error("Found invalid verb '%{public}@'", args: String(verb))
-                        printUsage()
+                        printUsageToStandardError()
                         exit(EX_USAGE)
                 }
                 CommandLog.info("Active verb is '%{public}@'", args: String(self.activeVerb))
@@ -141,7 +141,7 @@ extension CommandLine {
                         let flag = splitFlag[0]
                         let attachedArgument: String? = splitFlag.count == 2 ? String(splitFlag[1]) : nil
                         var flagMatched = false
-                        for option in command.options where option.flagMatch(String(flag)) {
+                        for option in self.options where option.flagMatch(String(flag)) {
 
                                 /* Preclude */
                                 
@@ -176,7 +176,7 @@ extension CommandLine {
                         if !flagMatched && !string.hasPrefix(longPrefix) {
                                 let flagCharactersEnumerator = flag.characters.enumerated()
                                 for (i, c) in flagCharactersEnumerator {
-                                        for option in command.options where option.flagMatch(String(c)) {
+                                        for option in self.options where option.flagMatch(String(c)) {
                                                 
                                                 /* preclude */
                                                 if let c = option.shortFlag?.characters.first {
@@ -217,7 +217,7 @@ extension CommandLine {
                 
                 /* Check to see if any required options were not matched */
                 
-                let missingOptions = command.options.filter { $0.required && !$0.wasSet }
+                let missingOptions = self.options.filter { $0.required && !$0.wasSet }
                 guard missingOptions.count == 0 else {
                         throw ParseError.missingRequiredOptions(missingOptions)
                 }

@@ -26,12 +26,12 @@ func set() {
         let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
         let labelOption = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
         let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-        commandLine.invocationHelpText = "set -l PATH -L LABEL [-u STRING]"
+        commandLine.invocationHelpMessage = "set -l PATH -L LABEL [-u STRING]"
         commandLine.setOptions(loaderOption, labelOption, unicodeOption)
         do {
                 try commandLine.parse(strict: true)
         } catch {
-                commandLine.printUsage(error: error)
+                commandLine.printUsageToStandardError(withError: error)
                 exit(EX_USAGE)
         }
         

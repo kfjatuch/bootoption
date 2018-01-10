@@ -19,95 +19,82 @@ import Foundation
 
 let shortPrefix = "-"
 let longPrefix = "--"
-let stopParsing = "--"
-let attached: Character = "="
+var standardError = FileHandle.standardError
 
 class CommandLine {
         
-        struct command {
-                static var options: [Option] = Array()
-                static var verbs: [Verb] = Array()
-                static let helpFlag = "--help"
-                static let helpVerb = "help"
-                static let versionFlag = "--version"
-                static let versionVerb = "version"
-        }
-        
-        var invocationHelpText: String
-        var version: String
-        var programName: String
-        var copyright: String
-        var license: String
-        
-        var versionHelpText: String {
-                get {
-                        var string = "\(programName) \(version)\n"
-                        string.append("\(copyright)\n")
-                        string.append(license)
-                        return string
-                }
-        }
-        
+        /*
+         *  Variables
+         */
         
         var rawArguments: [String]
+        
+        /* Verbs and options variables */
+        
+        var options: [Option] = Array()
+        var verbs: [Verb] = Array()
+        let helpLongOption = "--help"
+        let helpVerb = "help"
+        let versionLongOption = "--version"
+        let versionVerb = "version"
+        let stopParsing = "--"
+        let attached: Character = "="
         var activeVerb: String = ""
-        var storedFlagDescriptionWidth: Int = 0
-        var storedVerbWidth: Int = 0
-        var precludedOptions: String = ""
         var usedFlags: Set<String> {
-                var flags = Set<String>(minimumCapacity: command.options.count * 2)
-                for option in command.options {
+                var flags = Set<String>(minimumCapacity: self.options.count * 2)
+                for option in self.options {
                         for case let flag? in [option.shortFlag, option.longFlag] {
                                 flags.insert(flag)
                         }
                 }
                 return flags
         }
+        var precludedOptions: String = ""
+        var unparsedArguments: [String] = [String]() // This property will contain any values that weren't captured by an option
         
-        func getVersionVerb() -> String {
-                return command.versionVerb
-        }
+        /* Messages variables */
         
-        func getHelpVerb() -> String {
-                return command.helpVerb
-        }
-        
-        /* If supplied, this function will be called when printing usage messages. */
-        var formatOutput: ((String, OutputType) -> String)?
-        
-        /*
-         * After calling parse(), this property will contain any values that weren't
-         * captured by an Option.
-         */
-        var unparsedArguments: [String] = [String]()
-
-
-
-        /*
-         * init()
-         */
-        
-        init(arguments: [String] = Swift.CommandLine.arguments, invocationHelpText: String?, version: String = "1.0", programName: String = "", copyright: String = "", license: String = "") {
-                self.rawArguments = arguments
-                if invocationHelpText != nil {
-                        self.invocationHelpText = invocationHelpText!
-                } else {
-                        self.invocationHelpText = "[options]"
+        var invocationHelpMessage: String
+        var version: String
+        var programName: String
+        var copyright: String
+        var license: String
+        var versionMessage: String {
+                get {
+                        var string = "\(self.programName) \(self.version)\n"
+                        string.append("\(self.copyright)\n")
+                        string.append(self.license)
+                        return string
                 }
-                
+        }
+        
+        /* Format and layout variables */
+        
+        var optionMaxWidth: Int = 0
+        var verbMaxWidth: Int = 0
+        var columnPadding: String = "  "
+        var formatOutput: ((String, OutputType) -> String)? // If not nil this function will be called when printing usage messages
+
+        /*
+         *  init
+         */
+        
+        init(arguments: [String] = Swift.CommandLine.arguments, invocationHelpMessage: String = "[options]", version: String = "1.0", programName: String = "", copyright: String = "", license: String = "") {
+                self.rawArguments = arguments
+                self.invocationHelpMessage = invocationHelpMessage
                 self.version = version
                 self.programName = programName
                 self.copyright = copyright
                 self.license = license
-                
                 /* Initialize locale settings from the environment */
                 setlocale(LC_ALL, "")
                 CommandLog.info("Command line initialized")
         }
-
+        
         /*
-         *  Adds an Option to the command line.
-         *  - parameter option: The option to add.
+         *  Adding options to the command line
+         *
+         *  Add single Option
          */
         
         func addOption(_ option: Option) {
@@ -115,26 +102,20 @@ class CommandLine {
                 for case let flag? in [option.shortFlag, option.longFlag] {
                         assert(!flags.contains(flag), "Flag '\(flag)' already in use")
                 }
-                command.options.append(option)
+                self.options.append(option)
                 CommandLog.info("Added option '%{public}@' to command line", args: String(option.logDescription))
-                self.storedFlagDescriptionWidth = 0
+                self.optionMaxWidth = 0
         }
         
-        /*
-         *  Adds one or more Options to the command line.
-         *  - parameter options: An array containing the options to add.
-         */
-        
+	/* Add array of [Option] to the command line */
+
         func addOptions(_ options: [Option]) {
                 for option in options {
                         addOption(option)
                 }
         }
         
-        /*
-         *  Adds one or more Options to the command line.
-         *  - parameter options: The options to add.
-         */
+        /* Add 1 or more Option to the command line */
         
         func addOptions(_ options: Option...) {
                 for option in options {
@@ -143,35 +124,32 @@ class CommandLine {
         }
         
         /*
-         *  Adds one or more verb strings to the command line.
-         *  - parameter verbs: The verbs to add.
+         *  Adding verbs to the command line
          */
         
         func addVerbs(_ verbs: Verb...) {
                 for verb in verbs {
-                        assert(!command.verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
-                        command.verbs.append(verb)
+                        assert(!self.verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
+                        self.verbs.append(verb)
                         CommandLog.info("Added verb '%{public}@' to command line", args: String(verb.name))
                 }
         }
         
         /*
-         *  Sets the command line Options. Any existing options will be overwritten.
-         *  - parameter options: An array containing the options to set.
+         *  Setting and overwriting existing command line options
+         *
+         *  Sets the command line options [Option]
          */
-        
+
         func setOptions(_ options: [Option]) {
-                command.options = [Option]()
+                self.options = [Option]()
                 addOptions(options)
         }
         
-        /*
-         *  Sets the command line Options. Any existing options will be overwritten.
-         *  - parameter options: The options to set.
-         */
+        /* Sets one or more command line Option... */
         
         func setOptions(_ options: Option...) {
-                command.options = [Option]()
+                self.options = [Option]()
                 addOptions(options)
         }
         

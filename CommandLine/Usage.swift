@@ -19,55 +19,43 @@ import Foundation
 
 extension CommandLine {
         
-        /* An output stream to stderr; used by CommandLine.printUsage(). */
-        
-        struct StderrOutputStream: TextOutputStream {
-                static let stream = StderrOutputStream()
-                func write(_ s: String) {
-                        fputs(s, stderr)
-                }
-        }
-        
         /*
-         *  The maximum width of all options' `flagDescription` properties; provided for use by
-         *  output formatters.
-         *  - seealso: `defaultFormat`, `formatOutput`
+         *  When listing options/verbs use these computed widths for layout
          */
         
-        var flagDescriptionWidth: Int {
-                if self.storedFlagDescriptionWidth == 0 {
-                        self.storedFlagDescriptionWidth = command.options.map { $0.optionDescription.characters.count }.sorted().last ?? 0
+        var optionColumn: Int {
+                if self.optionMaxWidth == 0 {
+                        self.optionMaxWidth = self.options.map { $0.optionDescription.characters.count }.sorted().last ?? 0
                 }
-                return self.storedFlagDescriptionWidth
+                return self.optionMaxWidth + self.columnPadding.count
         }
         
-        var verbWidth: Int {
-                if self.storedVerbWidth == 0 {
-                        self.storedVerbWidth = command.verbs.map { $0.name.characters.count }.sorted().last ?? 0
+        var verbColumn: Int {
+                if self.verbMaxWidth == 0 {
+                        self.verbMaxWidth = self.verbs.map { $0.name.characters.count }.sorted().last ?? 0
                 }
-                return self.storedVerbWidth
+                return self.verbMaxWidth + self.columnPadding.count
         }
         
         /*
-         *  The type of output being supplied to an output formatter.
-         *  - seealso: `formatOutput`
+         *  The type of output being supplied to an output formatter. - seealso: `formatOutput`
          */
         
         enum OutputType {
                 /* About text: 'Usage: command-example [options]' and the like */
-                case about
+                case invocation
                 
                 /* An error message: 'Missing required option --extract' */
                 case error
                 
-                /* A verb e.g. VERB  help text */
+                /* A Verb.name e.g. VERB  help text */
                 case verb
                 
-                /* An Option's flagDescription: e.g. -h, --help: */
-                case optionFlag
+                /* An Option's optionDescription: e.g. -h, --help: */
+                case option
                 
-                /* An Option's help message */
-                case optionHelp
+                /* An Option or Verb's help message */
+                case helpMessage
         }
         
         /*
@@ -76,71 +64,59 @@ extension CommandLine {
         
         func defaultFormat(forString string: String, type: OutputType) -> String {
                 switch type {
-                case .about:
+                case .invocation:
                         return "\(string)\n"
                 case .error:
                         return "\(string)\n"
-                case .optionFlag:
-                        return "  \(string.padded(toWidth: flagDescriptionWidth + 3))"
+                case .option:
+                        let option = string.padding(toLength: self.optionColumn, withPad: " ", startingAt: 0)
+                        return "\(self.columnPadding)\(option)"
                 case .verb:
-                        return "  \(string.padded(toWidth: verbWidth + 3))"
-                case .optionHelp:
+                        let verb = string.padding(toLength: self.verbColumn, withPad: " ", startingAt: 0)
+                        return "\(self.columnPadding)\(verb)"
+                case .helpMessage:
                         return "\(string)\n"
                 }
         }
         
         /*
-         *  Prints a usage message.
-         *  - parameter to: An OutputStreamType to write the error message to.
+         *  Prints a usage message
          */
         
-        func printUsage(usingOutputStream to: inout StderrOutputStream) {
+        func printUsage(usingOutputStream outputStream: inout FileHandle) {
                 let format: (String, CommandLine.OutputType) -> String
                 format = formatOutput ?? defaultFormat
-                let name = NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent
-                print(format("Usage: \(name) \(self.invocationHelpText)", .about), terminator: "", to: &to)
+                let baseName = NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent
+                print(format("Usage: \(baseName) \(self.invocationHelpMessage)", .invocation), terminator: "", to: &outputStream)
                 if self.activeVerb.isEmpty {
-                        for verb in command.verbs {
-                                print(format(verb.name.uppercased(), .verb), terminator: "", to: &to)
-                                print(format(verb.helpMessage, .optionHelp), terminator: "", to: &to)
+                        for verb in self.verbs {
+                                print(format(verb.name.uppercased(), .verb), terminator: "", to: &outputStream)
+                                print(format(verb.helpMessage, .helpMessage), terminator: "", to: &outputStream)
                         }
                 } else {
-                        for opt in command.options {
-                                print(format(opt.optionDescription, .optionFlag), terminator: "", to: &to)
-                                print(format(opt.helpMessage, .optionHelp), terminator: "", to: &to)
+                        for option in self.options {
+                                print(format(option.optionDescription, .option), terminator: "", to: &outputStream)
+                                print(format(option.helpMessage, .helpMessage), terminator: "", to: &outputStream)
                         }
                 }
         }
         
         /*
-         *  Prints a usage message.
-         *  - parameter error: An error thrown from `parse()`. A description of the error
-         *   (e.g. "Missing required option --extract") will be printed before the usage message.
-         *  - parameter to: An OutputStreamType to write the error message to.
+         *  Prints an error then a usage message to standardError
          */
         
-        func printUsage(error: Error, usingOutputStream out: inout StderrOutputStream) {
+        func printUsageToStandardError(withError: Error) {
                 let format: (String, CommandLine.OutputType) -> String
                 format = formatOutput ?? defaultFormat
-                print(format("\(error)", .error), terminator: "", to: &out)
-                printUsage(usingOutputStream: &out)
+                print(format("\(withError)", .error), terminator: "", to: &standardError)
+                printUsage(usingOutputStream: &standardError)
         }
         
         /*
-         *  Prints a usage message.
-         *  - parameter error: An error thrown from `parse()`. A description of the error
-         *  (e.g. "Missing required option --extract") will be printed before the usage message.
+         *  Prints a usage message to standardError
          */
-        func printUsage(error: Error) {
-                var out = StderrOutputStream.stream
-                printUsage(error: error, usingOutputStream: &out)
-        }
         
-        /*
-         *  Prints a usage message.
-         */
-        func printUsage() {
-                var out = StderrOutputStream.stream
-                printUsage(usingOutputStream: &out)
+        func printUsageToStandardError() {
+                printUsage(usingOutputStream: &standardError)
         }
 }

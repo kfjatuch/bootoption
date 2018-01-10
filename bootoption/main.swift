@@ -32,13 +32,13 @@ let nvram = Nvram()
 
 /* Initialise command line */
 
-var commandLine = CommandLine(invocationHelpText: "VERB [options] where VERB is one from the following:", version: versionString, programName: programName, copyright: copyright, license: license)
+var commandLine = CommandLine(invocationHelpMessage: "VERB [options] where VERB is one from the following:", version: versionString, programName: programName, copyright: copyright, license: license)
 
 /* Command line verb parsing */
 
 func parseCommandLineVerb() {
         let listVerb = Verb(withName: "list", helpMessage: "print the current entries from the firmware boot menu")
-        let setVerb = Verb(withName: "set", helpMessage: "create a new entry and add it to the boot order")
+        let setVerb = Verb(withName: "set", helpMessage: "set EFI variables in NVRAM")
         let makeVerb = Verb(withName: "make", helpMessage: "print or save boot variable data in different formats")
         let deleteVerb = Verb(withName: "delete", helpMessage: "remove an entry from the firmware boot menu")
         commandLine.addVerbs(listVerb, setVerb, makeVerb, deleteVerb)
@@ -52,9 +52,9 @@ func parseCommandLineVerb() {
                 delete()
         case makeVerb.name:
                 make()
-        case commandLine.getVersionVerb():
+        case commandLine.versionLongOption:
                 version()
-        case commandLine.getHelpVerb():
+        case commandLine.helpLongOption:
                 help()
         default:
                 exit(EX_USAGE)

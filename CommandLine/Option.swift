@@ -15,17 +15,19 @@
  * limitations under the License.
  */
 
-/**
+/*
  * The base class for a command-line option.
  */
-public class Option {
+
+class Option {
+        
         let shortFlag: String?
         let longFlag: String?
         let required: Bool
         let helpMessage: String
         let precludes: String
         
-        /** True if the option was set when parsing command-line arguments */
+        /* True if the option was set when parsing command-line arguments */
         var wasSet: Bool {
                 return false
         }
@@ -58,7 +60,7 @@ public class Option {
                 var string: String = ""
                 if shortFlag != nil && longFlag != nil {
                         string.append("\(shortPrefix)\(shortFlag!)")
-                        string.append("   ")
+                        string.append("  ")
                         string.append("\(longPrefix)\(longFlag!)")
                 } else if longFlag != nil {
                         string.append("\(longPrefix)\(longFlag!)")
@@ -83,17 +85,17 @@ public class Option {
                 self.precludes = precludes
         }
         
-        /** Initializes a new Option that has both long and short flags. */
+        /* Initializes a new Option that has both long and short flags. */
         convenience init(shortFlag: String, longFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
                 self.init(shortFlag, longFlag, required, helpMessage, precludes)
         }
         
-        /** Initializes a new Option that has only a short flag. */
+        /* Initializes a new Option that has only a short flag. */
         convenience init(shortFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
                 self.init(shortFlag, nil, required, helpMessage, precludes)
         }
         
-        /** Initializes a new Option that has only a long flag. */
+        /* Initializes a new Option that has only a long flag. */
         convenience init(longFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
                 self.init(nil, longFlag, required, helpMessage, precludes)
         }
@@ -107,50 +109,47 @@ public class Option {
         }
 }
 
-/**
- * A boolean option. The presence of either the short or long flag will set the value to true;
- * absence of the flag(s) is equivalent to false.
+/*
+ *  A boolean option. The presence of either the short or long flag will set the value to true;
+ *  absence of the flag(s) is equivalent to false.
  */
+
 class BoolOption: Option {
-        private var _value: Bool = false
         
-        public var value: Bool {
-                return _value
-        }
+        var value: Bool = false
         
-        override public var wasSet: Bool {
-                return _value
+        override var wasSet: Bool {
+                return value
         }
         
         override func setValue(_ values: [String]) -> Bool {
-                _value = true
+                value = true
                 return true
         }
 }
 
-/**  An option that accepts a positive or negative integer value. */
+/*  An option that accepts a positive or negative integer value. */
+
 class IntOption: Option {
-        private var _value: Int?
         
-        public var value: Int? {
-                return _value
+        var value: Int?
+        
+        override var wasSet: Bool {
+                return value != nil
         }
         
-        override public var wasSet: Bool {
-                return _value != nil
-        }
-        
-        override public var claimedValues: Int {
-                return _value != nil ? 1 : 0
+        override var claimedValues: Int {
+                return value != nil ? 1 : 0
         }
         
         override func setValue(_ values: [String]) -> Bool {
+                
                 if values.count == 0 {
                         return false
                 }
                 
                 if let val = Int(values[0]) {
-                        _value = val
+                        value = val
                         return true
                 }
                 
@@ -158,54 +157,51 @@ class IntOption: Option {
         }
 }
 
-/**
- * An option that represents an integer counter. Each time the short or long flag is found
- * on the command-line, the counter will be incremented.
+/*
+ *  An option that represents an integer counter. Each time the short or long flag is found
+ *  on the command-line, the counter will be incremented.
  */
+
 class CounterOption: Option {
-        private var _value: Int = 0
         
-        public var value: Int {
-                return _value
+        var value: Int = 0
+        
+        override var wasSet: Bool {
+                return value > 0
         }
         
-        override public var wasSet: Bool {
-                return _value > 0
-        }
-        
-        public func reset() {
-                _value = 0
+        func reset() {
+                value = 0
         }
         
         override func setValue(_ values: [String]) -> Bool {
-                _value += 1
+                value += 1
                 return true
         }
 }
 
-/**  An option that accepts a positive or negative floating-point value. */
+/* An option that accepts a positive or negative floating-point value. */
+
 class DoubleOption: Option {
-        private var _value: Double?
         
-        public var value: Double? {
-                return _value
+        var value: Double?
+        
+        override var wasSet: Bool {
+                return value != nil
         }
         
-        override public var wasSet: Bool {
-                return _value != nil
-        }
-        
-        override public var claimedValues: Int {
-                return _value != nil ? 1 : 0
+        override var claimedValues: Int {
+                return value != nil ? 1 : 0
         }
         
         override func setValue(_ values: [String]) -> Bool {
+                
                 if values.count == 0 {
                         return false
                 }
                 
                 if let val = values[0].toDouble() {
-                        _value = val
+                        value = val
                         return true
                 }
                 
@@ -213,46 +209,44 @@ class DoubleOption: Option {
         }
 }
 
-/**  An option that accepts a string value. */
+/* An option that accepts a string value. */
+
 class StringOption: Option {
-        private var _value: String? = nil
         
-        public var value: String? {
-                return _value
+        var value: String? = nil
+        
+        override var wasSet: Bool {
+                return value != nil
         }
         
-        override public var wasSet: Bool {
-                return _value != nil
-        }
-        
-        override public var claimedValues: Int {
-                return _value != nil ? 1 : 0
+        override var claimedValues: Int {
+                return value != nil ? 1 : 0
         }
         
         override func setValue(_ values: [String]) -> Bool {
+                
                 if values.count == 0 {
                         return false
                 }
                 
-                _value = values[0]
+                value = values[0]
                 return true
         }
 }
 
-/**  An option that accepts one or more string values. */
+/* An option that accepts one or more string values. */
+
 class MultiStringOption: Option {
-        private var _value: [String]?
         
-        public var value: [String]? {
-                return _value
+        var value: [String]?
+        
+        override var wasSet: Bool {
+                return value != nil
         }
         
-        override public var wasSet: Bool {
-                return _value != nil
-        }
-        
-        override public var claimedValues: Int {
-                if let v = _value {
+        override var claimedValues: Int {
+                
+                if let v = value {
                         return v.count
                 }
                 
@@ -260,41 +254,42 @@ class MultiStringOption: Option {
         }
         
         override func setValue(_ values: [String]) -> Bool {
+                
                 if values.count == 0 {
                         return false
                 }
                 
-                _value = values
+                value = values
                 return true
         }
 }
 
-/** An option that represents an enum value. */
+/* An option that represents an enum value. */
+
 class EnumOption<T:RawRepresentable>: Option where T.RawValue == String {
-        private var _value: T?
-        public var value: T? {
-                return _value
+        
+        var value: T?
+        
+        override var wasSet: Bool {
+                return value != nil
         }
         
-        override public var wasSet: Bool {
-                return _value != nil
-        }
-        
-        override public var claimedValues: Int {
-                return _value != nil ? 1 : 0
+        override var claimedValues: Int {
+                return value != nil ? 1 : 0
         }
         
         override func setValue(_ values: [String]) -> Bool {
+                
                 if values.count == 0 {
                         return false
                 }
                 
                 if let v = T(rawValue: values[0]) {
-                        _value = v
+                        value = v
+                        
                         return true
                 }
                 
                 return false
         }
-        
 }

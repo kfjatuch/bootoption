@@ -21,6 +21,6 @@
 import Foundation
 
 func version() {
-        print(versionString)
+        print(commandLine.versionHelpText)
         exit(0)
 }

@@ -87,13 +87,18 @@ class CommandLine {
          * init()
          */
         
-        init(arguments: [String] = Swift.CommandLine.arguments, invocationHelpText: String?) {
+        init(arguments: [String] = Swift.CommandLine.arguments, invocationHelpText: String?, version: String = "1.0", programName: String = "", copyright: String = "", license: String = "") {
                 self.rawArguments = arguments
                 if invocationHelpText != nil {
                         self.invocationHelpText = invocationHelpText!
                 } else {
                         self.invocationHelpText = "[options]"
                 }
+                
+                self.version = version
+                self.programName = programName
+                self.copyright = copyright
+                self.license = license
                 
                 /* Initialize locale settings from the environment */
                 setlocale(LC_ALL, "")

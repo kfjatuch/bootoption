@@ -105,7 +105,7 @@ class RegistryEntry {
                         result = IORegistryEntrySetCFProperty(registryEntry, key as CFString, value as! CFBoolean)
                 default:
                         result = -1
-                        Log.error("No provision for provided type")
+                        Log.error("CFDate, CFArray, CFDictionary are not implemented")
                 }
                 if result != KERN_SUCCESS {
                         Log.error("Error setting value for property (%{public}X)", args: Int(result))

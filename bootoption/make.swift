@@ -83,7 +83,7 @@ func make() {
                 exit(1)
         }
         
-        let data: Data = getVariableData(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
+        let data: Data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
         if data.count < testCount {
                 Log.error("Variable data is too little to be valid")
                 exit(1)

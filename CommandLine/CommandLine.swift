@@ -34,6 +34,21 @@ class CommandLine {
         }
         
         var invocationHelpText: String
+        var version: String
+        var programName: String
+        var copyright: String
+        var license: String
+        
+        var versionHelpText: String {
+                get {
+                        var string = "\(programName) \(version)\n"
+                        string.append("\(copyright)\n")
+                        string.append(license)
+                        return string
+                }
+        }
+        
+        
         var rawArguments: [String]
         var activeVerb: String = ""
         var storedFlagDescriptionWidth: Int = 0

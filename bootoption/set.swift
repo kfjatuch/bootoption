@@ -37,7 +37,7 @@ func set() {
         
         /* Set in NVRAM */
         
-        let data = getVariableData(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
+        let data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
 
         if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
                 let name = nvram.bootOptionName(for: n)

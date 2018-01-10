@@ -14,17 +14,17 @@ A stored representation of the variable data can be used to work around situatio
 bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one from the following:
 
 - <strong>LIST</strong>&nbsp;&nbsp;print the current entries from the firmware boot menu
-- <strong>SET</strong>&nbsp;&nbsp;create a new entry and add it to the boot order
+- <strong>SET</strong>&nbsp;&nbsp;set EFI variables in NVRAM
 - <strong>MAKE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
 - <strong>DELETE</strong>&nbsp;&nbsp;remove an entry from the firmware boot menu
 
 #### Set
 
-bootoption set --loader <em>PATH</em> --label <em>LABEL</em> [ --unicode <em>STRING</em> ]
+bootoption set --loader <em>PATH</em> --label <em>LABEL</em> [ --unicode <em>STRING</em> ] -t <em>SECONDS</em>
 
 <table>
         <tr>
-                <td style="width: 3em">-l</td>
+                        <td style="width: 3em">-l</td>
                         <td style="width: 8.5em">--loader</td>
                         <td>the <em>PATH</em> to an EFI loader executable</td>
         </tr>
@@ -37,6 +37,11 @@ bootoption set --loader <em>PATH</em> --label <em>LABEL</em> [ --unicode <em>STR
                         <td>-u</td>
                         <td>--unicode</td>
                         <td>an optional <em>STRING</em> passed to the loader command line</td>
+        </tr>
+        <tr>
+                        <td>-t</td>
+                        <td>--timeout</td>
+                        <td>set the boot menu timeout in <em>SECONDS</em></td>
         </tr>
 </table>
 

@@ -146,12 +146,32 @@ class Nvram {
                 let nameWithGuid: String = "\(efiGlobalGuid):BootOrder"
                 var result = self.options.setDataValue(forProperty: nameWithGuid, value: data)
                 if result != KERN_SUCCESS {
+                        Log.def("Error setting BootOrder (setBootOrder)")
                         return false
                 }
                 /* sync now */
                 result = self.nvramSyncNow(withNamedVariable: nameWithGuid)
                 if result != KERN_SUCCESS {
                         Log.def("Error syncing BootOrder (setBootOrder)")
+                        return false
+                }
+                return true
+        }
+        
+        func setTimeout(int: Int) -> Bool {
+                var timeoutValue = UInt16(int)
+                var data = Data.init()
+                data.append(UnsafeBufferPointer(start: &timeoutValue, count: 1))
+                let nameWithGuid: String = "\(efiGlobalGuid):Timeout"
+                var result = self.options.setDataValue(forProperty: nameWithGuid, value: data)
+                if result != KERN_SUCCESS {
+                        Log.def("Error setting Timeout (setBootOrder)")
+                        return false
+                }
+                /* sync now */
+                result = self.nvramSyncNow(withNamedVariable: nameWithGuid)
+                if result != KERN_SUCCESS {
+                        Log.def("Error syncing Timeout (setTimeout)")
                         return false
                 }
                 return true

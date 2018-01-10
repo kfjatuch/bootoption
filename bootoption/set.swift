@@ -23,11 +23,12 @@ import Foundation
 func set() {
 
         Log.info("Setting up command line")
-        let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
-        let labelOption = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
+        let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", helpMessage: "the PATH to an EFI loader executable")
+        let labelOption = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
         let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-        commandLine.invocationHelpMessage = "set -l PATH -L LABEL [-u STRING]"
-        commandLine.setOptions(loaderOption, labelOption, unicodeOption)
+        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set the boot menu timeout in SECONDS")
+        commandLine.invocationHelpMessage = "set -l PATH -L LABEL [-u STRING] -t SECONDS"
+        commandLine.setOptions(loaderOption, labelOption, unicodeOption, timeoutOption)
         do {
                 try commandLine.parse(strict: true)
         } catch {
@@ -35,16 +36,46 @@ func set() {
                 exit(EX_USAGE)
         }
         
-        /* Set in NVRAM */
+        var status: Int32 = 0
+        var noop = true
         
-        let data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
+        /* Set a new load option */
+        
+        if loaderOption.wasSet && labelOption.wasSet {
+                noop = false
+                let data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
 
-        if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
-                let name = nvram.bootOptionName(for: n)
-                Log.info("Set new boot variable %{public}@ in NVRAM", args: String(name))
-                exit(0)
-        } else {
-                print("Error: Couldn't set variables in NVRAM")
-                exit(1)
+                if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
+                        let name = nvram.bootOptionName(for: n)
+                        Log.info("Set new boot variable %{public}@ in NVRAM", args: String(name))
+                } else {
+                        print("Error setting boot option")
+                        status = 1
+                }
         }
+        
+        /* Set the timeout */
+        
+        if timeoutOption.wasSet {
+                noop = false
+                var timeoutResult = false
+                if let timeout: Int = timeoutOption.value {
+                        if 1 ... 65534 ~= timeout {
+                                timeoutResult = nvram.setTimeout(int: timeout)
+                        }
+                }
+                if timeoutResult {
+                        Log.info("Set new timeout %{public}@ in NVRAM", args: String(describing: timeoutOption.value))
+                } else {
+                        print("Error setting timeout")
+                        status = 1
+                }
+        }
+        
+        if noop {
+                commandLine.printUsageToStandardError()
+                exit(EX_USAGE)
+        }
+        
+        exit(status)
 }

@@ -1,13 +1,6 @@
 #  bootoption
 
-A command line program that generates EFI boot load options for file media. Supported output modes:
-
-- raw hex
-- XML
-- [EDK2 dmpstore](https://github.com/tianocore/edk2/blob/master/ShellPkg/Library/UefiShellDebug1CommandsLib/DmpStore.c) format
-- string formatted for [Apple's nvram system command](https://opensource.apple.com/source/system_cmds/system_cmds-790/nvram.tproj/nvram.c.auto.html)
-
-A stored representation of the variable data can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from inside the operating system (for instance, generated during loader installation, stored and then added from an EFI context - see also [Punchdrum](https://github.com/vulgo/Punchdrum)).
+A command line utility for managing a firmware's boot menu.
 
 ## Usage
 
@@ -18,9 +11,9 @@ bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one fr
 - <strong>MAKE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
 - <strong>DELETE</strong>&nbsp;&nbsp;remove an entry from the firmware boot menu
 
-#### Set
+### Set
 
-bootoption set --loader <em>PATH</em> --label <em>LABEL</em> [ --unicode <em>STRING</em> ] -t <em>SECONDS</em>
+bootoption set &nbsp;[ -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] ] &nbsp;[ -t <em>SECONDS</em> ]
 
 <table>
         <tr>
@@ -45,7 +38,24 @@ bootoption set --loader <em>PATH</em> --label <em>LABEL</em> [ --unicode <em>STR
         </tr>
 </table>
 
-#### Make
+#### Set a new boot option in NVRAM and add it to the boot order
+
+```
+sudo bootoption set -l "/Volumes/EFI/shell.efi" -L "EFI Shell"
+```
+
+Set requires working hardware NVRAM - for instance, emulated NVRAM will not work.
+
+### Make
+
+Supported output modes:
+
+- raw hex
+- XML
+- [EDK2 dmpstore](https://github.com/tianocore/edk2/blob/master/ShellPkg/Library/UefiShellDebug1CommandsLib/DmpStore.c) format
+- string formatted for [Apple's nvram system command](https://opensource.apple.com/source/system_cmds/system_cmds-790/nvram.tproj/nvram.c.auto.html)
+
+A stored representation of the variable data can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from inside the operating system (for instance, generated during loader installation, stored and then added from an EFI context - see also [Punchdrum](https://github.com/vulgo/Punchdrum)).
 
 bootoption make -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FILE</em> | -a | -x [ -k <em>KEY</em> ] ]
 
@@ -118,28 +128,11 @@ The data element contains the base 64 encoded variable data conforming to the EF
 bootoption make -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -o "/Volumes/USB-FAT32/vars.dmpstore"
 ````
 
-#### Output
-
-```
-Created a new 'Boot0005' variable
-Created an updated 'BootOrder' variable
-Written to '/Volumes/USB-FAT32/vars.dmpstore'
-```
-
 The resulting file can be read from the EFI shell. To load and set the variables:
 
 ```
 FS0:\> dmpstore -l vars.dmpstore
 ```
-
-
-#### Create the boot option in NVRAM and add it to the boot order
-
-```
-sudo bootoption set -l "/Volumes/EFI/shell.efi" -L "EFI Shell"
-```
-
-Set requires working hardware NVRAM - for instance, emulated NVRAM will not work.
 
 ## License
 

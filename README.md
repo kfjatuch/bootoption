@@ -1,6 +1,8 @@
 #  bootoption
 
-A command line utility for managing a firmware's boot menu.
+![bootoption screenshot](https://github.com/vulgo/bootoption/raw/master/Images/screenshot.png "bootoption screenshot")
+
+A command line utility for managing a firmware's boot menu. Report bugs [here](https://github.com/vulgo/bootoption/issues).
 
 ## Usage
 

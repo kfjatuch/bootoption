@@ -6,14 +6,15 @@ A command line utility for managing a firmware's boot menu.
 
 bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one from the following:
 
-- <strong>LIST</strong>&nbsp;&nbsp;print the current entries from the firmware boot menu
-- <strong>SET</strong>&nbsp;&nbsp;set EFI variables in NVRAM
+- <strong>LIST</strong>&nbsp;&nbsp;show the firmware boot menu
+- <strong>SET</strong>&nbsp;&nbsp;set/create variables in NVRAM
+- <strong>DELETE</strong>&nbsp;&nbsp;unset/delete variables in NVRAM
 - <strong>MAKE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
-- <strong>DELETE</strong>&nbsp;&nbsp;remove an entry from the firmware boot menu
+
 
 ### Set
 
-bootoption set &nbsp;[ -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] ] &nbsp;[ -t <em>SECONDS</em> ]
+bootoption set &nbsp;[ -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] ] &nbsp;[ -n <em>BOOT####</em> ] &nbsp;[ -t <em>SECONDS</em> ]
 
 <table>
         <tr>
@@ -30,6 +31,11 @@ bootoption set &nbsp;[ -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ]
                         <td>-u</td>
                         <td>--unicode</td>
                         <td>an optional <em>STRING</em> passed to the loader command line</td>
+        </tr>
+        <tr>
+                        <td>-n</td>
+                        <td>--bootnext</td>
+                        <td>set BootNext to <em>BOOT####</em></td>
         </tr>
         <tr>
                         <td>-t</td>

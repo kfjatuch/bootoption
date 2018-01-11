@@ -26,9 +26,10 @@ func set() {
         let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", helpMessage: "the PATH to an EFI loader executable")
         let labelOption = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
         let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
+        let bootNextOption = StringOption(shortFlag: "n", longFlag: "bootnext", helpMessage: "set BootNext to BOOT####")
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set the boot menu timeout in SECONDS")
-        commandLine.invocationHelpMessage = "set -l PATH -L LABEL [-u STRING] -t SECONDS"
-        commandLine.setOptions(loaderOption, labelOption, unicodeOption, timeoutOption)
+        commandLine.invocationHelpMessage = "set [-l PATH -L LABEL [-u STRING]] [-t SECONDS] [-n BOOT####]"
+        commandLine.setOptions(loaderOption, labelOption, unicodeOption, bootNextOption, timeoutOption)
         do {
                 try commandLine.parse(strict: true)
         } catch {
@@ -44,12 +45,18 @@ func set() {
         if loaderOption.wasSet && labelOption.wasSet {
                 noop = false
                 let data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
-
-                if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
-                        let name: String = nvram.bootStringFromBoot(number: n)
-                        Log.info("Asked the kernel to set new boot variable %{public}@", name)
-                } else {
+                if nvram.createNewBootOption(withData: data, addToBootOrder: true) == nil {
                         print("Error setting boot option")
+                        status = 1
+                }
+        }
+        
+        /* Set BootNext */
+        
+        if bootNextOption.wasSet {
+                noop = false
+                if !nvram.setBootNext(bootString: bootNextOption.value) {
+                        print("Error setting BootNext.")
                         status = 1
                 }
         }
@@ -61,16 +68,16 @@ func set() {
                 var timeoutResult = false
                 if let timeout: Int = timeoutOption.value {
                         if 1 ... 65534 ~= timeout {
-                                timeoutResult = nvram.setTimeout(int: timeout)
+                                timeoutResult = nvram.setTimeout(seconds: timeout)
                         }
                 }
-                if timeoutResult {
-                        Log.info("Asked the kernel to set new timeout %{public}d", timeoutOption.value!)
-                } else {
-                        print("Error setting timeout")
+                if !timeoutResult {
+                        print("Error setting timeout.")
                         status = 1
                 }
         }
+        
+        /* After all functions, exit some way */
         
         if noop {
                 commandLine.printUsageToStandardError()

@@ -81,8 +81,8 @@ extension Nvram {
                 return true
         }
         
-        func setTimeout(int: Int) -> Bool {
-                var timeoutValue = UInt16(int)
+        func setTimeout(seconds: Int) -> Bool {
+                var timeoutValue = UInt16(seconds)
                 var data = Data.init()
                 data.append(UnsafeBufferPointer(start: &timeoutValue, count: 1))
                 let set = self.options.setDataValue(forProperty: nameWithGuid("Timeout"), value: data)
@@ -91,6 +91,27 @@ extension Nvram {
                         return false
                 }
                 Log.info("Asked the kernel to set a new Timeout")
+                return true
+        }
+        
+        func setBootNext(bootString: String?) -> Bool {
+                guard let string = bootString else {
+                        Log.def("bootString is nil, not setting BootNext")
+                        return false
+                }
+                guard let bootNumber = bootNumberFromBoot(string: string) else {
+                        Log.def("Couldn't find %{public}@, not setting BootNext", string)
+                        return false
+                }
+                var bootNext = UInt16(bootNumber)
+                var data = Data.init()
+                data.append(UnsafeBufferPointer(start: &bootNext, count: 1))
+                let set = self.options.setDataValue(forProperty: nameWithGuid("BootNext"), value: data)
+                let sync = self.nvramSyncNow(withNamedVariable: nameWithGuid("BootNext"))
+                if set + sync != 0 {
+                        return false
+                }
+                Log.info("Asked the kernel to set BootNext")
                 return true
         }
         
@@ -127,7 +148,7 @@ extension Nvram {
                         return nil
                 }
                 addToStartOfBootOrder(bootNumber)
-                Log.info("Create new boot option returned %{public}d", bootNumber)
+                Log.info("Asked the kernel to set %{public}@", name)
                 return bootNumber
         }
         
@@ -144,6 +165,16 @@ extension Nvram {
                 self.deleteVariable(key: nameWithGuid(name))
                 Log.info("Asked the kernel to delete %{public}@", name)
                 // to do: needs to be read back to confirm success
+        }
+        
+        func deleteTimeout() {
+                self.deleteVariable(key: nameWithGuid("Timeout"))
+                Log.info("Asked the kernel to delete Timeout")
+        }
+        
+        func deleteBootNext() {
+                self.deleteVariable(key: nameWithGuid("BootNext"))
+                Log.info("Asked the kernel to delete BootNext")
         }
         
         func removeFromBootOrder(number bootNumber: Int) -> [UInt16]? {

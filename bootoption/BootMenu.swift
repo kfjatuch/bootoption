@@ -108,7 +108,7 @@ class BootMenu {
                 if self.timeout != nil {
                         timeout = String(self.timeout!)
                 } else {
-                        current = notSet
+                        timeout = notSet
                 }
                 string.append("BootCurrent: \(current)\n")
                 string.append("BootNext: \(next)\n")

@@ -24,7 +24,7 @@ let versionString = "0.2.0"
 let programName = "bootoption"
 let copyright = "Copyright © 2017-2018 vulgo"
 let license = "GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law."
-Log.info("*** Starting bootoption version %{public}@", String(versionString))
+Log.info("*** bootoption version %{public}@", String(versionString))
 
 /* Nvram */
 
@@ -37,11 +37,12 @@ var commandLine = CommandLine(invocationHelpMessage: "VERB [options] where VERB 
 /* Command line verb parsing */
 
 func parseCommandLineVerb() {
-        let listVerb = Verb(withName: "list", helpMessage: "print the current entries from the firmware boot menu")
-        let setVerb = Verb(withName: "set", helpMessage: "set EFI variables in NVRAM")
+        let listVerb = Verb(withName: "list", helpMessage: "show the firmware boot menu")
+        let setVerb = Verb(withName: "set", helpMessage: "set/create variables in NVRAM")
+        let deleteVerb = Verb(withName: "delete", helpMessage: "unset/delete variables in NVRAM")
         let makeVerb = Verb(withName: "make", helpMessage: "print or save boot variable data in different formats")
-        let deleteVerb = Verb(withName: "delete", helpMessage: "remove an entry from the firmware boot menu")
-        commandLine.addVerbs(listVerb, setVerb, makeVerb, deleteVerb)
+
+        commandLine.addVerbs(listVerb, setVerb, deleteVerb, makeVerb)
         commandLine.parseVerb()
         switch commandLine.activeVerb {
         case listVerb.name:

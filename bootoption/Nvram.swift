@@ -27,7 +27,7 @@ class Nvram {
         let options = RegistryEntry(fromPath: "IODeviceTree:/options")
         
         func nameWithGuid(_ name: String) -> String {
-                return "\(name):\(efiGlobalGuid)"
+                return "\(efiGlobalGuid):\(name)"
         }
         
         /*

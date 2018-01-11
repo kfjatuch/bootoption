@@ -52,9 +52,9 @@ func parseCommandLineVerb() {
                 delete()
         case makeVerb.name:
                 make()
-        case commandLine.versionLongOption:
+        case commandLine.versionVerb:
                 version()
-        case commandLine.helpLongOption:
+        case commandLine.helpVerb:
                 help()
         default:
                 exit(EX_USAGE)

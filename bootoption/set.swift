@@ -65,7 +65,7 @@ func set() {
                         }
                 }
                 if timeoutResult {
-                        Log.info("Set new timeout %{public}@ in NVRAM", args: String(describing: timeoutOption.value))
+                        Log.info("Set new timeout %{public}d in NVRAM", args: timeoutOption.value!)
                 } else {
                         print("Error setting timeout")
                         status = 1

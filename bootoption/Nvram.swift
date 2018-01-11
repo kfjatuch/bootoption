@@ -31,15 +31,6 @@ class Nvram {
         }
         
         /*
-         *  Return full variable name from boot option integer number
-         */
-        
-        func bootOptionName(for number: Int) -> String {
-                let string = "Boot\(String(format:"%04X", number))"
-                return string
-        }
-        
-        /*
          *  Delete variable: ask kernel to delete a variable by setting kIONVRAMDeletePropertyKey
          */
         
@@ -55,7 +46,7 @@ class Nvram {
                         result = self.options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: key)
                 }
                 if result != KERN_SUCCESS {
-                        Log.def("Error syncing %{public}@", args: key)
+                        Log.def("Error syncing %{public}@", key)
                 }
                 return result
         }

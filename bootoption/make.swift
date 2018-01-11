@@ -66,7 +66,7 @@ func make() {
                         let errorDescription = error.localizedDescription
                         let errorCode = error.code
                         print(errorDescription)
-                        Log.error("Error serializing to XML (%{public}@)", args: String(errorCode))
+                        Log.error("Error serializing to XML (%{public}@)", String(errorCode))
                         exit(1)
                 }
                 if let xml = String.init(data: propertyList, encoding: .utf8) {
@@ -86,7 +86,7 @@ func make() {
         let testCount: Int = 54
         let data: Data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
         if data.count < testCount {
-                Log.error("Variable data is too little to be valid")
+                Log.error("Variable data is too small")
                 exit(1)
         }
         
@@ -105,7 +105,7 @@ func make() {
                         let errorDescription = error.localizedDescription
                         let errorCode = error.code
                         print(errorDescription)
-                        Log.error("Error writing output file (%{public}@)", args: String(errorCode))
+                        Log.error("Error writing output file (%{public}@)", String(errorCode))
                         exit(1)
                 }
                 exit(0)

@@ -23,25 +23,25 @@ import os.log
 
 struct Log {
         
-        static func info(_ message: StaticString, args: CVarArg = "") {
+        static func info(_ message: StaticString, _ arg: CVarArg = "") {
                 if #available(OSX 10.12, *) {
-                        os_log(message, log: .default, type: .info, args)
+                        os_log(message, log: .default, type: .info, arg)
                 } else {
                         //
                 }
         }
         
-        static func def(_ message: StaticString, args: CVarArg = "") {
+        static func def(_ message: StaticString, _ arg: CVarArg = "") {
                 if #available(OSX 10.12, *) {
-                        os_log(message, log: .default, type: .default, args)
+                        os_log(message, log: .default, type: .default, arg)
                 } else {
                         //
                 }
         }
         
-        static func error(_ message: StaticString, args: CVarArg = "") {
+        static func error(_ message: StaticString, _ arg: CVarArg = "") {
                 if #available(OSX 10.12, *) {
-                        os_log(message, log: .default, type: .error, args)
+                        os_log(message, log: .default, type: .error, arg)
                 } else {
                         //
                 }

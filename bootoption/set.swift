@@ -46,8 +46,8 @@ func set() {
                 let data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
 
                 if let n: Int = nvram.createNewBootOption(withData: data, addToBootOrder: true) {
-                        let name = nvram.bootOptionName(for: n)
-                        Log.info("Set new boot variable %{public}@ in NVRAM", args: String(name))
+                        let name: String = nvram.bootStringFromBoot(number: n)
+                        Log.info("Asked the kernel to set new boot variable %{public}@", name)
                 } else {
                         print("Error setting boot option")
                         status = 1
@@ -65,7 +65,7 @@ func set() {
                         }
                 }
                 if timeoutResult {
-                        Log.info("Set new timeout %{public}d in NVRAM", args: timeoutOption.value!)
+                        Log.info("Asked the kernel to set new timeout %{public}d", timeoutOption.value!)
                 } else {
                         print("Error setting timeout")
                         status = 1

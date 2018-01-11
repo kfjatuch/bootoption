@@ -108,8 +108,8 @@ class RegistryEntry {
                         Log.error("CFDate, CFArray, CFDictionary are not implemented")
                 }
                 if result != KERN_SUCCESS {
-                        Log.def("Error setting value for property %{public}@", args: key)
-                        Log.def("Set value kern_return_t was %{public}X", args: result)
+                        Log.def("Error setting value for property %{public}@", key)
+                        Log.def("IORegistryEntrySetCFProperty kern_return_t was %{public}X", result)
                 }
                 return result
         }

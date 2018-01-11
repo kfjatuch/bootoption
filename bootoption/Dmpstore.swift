@@ -41,11 +41,11 @@ struct Dmpstore {
                         var dataSizeValue = UInt32(variable.count)
                         /* store dataSize */
                         self.dataSize.append(UnsafeBufferPointer(start: &dataSizeValue, count: 1))
-                        guard let emptyBootOption: Int = nvram.discoverEmptyBootOption(leavingSpace: true) else {
+                        guard let emptyBootOption: Int = nvram.discoverEmptyBootNumber(leavingSpace: true) else {
                                 Log.error("Empty boot option is nil")
                                 exit(EX_IOERR)
                         }
-                        let name = nvram.bootOptionName(for: emptyBootOption)
+                        let name = nvram.bootStringFromBoot(number: emptyBootOption)
                         var nameData = name.data(using: String.Encoding.utf16)!
                         nameData.removeFirst()
                         nameData.removeFirst()

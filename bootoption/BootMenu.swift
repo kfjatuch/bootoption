@@ -80,7 +80,7 @@ class BootMenu {
                 for n in 0x0 ..< 0xFF {
                         if let data: Data = nvram.getBootOption(n) {
                                 let order: Int? = self.bootOrder?.index(of: UInt16(n))
-                                options.append(Option.init(name: nvram.bootOptionName(for: n), data: data, order: order))
+                                options.append(Option.init(name: nvram.bootStringFromBoot(number: n), data: data, order: order))
                         }
                         
                 }
@@ -96,12 +96,12 @@ class BootMenu {
                 let notSet = "Not set"
                 /* Boot */
                 if self.bootCurrent != nil {
-                        current = nvram.bootOptionName(for: Int(self.bootCurrent!))
+                        current = nvram.bootStringFromBoot(number: Int(self.bootCurrent!))
                 } else {
                         current = notSet
                 }
                 if self.bootNext != nil {
-                        next = nvram.bootOptionName(for: Int(self.bootNext!))
+                        next = nvram.bootStringFromBoot(number: Int(self.bootNext!))
                 } else {
                         next = notSet
                 }

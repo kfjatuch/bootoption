@@ -17,7 +17,7 @@ bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one fr
 
 ### Set
 
-bootoption set &nbsp;[ -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] ] &nbsp;[ -n <em>BOOT####</em> ] &nbsp;[ -t <em>SECONDS</em> ]
+bootoption set &nbsp;[ -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] ] &nbsp;[ -n <em>####</em> ] &nbsp;[ -t <em>SECONDS</em> ]
 
 <table>
         <tr>
@@ -38,7 +38,7 @@ bootoption set &nbsp;[ -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ]
         <tr>
                         <td>-n</td>
                         <td>--bootnext</td>
-                        <td>set BootNext to <em>BOOT####</em></td>
+                        <td>set BootNext to <em>####</em> (hex)</td>
         </tr>
         <tr>
                         <td>-t</td>

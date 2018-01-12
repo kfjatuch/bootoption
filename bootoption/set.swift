@@ -33,7 +33,7 @@ func set() {
         do {
                 try commandLine.parse(strict: true)
         } catch {
-                commandLine.printUsageToStandardError(withError: error)
+                commandLine.printUsage(withMessageForError: error)
                 exit(EX_USAGE)
         }
         
@@ -80,7 +80,7 @@ func set() {
         /* After all functions, exit some way */
         
         if noop {
-                commandLine.printUsageToStandardError()
+                commandLine.printUsage()
                 exit(EX_USAGE)
         }
         

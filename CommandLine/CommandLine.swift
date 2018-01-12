@@ -23,14 +23,7 @@ var standardError = FileHandle.standardError
 
 class CommandLine {
         
-        /*
-         *  Variables
-         */
-        
         var rawArguments: [String]
-        
-        /* Verbs and options variables */
-        
         var options: [Option] = Array()
         var verbs: [Verb] = Array()
         let helpLongOption = "--help"
@@ -52,29 +45,7 @@ class CommandLine {
         var precludedOptions: String = ""
         var unparsedArguments: [String] = [String]() // This property will contain any values that weren't captured by an option
         
-        /* Messages variables */
         
-        var invocationHelpMessage: String
-        var version: String
-        var programName: String
-        var copyright: String
-        var license: String
-        var versionMessage: String {
-                get {
-                        var string = "\(self.programName) \(self.version)\n"
-                        string.append("\(self.copyright)\n")
-                        string.append(self.license)
-                        return string
-                }
-        }
-        
-        /* Format and layout variables */
-        
-        var optionMaxWidth: Int = 0
-        var verbMaxWidth: Int = 0
-        var columnPadding: String = "  "
-        var formatOutput: ((String, OutputType) -> String)? // If not nil this function will be called when printing usage messages
-
         /*
          *  init
          */
@@ -93,9 +64,15 @@ class CommandLine {
         
         /*
          *  Adding options to the command line
-         *
-         *  Add single Option
          */
+        
+        func addVerbs(_ verbs: Verb...) {
+                for verb in verbs {
+                        assert(!self.verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
+                        self.verbs.append(verb)
+                        CommandLog.info("Added verb '%{public}@' to command line", args: String(verb.name))
+                }
+        }
         
         func addOption(_ option: Option) {
                 let flags = usedFlags
@@ -106,8 +83,6 @@ class CommandLine {
                 CommandLog.info("Added option '%{public}@' to command line", args: String(option.logDescription))
                 self.optionMaxWidth = 0
         }
-        
-	/* Add array of [Option] to the command line */
 
         func addOptions(_ options: [Option]) {
                 for option in options {
@@ -115,25 +90,12 @@ class CommandLine {
                 }
         }
         
-        /* Add 1 or more Option to the command line */
-        
         func addOptions(_ options: Option...) {
                 for option in options {
                         addOption(option)
                 }
         }
-        
-        /*
-         *  Adding verbs to the command line
-         */
-        
-        func addVerbs(_ verbs: Verb...) {
-                for verb in verbs {
-                        assert(!self.verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
-                        self.verbs.append(verb)
-                        CommandLog.info("Added verb '%{public}@' to command line", args: String(verb.name))
-                }
-        }
+
         
         /*
          *  Setting and overwriting existing command line options
@@ -146,11 +108,104 @@ class CommandLine {
                 addOptions(options)
         }
         
-        /* Sets one or more command line Option... */
-        
         func setOptions(_ options: Option...) {
                 self.options = [Option]()
                 addOptions(options)
         }
         
+
+        
+        
+
+        
+        /*
+         *  Formatting, usage, messages
+         */
+        
+        var optionMaxWidth: Int = 0
+        var verbMaxWidth: Int = 0
+        var listPadding: String = "  "
+        var formatUser: ((String, style) -> String)? // If not nil this function will be called when printing usage messages
+        var invocationHelpMessage: String
+        var version: String
+        var programName: String
+        var copyright: String
+        var license: String
+        var versionMessage: String {
+                get {
+                        var string = "\(self.programName) \(self.version)\n"
+                        string.append("\(self.copyright)\n")
+                        string.append(self.license)
+                        return string
+                }
+        }
+        
+        enum style {
+                case invocationMessage
+                case errorMessage
+                case verbListItem
+                case optionListItem
+                case helpMessage
+        }
+        
+        var optionWidth: Int {
+                if self.optionMaxWidth == 0 {
+                        self.optionMaxWidth = self.options.map { $0.optionDescription.characters.count }.sorted().last ?? 0
+                }
+                return self.optionMaxWidth + self.listPadding.count
+        }
+        
+        var verbWidth: Int {
+                if self.verbMaxWidth == 0 {
+                        self.verbMaxWidth = self.verbs.map { $0.name.characters.count }.sorted().last ?? 0
+                }
+                return self.verbMaxWidth + self.listPadding.count
+        }
+       
+        func formatDefault(forString string: String, style: style) -> String {
+                switch style {
+                case .invocationMessage:
+                        return "\(string)\n"
+                case .errorMessage:
+                        return "\(string)\n"
+                case .optionListItem:
+                        let option = string.padding(toLength: self.optionWidth, withPad: " ", startingAt: 0)
+                        return "\(self.listPadding)\(option)"
+                case .verbListItem:
+                        let verb = string.padding(toLength: self.verbWidth, withPad: " ", startingAt: 0)
+                        return "\(self.listPadding)\(verb)"
+                case .helpMessage:
+                        return "\(string)\n"
+                }
+        }
+        
+        /* Print to standardError */
+        
+        func printDefault(_ string: String) {
+                print(string, terminator: "", to: &standardError)
+        }
+        
+        /*  Prints a usage message */
+        
+        func printUsage(withMessageForError error: Error? = nil) {
+                let format: (String, CommandLine.style) -> String
+                format = formatUser ?? formatDefault
+                if let error: Error = error {
+                        printDefault(format("\(error)", style.errorMessage))
+                }
+                let baseName = NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent
+                printDefault(format("Usage: \(baseName) \(self.invocationHelpMessage)", style.invocationMessage))
+                if self.activeVerb.isEmpty {
+                        for verb in self.verbs {
+                                printDefault(format(verb.name.uppercased(), style.verbListItem))
+                                printDefault(format(verb.helpMessage, style.helpMessage))
+                        }
+                } else {
+                        for option in self.options {
+                                printDefault(format(option.optionDescription, style.optionListItem))
+                                printDefault(format(option.helpMessage, style.helpMessage))
+                        }
+                }
+        }
+   
 }

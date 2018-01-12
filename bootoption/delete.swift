@@ -31,7 +31,7 @@ func delete() {
         do {
                 try commandLine.parse(strict: true)
         } catch {
-                commandLine.printUsageToStandardError(withError: error)
+                commandLine.printUsage(withMessageForError: error)
                 exit(EX_USAGE)
         }
         
@@ -47,7 +47,7 @@ func delete() {
                 /* BootNumber */
                 guard let bootNumber: Int = result else {
                         print("Supplied Boot#### name is invalid", to: &standardError)
-                        commandLine.printUsageToStandardError()
+                        commandLine.printUsage()
                         exit(EX_USAGE)
                 }
                 
@@ -86,7 +86,7 @@ func delete() {
         /* After all functions, exit some way */
         
         if noop {
-                commandLine.printUsageToStandardError()
+                commandLine.printUsage()
                 exit(EX_USAGE)
         }
         

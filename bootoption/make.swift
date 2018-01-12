@@ -35,7 +35,7 @@ func make() {
         do {
                 try commandLine.parse(strict: true)
         } catch {
-                commandLine.printUsageToStandardError(withError: error)
+                commandLine.printUsage(withMessageForError: error)
                 exit(EX_USAGE)
         }
         

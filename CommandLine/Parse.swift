@@ -56,7 +56,7 @@ extension CommandLine {
                 CommandLog.info("Parsing command line verb...")
                 if rawArguments.count < 2 {
                         CommandLog.info("Nothing to parse, printing usage")
-                        printUsageToStandardError()
+                        printUsage()
                         exit(EX_USAGE)
                 }
                 let verb = rawArguments[1].lowercased()
@@ -68,7 +68,7 @@ extension CommandLine {
                         self.activeVerb = verb
                 } else {
                         CommandLog.error("Found invalid verb '%{public}@'", args: String(verb))
-                        printUsageToStandardError()
+                        printUsage()
                         exit(EX_USAGE)
                 }
                 CommandLog.info("Active verb is '%{public}@'", args: String(self.activeVerb))

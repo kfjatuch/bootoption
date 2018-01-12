@@ -278,6 +278,18 @@ extension Nvram {
                 return string
         }
         
+        /*
+         *  Helper: Array to BootOrder data
+         */
+        
+        func bootOrderData(from bootOrder: [UInt16]) -> Data {
+                var data = Data.init()
+                for var bootNumber in bootOrder {
+                        data.append(UnsafeBufferPointer(start: &bootNumber, count: 1))
+                }
+                return data
+        }
+        
 }
 
 

@@ -56,7 +56,7 @@ func set() {
         if bootNextOption.wasSet {
                 noop = false
                 if !nvram.setBootNext(bootString: bootNextOption.value) {
-                        print("Error setting BootNext.")
+                        print("Error setting BootNext")
                         status = 1
                 }
         }
@@ -72,7 +72,7 @@ func set() {
                         }
                 }
                 if !timeoutResult {
-                        print("Error setting timeout.")
+                        print("Error setting Timeout")
                         status = 1
                 }
         }

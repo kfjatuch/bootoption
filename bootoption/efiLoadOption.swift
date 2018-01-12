@@ -1,5 +1,5 @@
 /*
- * File: variable.swift
+ * File: efiLoadOption.swift
  *
  * bootoption © vulgo 2017-2018 - A program to create / save an EFI boot
  * option - so that it might be added to the firmware menu later

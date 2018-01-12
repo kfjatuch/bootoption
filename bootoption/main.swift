@@ -20,7 +20,7 @@
 
 import Foundation
 
-let versionString = "0.2.0"
+let versionString = "0.2.1"
 let programName = "bootoption"
 let copyright = "Copyright © 2017-2018 vulgo"
 let license = "GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law."
@@ -39,16 +39,19 @@ var commandLine = CommandLine(invocationHelpMessage: "VERB [options] where VERB 
 func parseCommandLineVerb() {
         let listVerb = Verb(withName: "list", helpMessage: "show the firmware boot menu")
         let setVerb = Verb(withName: "set", helpMessage: "set/create variables in NVRAM")
+        let orderVerb = Verb(withName: "order", helpMessage: "change the boot order")
         let deleteVerb = Verb(withName: "delete", helpMessage: "unset/delete variables in NVRAM")
         let makeVerb = Verb(withName: "make", helpMessage: "print or save boot variable data in different formats")
 
-        commandLine.addVerbs(listVerb, setVerb, deleteVerb, makeVerb)
+        commandLine.addVerbs(listVerb, setVerb, orderVerb, deleteVerb, makeVerb)
         commandLine.parseVerb()
         switch commandLine.activeVerb {
         case listVerb.name:
                 list()
         case setVerb.name:
                 set()
+        case orderVerb.name:
+                order()
         case deleteVerb.name:
                 delete()
         case makeVerb.name:

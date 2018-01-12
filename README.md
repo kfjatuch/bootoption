@@ -10,6 +10,7 @@ bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one fr
 
 - <strong>LIST</strong>&nbsp;&nbsp;show the firmware boot menu
 - <strong>SET</strong>&nbsp;&nbsp;set/create variables in NVRAM
+- <strong>ORDER</strong>&nbsp;&nbsp;change the boot order
 - <strong>DELETE</strong>&nbsp;&nbsp;unset/delete variables in NVRAM
 - <strong>MAKE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
 

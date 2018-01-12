@@ -20,6 +20,12 @@
 
 import Foundation
 
+extension Array {
+        mutating func order(from: Int, to: Int) {
+                insert(remove(at: from), at: to)
+        }
+}
+
 extension FileHandle : TextOutputStream {
         public func write(_ string: String) {
                 guard let data = string.data(using: .utf8) else { return }
@@ -33,6 +39,16 @@ extension String {
                 return NumberFormatter().number(from: self)?.doubleValue
         }
         
+        func toZeroBasedInt() -> Int? {
+                let p = Int(self)
+                if var i: Int = p {
+                        i -= 1
+                        return i
+                } else {
+                        return nil
+                }
+                
+        }
         func containsOutlawedCharacters() -> Bool {
                 let allowed: Set<Character> = Set("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLKMNOPQRSTUVWXYZ1234567890+-=(),.!_\\".characters)
                 for char in self.characters {

@@ -136,7 +136,7 @@ extension Nvram {
                 return true
         }
         
-        func createNewBootOption(withData data: Data, addToBootOrder: Bool = true) -> Int? {
+        func createNewAndAddToBootOrder(withData data: Data, addToBootOrder: Bool = true) -> Int? {
                 guard let bootNumber: Int = self.discoverEmptyBootNumber() else {
                         return nil
                 }

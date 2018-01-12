@@ -45,7 +45,7 @@ func set() {
         if loaderOption.wasSet && labelOption.wasSet {
                 noop = false
                 let data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
-                if nvram.createNewBootOption(withData: data, addToBootOrder: true) == nil {
+                if nvram.createNewAndAddToBootOrder(withData: data, addToBootOrder: true) == nil {
                         print("Error setting boot option")
                         status = 1
                 }

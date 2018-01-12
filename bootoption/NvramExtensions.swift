@@ -114,29 +114,32 @@ extension Nvram {
                 Log.info("Asked the kernel to set BootNext")
                 return true
         }
-        
-        @discardableResult func addToStartOfBootOrder(_ number: Int) -> Bool {
+
+        @discardableResult func addToBootOrder(_ number: Int, atIndex index: Int = 0) -> Bool {
                 let name = bootStringFromBoot(number: number)
                 guard self.getBootOption(number) != nil else {
-                        Log.def("Couldn't get %{public}@ data, cancelling add to start", name)
+                        Log.def("Couldn't get %{public}@ data, cancelling add to boot order", name)
                         return false
                 }
-                guard let bootOrder: Data = getBootOrder() else {
-                        Log.def("Error getting BootOrder, cancelling add to start")
+                guard var bootOrder: [UInt16] = getBootOrderArray() else {
+                        Log.def("Error getting BootOrder, cancelling add to boot order")
                         return false
                 }
-                var newOption = UInt16(number)
-                var data = Data.init()
-                data.append(UnsafeBufferPointer(start: &newOption, count: 1))
-                data.append(bootOrder)
+                if bootOrder.indices.contains(index) {
+                        Log.info("Inserted to boot order at index %{public}@", index)
+                        bootOrder.insert(UInt16(number), at: index)
+                } else {
+                        Log.def("Index out of range, appending to boot order instead")
+                        bootOrder.append(UInt16(number))
+                }
+                let data = bootOrderData(from: bootOrder)
                 if !self.setBootOrder(data: data) {
                         return false
                 }
-                Log.info("Add to start of boot order: Success")
                 return true
         }
         
-        func createNewAndAddToBootOrder(withData data: Data, addToBootOrder: Bool = true) -> Int? {
+        func createNewAndAddToBootOrder(withData data: Data) -> Int? {
                 guard let bootNumber: Int = self.discoverEmptyBootNumber() else {
                         return nil
                 }
@@ -147,7 +150,7 @@ extension Nvram {
                         Log.def("Create new boot option returned nil")
                         return nil
                 }
-                addToStartOfBootOrder(bootNumber)
+                addToBootOrder(bootNumber, atIndex: 0)
                 Log.info("Asked the kernel to set %{public}@", name)
                 return bootNumber
         }
@@ -239,7 +242,7 @@ extension Nvram {
         }
         
         /*
-         *  Helper: Parse (user provided) Boot#### to integer
+         *  Helper: Read integer value from (user provided) Boot#### string
          */
         
         func bootNumberFromBoot(string: String) -> Int? {

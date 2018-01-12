@@ -244,12 +244,12 @@ extension Nvram {
         
         func bootNumberFromBoot(string: String) -> Int? {
                 let logErrorMessage: StaticString = "Parsing user provided Boot#### failed"
-                guard string.characters.count == 8 && string.uppercased().hasPrefix("BOOT") else {
-                        Log.def(logErrorMessage)
-                        return nil
-                }
-                let hexString: String = string.subString(from: 4, to: 8)
-                if hexString.containsNonHexCharacters() {
+                var hexString = String()
+                if string.characters.count == 8 && string.uppercased().hasPrefix("BOOT") {
+                        hexString = string.subString(from: 4, to: 8)
+                } else if string.characters.count < 5 {
+                        hexString = string
+                } else {
                         Log.def(logErrorMessage)
                         return nil
                 }

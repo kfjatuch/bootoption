@@ -26,9 +26,9 @@ func set() {
         let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", helpMessage: "the PATH to an EFI loader executable")
         let labelOption = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
         let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-        let bootNextOption = StringOption(shortFlag: "n", longFlag: "bootnext", helpMessage: "set BootNext to BOOT####")
+        let bootNextOption = StringOption(shortFlag: "n", longFlag: "bootnext", helpMessage: "set BootNext to #### (hex)")
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set the boot menu timeout in SECONDS")
-        commandLine.invocationHelpMessage = "set [-l PATH -L LABEL [-u STRING]] [-t SECONDS] [-n BOOT####]"
+        commandLine.invocationHelpMessage = "set [-l PATH -L LABEL [-u STRING]] [-t SECONDS] [-n ####]"
         commandLine.setOptions(loaderOption, labelOption, unicodeOption, bootNextOption, timeoutOption)
         do {
                 try commandLine.parse(strict: true)

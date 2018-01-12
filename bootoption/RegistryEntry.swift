@@ -37,7 +37,7 @@ class RegistryEntry {
                 guard registryEntry != 0 else {
                         print("Error: Failed to get registry entry from path")
                         Log.error("RegistryEntry: Error getting registry entry from path")
-                        exit(EX_IOERR)
+                        logExit(EX_IOERR)
                 }
         }
   

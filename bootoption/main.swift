@@ -61,8 +61,17 @@ func parseCommandLineVerb() {
         case commandLine.helpVerb:
                 help()
         default:
-                exit(EX_USAGE)
+                logExit(EX_USAGE)
         }
+}
+
+func logExit(_ status: Int32) -> Never {
+        if status != 0 {
+                Log.def("* exit code: %{public}d", status)
+        } else {
+                Log.info("* exit code: %{public}d", status)
+        }
+        exit(status)
 }
 
 parseCommandLineVerb()

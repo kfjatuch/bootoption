@@ -32,7 +32,7 @@ func delete() {
                 try commandLine.parse(strict: true)
         } catch {
                 commandLine.printUsage(withMessageForError: error)
-                exit(EX_USAGE)
+                logExit(EX_USAGE)
         }
         
         var status: Int32 = 0
@@ -48,7 +48,7 @@ func delete() {
                 guard let bootNumber: Int = result else {
                         print("Supplied Boot#### name is invalid", to: &standardError)
                         commandLine.printUsage()
-                        exit(EX_USAGE)
+                        logExit(EX_USAGE)
                 }
                 
                 let bootOrder: [UInt16]? = nvram.getBootOrderArray()
@@ -87,9 +87,9 @@ func delete() {
         
         if noop {
                 commandLine.printUsage()
-                exit(EX_USAGE)
+                logExit(EX_USAGE)
         }
         
-        exit(status)
+        logExit(status)
 }
 

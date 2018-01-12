@@ -23,5 +23,5 @@ import Foundation
 func help() {
         commandLine.activeVerb = ""
         commandLine.printUsage()
-        exit(0)
+        logExit(0)
 }

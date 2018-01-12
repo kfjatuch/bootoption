@@ -36,7 +36,7 @@ func make() {
                 try commandLine.parse(strict: true)
         } catch {
                 commandLine.printUsage(withMessageForError: error)
-                exit(EX_USAGE)
+                logExit(EX_USAGE)
         }
         
         /* Printed output functions */
@@ -67,27 +67,27 @@ func make() {
                         let errorCode = error.code
                         print(errorDescription)
                         Log.error("Error serializing to XML (%{public}@)", String(errorCode))
-                        exit(1)
+                        logExit(1)
                 }
                 if let xml = String.init(data: propertyList, encoding: .utf8) {
                         let outputString = String(xml.characters.filter { !"\n\t\r".characters.contains($0) })
                         print(outputString)
                 } else {
                         print("Error printing serialized xml property list representation")
-                        exit(1)
+                        logExit(1)
                 }
         }
         
         if labelOption.value == nil || loaderOption.value == nil {
                 Log.error("Required options should no longer be nil")
-                exit(1)
+                logExit(1)
         }
         
         let testCount: Int = 54
         let data: Data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
         if data.count < testCount {
                 Log.error("Variable data is too small")
-                exit(1)
+                logExit(1)
         }
         
         /* Output to dmpstore format file */
@@ -106,9 +106,9 @@ func make() {
                         let errorCode = error.code
                         print(errorDescription)
                         Log.error("Error writing output file (%{public}@)", String(errorCode))
-                        exit(1)
+                        logExit(1)
                 }
-                exit(0)
+                logExit(0)
         }
         
         /* Printed output */
@@ -120,5 +120,5 @@ func make() {
         } else {
                 printRawHex(data: data)
         }
-        exit(0)
+        logExit(0)
 }

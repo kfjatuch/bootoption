@@ -21,10 +21,11 @@ import os.log
 struct CLog {
         
         static func exit(_ status: Int32) -> Never {
+                let exitLogMessage: StaticString = "* exit code: %{public}d"
                 if status != 0 {
-                        CLog.log("* exit code: %{public}d", status)
+                        CLog.log(exitLogMessage, status)
                 } else {
-                        CLog.info("* exit code: %{public}d", status)
+                        CLog.info(exitLogMessage, status)
                 }
                 exit(status)
         }

@@ -15,15 +15,6 @@
  * limitations under the License.
  */
 
-struct Verb {
-        var name: String
-        var helpMessage: String
-        init(withName name: String, helpMessage: String) {
-                self.name = name
-                self.helpMessage = helpMessage
-        }
-}
-
 /*
  * The base class for a command-line option.
  */

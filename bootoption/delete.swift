@@ -21,75 +21,79 @@
 import Foundation
 
 func delete() {
-
-        CLog.info("Setting up command line")
+        
+        Log.info("Setting up command line")
         let variableOption = StringOption(shortFlag: "b", longFlag: "boot", helpMessage: "boot name or number #### to delete (hex)")
         let bootNextOption = BoolOption(shortFlag: "n", longFlag: "bootnext", helpMessage: "delete BootNext")
         let timeoutOption = BoolOption(shortFlag: "t", longFlag: "timeout", helpMessage: "delete the timeout")
         commandLine.invocationHelpMessage = "delete [-b ####] [-n] [-t]"
         commandLine.setOptions(variableOption, bootNextOption, timeoutOption)
-        do {
-                try commandLine.parse(strict: true)
-        } catch {
-                commandLine.printUsage(withMessageForError: error)
-                CLog.exit(EX_USAGE)
-        }
         
-        var status: Int32 = 0
-        var noop = true
-        
-        /* Delete a boot option */
-        
-        if variableOption.wasSet {
-                noop = false
-                let result: Int? = nvram.bootNumberFromBoot(string: variableOption.value ?? "")
+        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
+        switch optionParser.status {
+        case .success:
                 
-                /* BootNumber */
-                guard let bootNumber: Int = result else {
-                        print("Supplied Boot#### name is invalid", to: &standardError)
-                        commandLine.printUsage()
-                        CLog.exit(EX_USAGE)
-                }
+                var status: Int32 = 0
+                var noop = true
                 
-                let bootOrder: [UInt16]? = nvram.getBootOrderArray()
-                if let _: Int = bootOrder?.index(of: UInt16(bootNumber)) {
-                        /* remove from boot order */
-                        let newBootOrder = nvram.removeFromBootOrder(number: bootNumber)
-                        if newBootOrder == nil {
-                                status = 1
-                                CLog.error("Error removing Boot#### from BootOrder")
+                /* Delete a boot option */
+                
+                if variableOption.wasSet {
+                        noop = false
+                        let result: Int? = nvram.bootNumberFromBoot(string: variableOption.value ?? "")
+                        
+                        /* BootNumber */
+                        guard let bootNumber: Int = result else {
+                                print("Supplied Boot#### name is invalid", to: &standardError)
+                                commandLine.printUsage()
+                                Log.logExit(EX_USAGE)
+                        }
+                        
+                        let bootOrder: [UInt16]? = nvram.getBootOrderArray()
+                        if let _: Int = bootOrder?.index(of: UInt16(bootNumber)) {
+                                /* remove from boot order */
+                                let newBootOrder = nvram.removeFromBootOrder(number: bootNumber)
+                                if newBootOrder == nil {
+                                        status = 1
+                                        Log.error("Error removing Boot#### from BootOrder")
+                                } else {
+                                        /* delete the entry variable */
+                                        nvram.deleteBootOption(Int(bootNumber))
+                                }
                         } else {
-                                /* delete the entry variable */
+                                /* variable is not in the boot order, just 'delete' it */
+                                Log.info("Variable not found in boot order")
                                 nvram.deleteBootOption(Int(bootNumber))
                         }
-                } else {
-                        /* variable is not in the boot order, just 'delete' it */
-                        CLog.info("Variable not found in boot order")
-                        nvram.deleteBootOption(Int(bootNumber))
                 }
+                
+                /* Delete boot next */
+                
+                if bootNextOption.wasSet {
+                        noop = false
+                        nvram.deleteBootNext()
+                }
+                
+                /* Delete timeout */
+                
+                if timeoutOption.wasSet {
+                        noop = false
+                        nvram.deleteTimeout()
+                }
+                
+                /* After all functions, exit some way */
+                
+                if noop {
+                        commandLine.printUsage()
+                        Log.logExit(EX_USAGE)
+                }
+                
+                Log.logExit(status)
+        
+        default:
+                commandLine.printUsage(withMessageForError: optionParser.status)
+                Log.logExit(EX_USAGE)
+                
         }
-
-        /* Delete boot next */
-        
-        if bootNextOption.wasSet {
-                noop = false
-                nvram.deleteBootNext()
-        }
-        
-        /* Delete timeout */
-        
-        if timeoutOption.wasSet {
-                noop = false
-                nvram.deleteTimeout()
-        }
-        
-        /* After all functions, exit some way */
-        
-        if noop {
-                commandLine.printUsage()
-                CLog.exit(EX_USAGE)
-        }
-        
-        CLog.exit(status)
 }
 

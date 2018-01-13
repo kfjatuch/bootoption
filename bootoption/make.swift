@@ -22,103 +22,108 @@ import Foundation
 
 func make() {
 
-        CLog.info("Setting up command line")
+        Log.info("Setting up command line")
         let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
         let labelOption = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
         let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-        let outputOption = StringOption(shortFlag: "o", longFlag: "output", helpMessage: "write to FILE for use with EDK2 dmpstore", precludes: "xn")
-        let appleOption = BoolOption(shortFlag: "a", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "dx")
-        let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "dn")
+        let outputOption = StringOption(shortFlag: "o", longFlag: "output", helpMessage: "write to FILE for use with EDK2 dmpstore", precludes: "xa")
+        let appleOption = BoolOption(shortFlag: "a", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "ox")
+        let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "oa")
         let keyOption = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
         commandLine.invocationHelpMessage = "make -l PATH -L LABEL [-u STRING] [-o FILE | -a | -x [-k KEY]]"
         commandLine.setOptions(loaderOption, labelOption, unicodeOption, outputOption, appleOption, xmlOption, keyOption)
-        do {
-                try commandLine.parse(strict: true)
-        } catch {
-                commandLine.printUsage(withMessageForError: error)
-                CLog.exit(EX_USAGE)
-        }
-        
-        /* Printed output functions */
-        
-        func printFormatString(data: Data) {
-                CLog.info("Printing format string")
-                let strings = data.map { String(format: "%%%02x", $0) }
-                let outputString = strings.joined()
-                print(outputString)
-        }
-        
-        func printRawHex(data: Data) {
-                CLog.info("Printing raw hex")
-                let strings = data.map { String(format: "%02x", $0) }
-                let outputString = strings.joined()
-                print(outputString)
-        }
-        
-        func printXml(data: Data) {
-                CLog.info("Printing XML")
-                let key: String = keyOption.value ?? "Boot"
-                let dictionary: NSDictionary = ["\(key)": data]
-                var propertyList: Data
-                do {
-                        propertyList = try PropertyListSerialization.data(fromPropertyList: dictionary, format: .xml, options: 0)
-                } catch let error as NSError {
-                        let errorDescription = error.localizedDescription
-                        let errorCode = error.code
-                        print(errorDescription)
-                        CLog.error("Error serializing to XML (%{public}@)", String(errorCode))
-                        CLog.exit(1)
-                }
-                if let xml = String.init(data: propertyList, encoding: .utf8) {
-                        let outputString = String(xml.characters.filter { !"\n\t\r".characters.contains($0) })
+
+        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
+        switch optionParser.status {
+        case .success:
+                
+                /* Printed output functions */
+                
+                func printFormatString(data: Data) {
+                        Log.info("Printing format string")
+                        let strings = data.map { String(format: "%%%02x", $0) }
+                        let outputString = strings.joined()
                         print(outputString)
+                }
+                
+                func printRawHex(data: Data) {
+                        Log.info("Printing raw hex")
+                        let strings = data.map { String(format: "%02x", $0) }
+                        let outputString = strings.joined()
+                        print(outputString)
+                }
+                
+                func printXml(data: Data) {
+                        Log.info("Printing XML")
+                        let key: String = keyOption.value ?? "Boot"
+                        let dictionary: NSDictionary = ["\(key)": data]
+                        var propertyList: Data
+                        do {
+                                propertyList = try PropertyListSerialization.data(fromPropertyList: dictionary, format: .xml, options: 0)
+                        } catch let error as NSError {
+                                let errorDescription = error.localizedDescription
+                                let errorCode = error.code
+                                print(errorDescription)
+                                Log.error("Error serializing to XML (%{public}@)", String(errorCode))
+                                Log.logExit(1)
+                        }
+                        if let xml = String.init(data: propertyList, encoding: .utf8) {
+                                let outputString = String(xml.characters.filter { !"\n\t\r".characters.contains($0) })
+                                print(outputString)
+                        } else {
+                                print("Error printing serialized xml property list representation")
+                                Log.logExit(1)
+                        }
+                }
+                
+                if labelOption.value == nil || loaderOption.value == nil {
+                        Log.error("Required options should no longer be nil")
+                        Log.logExit(1)
+                }
+                
+                let testCount: Int = 54
+                let data: Data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
+                if data.count < testCount {
+                        Log.error("Variable data is too small")
+                        Log.logExit(1)
+                }
+                
+                /* Output to dmpstore format file */
+                
+                if outputOption.wasSet {
+                        let dmpstoreOption = Dmpstore.Option(fromData: data)
+                        let dmpstoreOrder = Dmpstore.Order(adding: dmpstoreOption.created)
+                        var buffer = Data.init()
+                        buffer.append(dmpstoreOption.data)
+                        buffer.append(dmpstoreOrder.data)
+                        let url = URL(fileURLWithPath: outputOption.value!)
+                        do {
+                                try buffer.write(to: url)
+                        } catch let error as NSError {
+                                let errorDescription = error.localizedDescription
+                                let errorCode = error.code
+                                print(errorDescription)
+                                Log.error("Error writing output file (%{public}@)", String(errorCode))
+                                Log.logExit(1)
+                        }
+                        Log.logExit(0)
+                }
+                
+                /* Printed output */
+                
+                if appleOption.value {
+                        printFormatString(data: data)
+                } else if xmlOption.value {
+                        printXml(data: data)
                 } else {
-                        print("Error printing serialized xml property list representation")
-                        CLog.exit(1)
+                        printRawHex(data: data)
                 }
+                Log.logExit(0)
+                
+        default:
+                commandLine.printUsage(withMessageForError: optionParser.status)
+                Log.logExit(EX_USAGE)
         }
         
-        if labelOption.value == nil || loaderOption.value == nil {
-                CLog.error("Required options should no longer be nil")
-                CLog.exit(1)
-        }
-        
-        let testCount: Int = 54
-        let data: Data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
-        if data.count < testCount {
-                CLog.error("Variable data is too small")
-                CLog.exit(1)
-        }
-        
-        /* Output to dmpstore format file */
-        
-        if outputOption.wasSet {
-                let dmpstoreOption = Dmpstore.Option(fromData: data)
-                let dmpstoreOrder = Dmpstore.Order(adding: dmpstoreOption.created)
-                var buffer = Data.init()
-                buffer.append(dmpstoreOption.data)
-                buffer.append(dmpstoreOrder.data)
-                let url = URL(fileURLWithPath: outputOption.value!)
-                do {
-                        try buffer.write(to: url)
-                } catch let error as NSError {
-                        let errorDescription = error.localizedDescription
-                        let errorCode = error.code
-                        print(errorDescription)
-                        CLog.error("Error writing output file (%{public}@)", String(errorCode))
-                        CLog.exit(1)
-                }
-                CLog.exit(0)
-        }
-        
-        /* Printed output */
-        
-        if appleOption.value {
-                printFormatString(data: data)
-        } else if xmlOption.value {
-                printXml(data: data)
-        } else {
-                printRawHex(data: data)
-        }
-        CLog.exit(0)
+
 }

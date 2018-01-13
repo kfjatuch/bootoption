@@ -36,8 +36,8 @@ class RegistryEntry {
                 registryEntry = IORegistryEntryFromPath(kIOMasterPortDefault, path)
                 guard registryEntry != 0 else {
                         print("Error: Failed to get registry entry from path")
-                        CLog.error("RegistryEntry: Error getting registry entry from path")
-                        CLog.exit(EX_IOERR)
+                        Log.error("RegistryEntry: Error getting registry entry from path")
+                        Log.logExit(EX_IOERR)
                 }
         }
   
@@ -52,7 +52,7 @@ class RegistryEntry {
                                 let expected = CFCopyTypeIDDescription(type) as String
                                 let instead = CFCopyTypeIDDescription(valueType) as String
                                 print("RegistryEntry value(key:type:): Expected '\(expected)' type for '\(key)' Instead: '\(instead)'")
-                                CLog.error("CFType mismatch")
+                                Log.error("CFType mismatch")
                                 return nil
                         }
                         return value
@@ -105,11 +105,11 @@ class RegistryEntry {
                         result = IORegistryEntrySetCFProperty(registryEntry, key as CFString, value as! CFBoolean)
                 default:
                         result = -1
-                        CLog.error("CFDate, CFArray, CFDictionary are not implemented")
+                        Log.error("CFDate, CFArray, CFDictionary are not implemented")
                 }
                 if result != KERN_SUCCESS {
-                        CLog.log("Error setting value for property %{public}@", key)
-                        CLog.log("IORegistryEntrySetCFProperty kern_return_t was %{public}X", result)
+                        Log.log("Error setting value for property %{public}@", key)
+                        Log.log("IORegistryEntrySetCFProperty kern_return_t was %{public}X", result)
                 }
                 return result
         }

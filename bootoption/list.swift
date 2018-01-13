@@ -25,5 +25,5 @@ import Foundation
 func list() {
         let menu = BootMenu()
         print(menu.string)
-        CLog.exit(0)
+        Log.logExit(0)
 }

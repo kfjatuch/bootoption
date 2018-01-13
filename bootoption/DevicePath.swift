@@ -53,18 +53,18 @@ struct HardDriveMediaDevicePath {
                 let fileManager: FileManager = FileManager()
                 
                 guard fileManager.fileExists(atPath: path) else {
-                        CLog.error("Loader not found at specified path")
-                        CLog.exit(EX_IOERR)
+                        Log.error("Loader not found at specified path")
+                        Log.logExit(EX_IOERR)
                 }
                 
                 guard let session:DASession = DASessionCreate(kCFAllocatorDefault) else {
-                        CLog.error("Failed to create DASession")
-                        CLog.exit(EX_IOERR)
+                        Log.error("Failed to create DASession")
+                        Log.logExit(EX_IOERR)
                 }
                 
                 guard var volumes:[URL] = fileManager.mountedVolumeURLs(includingResourceValuesForKeys: nil) else {
-                        CLog.error("Failed to get mounted volume URLs")
-                        CLog.exit(EX_IOERR)
+                        Log.error("Failed to get mounted volume URLs")
+                        Log.logExit(EX_IOERR)
                 }
                 volumes = volumes.filter { $0.isFileURL }
 
@@ -99,24 +99,24 @@ struct HardDriveMediaDevicePath {
                 let cfMountPoint: CFString = mountPoint as CFString
                 
                 guard let url: CFURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfMountPoint, CFURLPathStyle(rawValue: 0)!, true) else {
-                        CLog.error("Failed to create CFURL for mount point")
-                        CLog.exit(EX_IOERR)
+                        Log.error("Failed to create CFURL for mount point")
+                        Log.logExit(EX_IOERR)
                 }
                 guard let disk: DADisk = DADiskCreateFromVolumePath(kCFAllocatorDefault, session, url) else {
-                        CLog.error("Failed to create DADisk from volume URL")
-                        CLog.exit(EX_IOERR)
+                        Log.error("Failed to create DADisk from volume URL")
+                        Log.logExit(EX_IOERR)
                 }
                 guard let cfDescription: CFDictionary = DADiskCopyDescription(disk) else {
-                        CLog.error("Failed to get volume description CFDictionary")
-                        CLog.exit(EX_IOERR)
+                        Log.error("Failed to get volume description CFDictionary")
+                        Log.logExit(EX_IOERR)
                 }
                 guard let description: [String: Any] = cfDescription as? Dictionary else {
-                        CLog.error("Failed to get volume description as Dictionary")
-                        CLog.exit(EX_IOERR)
+                        Log.error("Failed to get volume description as Dictionary")
+                        Log.logExit(EX_IOERR)
                 }
                 guard let daMediaPath = description["DAMediaPath"] as? String else {
-                        CLog.error("Failed to get DAMediaPath as String")
-                        CLog.exit(EX_IOERR)
+                        Log.error("Failed to get DAMediaPath as String")
+                        Log.logExit(EX_IOERR)
                 }
 
                 /* Get the registry object for our partition */
@@ -132,8 +132,8 @@ struct HardDriveMediaDevicePath {
                 let ioUUID: String? = partitionProperties.getStringValue(forProperty: "UUID")
                 
                 if (ioPreferredBlockSize == nil || ioPartitionID == nil || ioBase == nil || ioSize == nil || ioUUID == nil) {
-                        CLog.error("Failed to get registry values")
-                        CLog.exit(EX_IOERR)
+                        Log.error("Failed to get registry values")
+                        Log.logExit(EX_IOERR)
                 }
                 
                 let blockSize: Int = ioPreferredBlockSize!
@@ -183,8 +183,8 @@ struct FilePathMediaDevicePath {
                 var efiPath: String = "/" + localPath[i...]
                 efiPath = efiPath.uppercased().replacingOccurrences(of: "/", with: "\\")
                 if efiPath.containsOutlawedCharacters() {
-                        CLog.error("Forbidden character(s) found in path")
-                        CLog.exit(EX_IOERR)
+                        Log.error("Forbidden character(s) found in path")
+                        Log.logExit(EX_IOERR)
                 }
                 var pathData: Data = efiPath.data(using: String.Encoding.utf16)!
                 pathData.removeFirst()

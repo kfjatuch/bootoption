@@ -18,14 +18,14 @@
 import Foundation
 import os.log
 
-struct CLog {
+struct Log {
         
-        static func exit(_ status: Int32) -> Never {
-                let exitLogMessage: StaticString = "* exit code: %{public}d"
+        static func logExit(_ status: Int32) -> Never {
+                let message: StaticString = "* exit status %{public}d"
                 if status != 0 {
-                        CLog.log(exitLogMessage, status)
+                        Log.log(message, status)
                 } else {
-                        CLog.info(exitLogMessage, status)
+                        Log.info(message,status)
                 }
                 exit(status)
         }

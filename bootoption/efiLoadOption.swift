@@ -26,14 +26,14 @@ func efiLoadOption(loader: String, label: String, unicode: String?) -> Data {
         
         /* Attributes */
         
-        CLog.info("Generating attributes")
+        Log.info("Generating attributes")
         let attributes = Data.init(bytes: [1, 0, 0, 0])
         
         /* Description */
         
-        CLog.info("Generating description")
+        Log.info("Generating description")
         if label.containsOutlawedCharacters() {
-                CLog.error("Forbidden character(s) found in description")
+                Log.error("Forbidden character(s) found in description")
         }
         
         var description = label.data(using: String.Encoding.utf16)!
@@ -43,7 +43,7 @@ func efiLoadOption(loader: String, label: String, unicode: String?) -> Data {
         
         /* Device path list */
         
-        CLog.info("Generating device path list")
+        Log.info("Generating device path list")
         var devicePathList = Data.init()
         let hardDrive = HardDriveMediaDevicePath(forFile: loader)
         let file = FilePathMediaDevicePath(path: loader, mountPoint: hardDrive.mountPoint)
@@ -54,7 +54,7 @@ func efiLoadOption(loader: String, label: String, unicode: String?) -> Data {
         
         /* Device path list length */
         
-        CLog.info("Generating device path list length")
+        Log.info("Generating device path list length")
         var devicePathListLength = Data.init()
         var lengthValue = UInt16(devicePathList.count)
         devicePathListLength.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
@@ -62,17 +62,17 @@ func efiLoadOption(loader: String, label: String, unicode: String?) -> Data {
         /* Optional data */
         
         if unicode != nil {
-                CLog.info("Generating optional data")
+                Log.info("Generating optional data")
                 optionalData = unicode!.data(using: String.Encoding.utf16)!
                 optionalData?.removeFirst()
                 optionalData?.removeFirst()
         } else {
-                CLog.info("Not generating optional data, none specified")
+                Log.info("Not generating optional data, none specified")
         }
         
         /* Boot option variable data */
         
-        CLog.info("Generating EFI_LOAD_OPTION structured buffer")
+        Log.info("Generating EFI_LOAD_OPTION structured buffer")
         var efiLoadOption = Data.init()
         efiLoadOption.append(attributes)
         efiLoadOption.append(devicePathListLength)

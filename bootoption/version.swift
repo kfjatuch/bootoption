@@ -22,5 +22,5 @@ import Foundation
 
 func version() {
         print(commandLine.versionMessage)
-        CLog.exit(0)
+        Log.logExit(0)
 }

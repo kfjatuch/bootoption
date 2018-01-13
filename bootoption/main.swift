@@ -24,7 +24,7 @@ let versionString = "0.2.1"
 let programName = "bootoption"
 let copyright = "Copyright © 2017-2018 vulgo"
 let license = "GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law."
-CLog.info("*** bootoption version %{public}@", String(versionString))
+Log.info("*** bootoption version %{public}@", String(versionString))
 
 /* Nvram */
 
@@ -42,26 +42,35 @@ func parseCommandLineVerb() {
         let orderVerb = Verb(withName: "order", helpMessage: "change the boot order")
         let deleteVerb = Verb(withName: "delete", helpMessage: "unset/delete variables in NVRAM")
         let makeVerb = Verb(withName: "make", helpMessage: "print or save boot variable data in different formats")
-
         commandLine.addVerbs(listVerb, setVerb, orderVerb, deleteVerb, makeVerb)
-        commandLine.parseVerb()
-        switch commandLine.activeVerb {
-        case listVerb.name:
-                list()
-        case setVerb.name:
-                set()
-        case orderVerb.name:
-                order()
-        case deleteVerb.name:
-                delete()
-        case makeVerb.name:
-                make()
-        case commandLine.versionVerb:
-                version()
-        case commandLine.helpVerb:
-                help()
+        let verbParser = VerbParser(rawArguments: commandLine.rawArguments, verbs: commandLine.verbs)
+        switch verbParser.status {
+        case .success:
+                switch verbParser.activeVerb {
+                        case listVerb.name:
+                                list()
+                        case setVerb.name:
+                                set()
+                        case orderVerb.name:
+                                order()
+                        case deleteVerb.name:
+                                delete()
+                        case makeVerb.name:
+                                make()
+                        case verbParser.versionVerb:
+                                version()
+                        case verbParser.helpVerb:
+                                help()
+                        default:
+                                commandLine.printUsage(verbs: true)
+                                Log.logExit(EX_USAGE)
+                }
+        case .noInput:
+                commandLine.printUsage(verbs: true)
+                Log.logExit(EX_USAGE)
         default:
-                CLog.exit(EX_USAGE)
+                commandLine.printUsage(withMessageForError: verbParser.status, verbs: true)
+                Log.logExit(EX_USAGE)
         }
 }
 

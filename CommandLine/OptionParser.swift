@@ -17,71 +17,20 @@
 
 import Foundation
 
-extension CommandLine {
+class OptionParser {
         
-        /* A ParseError is thrown if the parse() method fails. */
-        
-        enum ParseError: Error, CustomStringConvertible {
-                case invalidArgument(String)
-                case tooManyOptions()
-                case invalidValueForOption(Option, [String])
-                case missingRequiredOptions([Option])
-                var description: String {
-                        switch self {
-                        case let .invalidArgument(arg):
-                                CLog.error("Parse error: Invalid argument")
-                                return "Invalid argument: \(arg)"
-                        case .tooManyOptions:
-                                CLog.error("Parse error: Too many options")
-                                return "Some options preclude the use of others."
-                        case let .invalidValueForOption(opt, vals):
-                                CLog.error("Parse error: Invalid value")
-                                let joined: String = vals.joined(separator: " ")
-                                return "Invalid value(s) for option \(opt.shortDescription): \(joined)"
-                        case let .missingRequiredOptions(opts):
-                                CLog.error("Parse error: Missing required options")
-                                let mapped: Array = opts.map { return $0.shortDescription }
-                                let joined: String = mapped.joined(separator: ", ")
-                                return "Missing required option(s): \(joined)"
-                        }
-                }
+        var status: CommandLine.ParserStatus = .noInput
+        var errorMessage: String {
+                return self.status.description
         }
+        let shortPrefix = "-"
+        let longPrefix = "--"
+        let stopParsing = "--"
+        let attached: Character = "="
+        var precludedOptions: String = ""
+        var unparsedArguments: [String] = [String]() // This property will contain any values that weren't captured by an option
         
-        /*
-         *  parseVerb()
-         *  See if a valid verb was specified and if yes set self.activeVerb
-         */
-        
-        func parseVerb() {
-                CLog.info("Parsing command line verb...")
-                if rawArguments.count < 2 {
-                        CLog.info("Nothing to parse, printing usage")
-                        printUsage()
-                        CLog.log("* exit code: %{public}d", EX_USAGE)
-                        exit(EX_USAGE)
-                }
-                let verb = rawArguments[1].lowercased()
-                if verb == self.helpLongOption {
-                        self.activeVerb = "help"
-                } else if verb == self.versionLongOption {
-                        self.activeVerb = "version"
-                } else if self.verbs.contains(where: { $0.name.uppercased() == verb.uppercased() } ) {
-                        self.activeVerb = verb
-                } else {
-                        CLog.error("Found invalid verb '%{public}@'", String(verb))
-                        printUsage()
-                        CLog.log("* exit code: %{public}d", EX_USAGE)
-                        exit(EX_USAGE)
-                }
-                CLog.info("Active verb is '%{public}@'", String(self.activeVerb))
-        }
-        
-        /*
-         *  Returns all argument values from flagIndex to the next flag
-         *  or the end of the argument array.
-         */
-        
-        func getFlagValues(_ flagIndex: Int, _ attachedArg: String? = nil) -> [String] {
+        func getFlagValues(rawArguments: [String], flagIndex: Int, attachedArg: String? = nil) -> [String] {
                 var args: [String] = [String]()
                 var skipFlagChecks = false
                 
@@ -91,12 +40,12 @@ extension CommandLine {
                 
                 for i in flagIndex + 1 ..< rawArguments.count {
                         if !skipFlagChecks {
-                                if rawArguments[i] == stopParsing {
+                                if rawArguments[i] == self.stopParsing {
                                         skipFlagChecks = true
                                         continue
                                 }
                                 
-                                if rawArguments[i].hasPrefix(shortPrefix) && Int(rawArguments[i]) == nil && rawArguments[i].toDouble() == nil {
+                                if rawArguments[i].hasPrefix(self.shortPrefix) && Int(rawArguments[i]) == nil && rawArguments[i].toDouble() == nil {
                                         break
                                 }
                         }
@@ -107,13 +56,9 @@ extension CommandLine {
                 return args
         }
         
-        /*
-         *  parse options
-         */
-        
-        func parse(strict: Bool = false) throws {
+        init(options: [Option], rawArguments: [String], strict: Bool = false) {
                 
-                CLog.info("Parsing command line options...")
+                Log.info("Parsing command line options...")
                 var raw = rawArguments
                 raw[0] = ""
                 raw[1] = ""
@@ -124,11 +69,11 @@ extension CommandLine {
                                 break
                         }
                         
-                        if !string.hasPrefix(shortPrefix) {
+                        if !string.hasPrefix(self.shortPrefix) {
                                 continue
                         }
                         
-                        let skipChars = string.hasPrefix(longPrefix) ? longPrefix.characters.count : shortPrefix.characters.count
+                        let skipChars = string.hasPrefix(self.longPrefix) ? self.longPrefix.characters.count : self.shortPrefix.characters.count
                         let flagWithArg = string[string.index(string.startIndex, offsetBy: skipChars)..<string.endIndex]
                         
                         /* The argument contained nothing but ShortOptionPrefix or LongOptionPrefix */
@@ -143,22 +88,24 @@ extension CommandLine {
                         let flag = splitFlag[0]
                         let attachedArgument: String? = splitFlag.count == 2 ? String(splitFlag[1]) : nil
                         var flagMatched = false
-                        for option in self.options where option.flagMatch(String(flag)) {
-
+                        for option in options where option.flagMatch(String(flag)) {
+                                
                                 /* Preclude */
                                 
                                 if let c = option.shortFlag?.characters.first {
                                         
                                         if self.precludedOptions.characters.contains(c) {
-                                                throw ParseError.tooManyOptions()
+                                                self.status = .tooManyOptions
+                                                return
                                         }
                                         
                                         self.precludedOptions.append(option.precludes)
                                 }
                                 
-                                let values = self.getFlagValues(index, attachedArgument)
+                                let values = self.getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument)
                                 guard option.setValue(values) else {
-                                        throw ParseError.invalidValueForOption(option, values)
+                                        self.status = .invalidValueForOption(option, values)
+                                        return
                                 }
                                 
                                 var claimedIndex = index + option.claimedValues
@@ -168,22 +115,23 @@ extension CommandLine {
                                 }
                                 
                                 flagMatched = true
-
+                                
                                 break
                         }
                         
                         /* Flags that do not take any arguments can be concatenated */
                         
                         let flagLength = flag.characters.count
-                        if !flagMatched && !string.hasPrefix(longPrefix) {
+                        if !flagMatched && !string.hasPrefix(self.longPrefix) {
                                 let flagCharactersEnumerator = flag.characters.enumerated()
                                 for (i, c) in flagCharactersEnumerator {
-                                        for option in self.options where option.flagMatch(String(c)) {
+                                        for option in options where option.flagMatch(String(c)) {
                                                 
                                                 /* preclude */
                                                 if let c = option.shortFlag?.characters.first {
                                                         if self.precludedOptions.characters.contains(c) {
-                                                                throw ParseError.tooManyOptions()
+                                                                self.status = .tooManyOptions
+                                                                return
                                                         }
                                                         self.precludedOptions.append(option.precludes)
                                                 }
@@ -193,9 +141,10 @@ extension CommandLine {
                                                  *  -xvf <file1> <file2>
                                                  */
                                                 
-                                                let values = (i == flagLength - 1) ? self.getFlagValues(index, attachedArgument) : [String]()
+                                                let values = (i == flagLength - 1) ? self.getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument) : [String]()
                                                 guard option.setValue(values) else {
-                                                        throw ParseError.invalidValueForOption(option, values)
+                                                        self.status = .invalidValueForOption(option, values)
+                                                        return
                                                 }
                                                 
                                                 var claimedIndex = index + option.claimedValues
@@ -213,17 +162,21 @@ extension CommandLine {
                         /* Invalid flag */
                         
                         guard !strict || flagMatched else {
-                                throw ParseError.invalidArgument(string)
+                                self.status = .invalidArgument(string)
+                                return
                         }
                 }
                 
                 /* Check to see if any required options were not matched */
                 
-                let missingOptions = self.options.filter { $0.required && !$0.wasSet }
+                let missingOptions = options.filter { $0.required && !$0.wasSet }
                 guard missingOptions.count == 0 else {
-                        throw ParseError.missingRequiredOptions(missingOptions)
+                        self.status = .missingRequiredOptions(missingOptions)
+                        return
                 }
                 
-                unparsedArguments = raw.filter { $0 != "" }
+                self.unparsedArguments = raw.filter { $0 != "" }
+                self.status = .success
         }
+        
 }

@@ -21,8 +21,8 @@
 import Foundation
 
 func set() {
-
-        CLog.info("Setting up command line")
+        
+        Log.info("Setting up command line")
         let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", helpMessage: "the PATH to an EFI loader executable")
         let labelOption = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
         let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
@@ -30,59 +30,62 @@ func set() {
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set the boot menu timeout in SECONDS")
         commandLine.invocationHelpMessage = "set [-l PATH -L LABEL [-u STRING]] [-t SECONDS] [-n ####]"
         commandLine.setOptions(loaderOption, labelOption, unicodeOption, bootNextOption, timeoutOption)
-        do {
-                try commandLine.parse(strict: true)
-        } catch {
-                commandLine.printUsage(withMessageForError: error)
-                CLog.exit(EX_USAGE)
-        }
         
-        var status: Int32 = 0
-        var noop = true
-        
-        /* Set a new load option */
-        
-        if loaderOption.wasSet && labelOption.wasSet {
-                noop = false
-                let data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
-                if nvram.createNewAndAddToBootOrder(withData: data) == nil {
-                        print("Error setting boot option")
-                        status = 1
-                }
-        }
-        
-        /* Set BootNext */
-        
-        if bootNextOption.wasSet {
-                noop = false
-                if !nvram.setBootNext(bootString: bootNextOption.value) {
-                        print("Error setting BootNext")
-                        status = 1
-                }
-        }
-        
-        /* Set the timeout */
-        
-        if timeoutOption.wasSet {
-                noop = false
-                var timeoutResult = false
-                if let timeout: Int = timeoutOption.value {
-                        if 1 ... 65534 ~= timeout {
-                                timeoutResult = nvram.setTimeout(seconds: timeout)
+        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
+        switch optionParser.status {
+        case .success:
+                
+                var status: Int32 = 0
+                var noop = true
+                
+                /* Set a new load option */
+                
+                if loaderOption.wasSet && labelOption.wasSet {
+                        noop = false
+                        let data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
+                        if nvram.createNewAndAddToBootOrder(withData: data) == nil {
+                                print("Error setting boot option")
+                                status = 1
                         }
                 }
-                if !timeoutResult {
-                        print("Error setting Timeout")
-                        status = 1
+                
+                /* Set BootNext */
+                
+                if bootNextOption.wasSet {
+                        noop = false
+                        if !nvram.setBootNext(bootString: bootNextOption.value) {
+                                print("Error setting BootNext")
+                                status = 1
+                        }
                 }
+                
+                /* Set the timeout */
+                
+                if timeoutOption.wasSet {
+                        noop = false
+                        var timeoutResult = false
+                        if let timeout: Int = timeoutOption.value {
+                                if 1 ... 65534 ~= timeout {
+                                        timeoutResult = nvram.setTimeout(seconds: timeout)
+                                }
+                        }
+                        if !timeoutResult {
+                                print("Error setting Timeout")
+                                status = 1
+                        }
+                }
+                
+                /* After all functions, exit some way */
+                
+                if noop {
+                        commandLine.printUsage()
+                        Log.logExit(EX_USAGE)
+                }
+                
+                Log.logExit(status)
+                
+        default:
+                commandLine.printUsage(withMessageForError: optionParser.status)
+                Log.logExit(EX_USAGE)
         }
-        
-        /* After all functions, exit some way */
-        
-        if noop {
-                commandLine.printUsage()
-                CLog.exit(EX_USAGE)
-        }
-        
-        CLog.exit(status)
 }

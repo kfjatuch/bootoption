@@ -17,22 +17,54 @@
 
 import Foundation
 
-let shortPrefix = "-"
-let longPrefix = "--"
+
 var standardError = FileHandle.standardError
 
 class CommandLine {
         
+        enum ParserStatus {
+                case noInput
+                case invalidInput
+                case success
+                case invalidArgument(String)
+                case tooManyOptions
+                case invalidValueForOption(Option, [String])
+                case missingRequiredOptions([Option])
+                var description: String {
+                        switch self {
+                        case .noInput:
+                                Log.info("Parse error: No input")
+                                return "No input"
+                        case .invalidInput:
+                                Log.info("Parse error: Invalid input")
+                                return "Invalid input"
+                        case .success:
+                                Log.info("Parse success!")
+                                return "Success"
+                        case let .invalidArgument(arg):
+                                Log.error("Parse error: Invalid argument")
+                                return "Invalid argument: \(arg)"
+                        case .tooManyOptions:
+                                Log.error("Parse error: Too many options")
+                                return "Some options preclude the use of others."
+                        case let .invalidValueForOption(opt, vals):
+                                Log.error("Parse error: Invalid value")
+                                let joined: String = vals.joined(separator: " ")
+                                return "Invalid value(s) for option \(opt.shortDescription): \(joined)"
+                        case let .missingRequiredOptions(opts):
+                                Log.error("Parse error: Missing required options")
+                                let mapped: Array = opts.map { return $0.shortDescription }
+                                let joined: String = mapped.joined(separator: ", ")
+                                return "Missing required option(s): \(joined)"
+                        }
+                }
+                
+        }
+        
+
         var rawArguments: [String]
         var options: [Option] = Array()
         var verbs: [Verb] = Array()
-        let helpLongOption = "--help"
-        let helpVerb = "help"
-        let versionLongOption = "--version"
-        let versionVerb = "version"
-        let stopParsing = "--"
-        let attached: Character = "="
-        var activeVerb: String = ""
         var usedFlags: Set<String> {
                 var flags = Set<String>(minimumCapacity: self.options.count * 2)
                 for option in self.options {
@@ -43,9 +75,7 @@ class CommandLine {
                 return flags
         }
         var precludedOptions: String = ""
-        var unparsedArguments: [String] = [String]() // This property will contain any values that weren't captured by an option
-        
-        
+
         /*
          *  init
          */
@@ -59,9 +89,7 @@ class CommandLine {
                 self.license = license
                 /* Initialize locale settings from the environment */
                 setlocale(LC_ALL, "")
-                #if LOG
-                        CLog.info("Command line initialized")
-                #endif
+                Log.info("Command line initialized")
         }
         
         /*
@@ -72,7 +100,7 @@ class CommandLine {
                 for verb in verbs {
                         assert(!self.verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
                         self.verbs.append(verb)
-                        CLog.info("Added verb '%{public}@' to command line", String(verb.name))
+                        Log.info("Added verb '%{public}@' to command line", String(verb.name))
                 }
         }
         
@@ -82,7 +110,7 @@ class CommandLine {
                         assert(!flags.contains(flag), "Flag '\(flag)' already in use")
                 }
                 self.options.append(option)
-                CLog.info("Added option '%{public}@' to command line", String(option.logDescription))
+                Log.info("Added option '%{public}@' to command line", String(option.logDescription))
                 self.optionMaxWidth = 0
         }
 
@@ -124,6 +152,8 @@ class CommandLine {
          *  Formatting, usage, messages
          */
         
+        static let shortPrefix = "-"
+        static let longPrefix = "--"
         var optionMaxWidth: Int = 0
         var verbMaxWidth: Int = 0
         var listPadding: String = "  "
@@ -189,15 +219,15 @@ class CommandLine {
         
         /*  Prints a usage message */
         
-        func printUsage(withMessageForError error: Error? = nil) {
+        func printUsage(withMessageForError error: ParserStatus? = nil, verbs: Bool = false) {
                 let format: (String, CommandLine.style) -> String
                 format = formatUser ?? formatDefault
-                if let error: Error = error {
-                        printDefault(format("\(error)", style.errorMessage))
+                if let error: ParserStatus = error {
+                        printDefault(format("\(error.description)", style.errorMessage))
                 }
                 let baseName = NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent
                 printDefault(format("Usage: \(baseName) \(self.invocationHelpMessage)", style.invocationMessage))
-                if self.activeVerb.isEmpty {
+                if verbs {
                         for verb in self.verbs {
                                 printDefault(format(verb.name.uppercased(), style.verbListItem))
                                 printDefault(format(verb.helpMessage, style.helpMessage))

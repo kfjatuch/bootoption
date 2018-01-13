@@ -22,7 +22,7 @@ import Foundation
 
 func make() {
 
-        Log.info("Setting up command line")
+        CLog.info("Setting up command line")
         let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: true, helpMessage: "the PATH to an EFI loader executable")
         let labelOption = StringOption(shortFlag: "L", longFlag: "label", required: true, helpMessage: "display LABEL in firmware boot manager")
         let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
@@ -36,27 +36,27 @@ func make() {
                 try commandLine.parse(strict: true)
         } catch {
                 commandLine.printUsage(withMessageForError: error)
-                logExit(EX_USAGE)
+                CLog.exit(EX_USAGE)
         }
         
         /* Printed output functions */
         
         func printFormatString(data: Data) {
-                Log.info("Printing format string")
+                CLog.info("Printing format string")
                 let strings = data.map { String(format: "%%%02x", $0) }
                 let outputString = strings.joined()
                 print(outputString)
         }
         
         func printRawHex(data: Data) {
-                Log.info("Printing raw hex")
+                CLog.info("Printing raw hex")
                 let strings = data.map { String(format: "%02x", $0) }
                 let outputString = strings.joined()
                 print(outputString)
         }
         
         func printXml(data: Data) {
-                Log.info("Printing XML")
+                CLog.info("Printing XML")
                 let key: String = keyOption.value ?? "Boot"
                 let dictionary: NSDictionary = ["\(key)": data]
                 var propertyList: Data
@@ -66,28 +66,28 @@ func make() {
                         let errorDescription = error.localizedDescription
                         let errorCode = error.code
                         print(errorDescription)
-                        Log.error("Error serializing to XML (%{public}@)", String(errorCode))
-                        logExit(1)
+                        CLog.error("Error serializing to XML (%{public}@)", String(errorCode))
+                        CLog.exit(1)
                 }
                 if let xml = String.init(data: propertyList, encoding: .utf8) {
                         let outputString = String(xml.characters.filter { !"\n\t\r".characters.contains($0) })
                         print(outputString)
                 } else {
                         print("Error printing serialized xml property list representation")
-                        logExit(1)
+                        CLog.exit(1)
                 }
         }
         
         if labelOption.value == nil || loaderOption.value == nil {
-                Log.error("Required options should no longer be nil")
-                logExit(1)
+                CLog.error("Required options should no longer be nil")
+                CLog.exit(1)
         }
         
         let testCount: Int = 54
         let data: Data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
         if data.count < testCount {
-                Log.error("Variable data is too small")
-                logExit(1)
+                CLog.error("Variable data is too small")
+                CLog.exit(1)
         }
         
         /* Output to dmpstore format file */
@@ -105,10 +105,10 @@ func make() {
                         let errorDescription = error.localizedDescription
                         let errorCode = error.code
                         print(errorDescription)
-                        Log.error("Error writing output file (%{public}@)", String(errorCode))
-                        logExit(1)
+                        CLog.error("Error writing output file (%{public}@)", String(errorCode))
+                        CLog.exit(1)
                 }
-                logExit(0)
+                CLog.exit(0)
         }
         
         /* Printed output */
@@ -120,5 +120,5 @@ func make() {
         } else {
                 printRawHex(data: data)
         }
-        logExit(0)
+        CLog.exit(0)
 }

@@ -37,13 +37,13 @@ struct Dmpstore {
                 var crc32 = Data.init()
                 
                 init(fromData variable: Data) {
-                        Log.info("Dmpstore.Option.init: Creating a boot variable for dmpstore")
+                        CLog.info("Dmpstore.Option.init: Creating a boot variable for dmpstore")
                         var dataSizeValue = UInt32(variable.count)
                         /* store dataSize */
                         self.dataSize.append(UnsafeBufferPointer(start: &dataSizeValue, count: 1))
                         guard let emptyBootOption: Int = nvram.discoverEmptyBootNumber(leavingSpace: true) else {
-                                Log.error("Empty boot option is nil")
-                                logExit(EX_IOERR)
+                                CLog.error("Empty boot option is nil")
+                                CLog.exit(EX_IOERR)
                         }
                         let name = nvram.bootStringFromBoot(number: emptyBootOption)
                         var nameData = name.data(using: String.Encoding.utf16)!
@@ -51,8 +51,8 @@ struct Dmpstore {
                         nameData.removeFirst()
                         nameData.append(contentsOf: [0, 0])
                         if nameData.count != Dmpstore.Option.nameSizeConstant {
-                                Log.error("Name size data is wrong")
-                                logExit(EX_IOERR)
+                                CLog.error("Name size data is wrong")
+                                CLog.exit(EX_IOERR)
                         }
                         /* store name data */
                         self.name = nameData
@@ -79,7 +79,7 @@ struct Dmpstore {
                         
                         /* store created */
                         self.created = emptyBootOption
-                        Log.info("Created a new variable")
+                        CLog.info("Created a new variable")
                 }
         }
         
@@ -94,15 +94,15 @@ struct Dmpstore {
                 var crc32 = Data.init()
                 
                 init(adding: Int?) {
-                        Log.info("Dmpstore.Order.init: Creating a boot order variable for dmpstore")
+                        CLog.info("Dmpstore.Order.init: Creating a boot order variable for dmpstore")
                         if adding == nil {
-                                Log.error("Option to add is nil")
-                                logExit(EX_IOERR)
+                                CLog.error("Option to add is nil")
+                                CLog.exit(EX_IOERR)
                         }
 
                         guard let bootOrder: Data = nvram.getBootOrder() else {
-                                Log.error("Couldn't get boot order from nvram")
-                                logExit(EX_IOERR)
+                                CLog.error("Couldn't get boot order from nvram")
+                                CLog.exit(EX_IOERR)
                         }
                         
                         // add to boot order and store variable data
@@ -130,7 +130,7 @@ struct Dmpstore {
                         /* store dmpstore data */
                         self.data.append(buffer)
                         self.data.append(self.crc32)
-                        Log.info("Created an updated 'BootOrder' variable")
+                        CLog.info("Created an updated 'BootOrder' variable")
                 }
         }
 }

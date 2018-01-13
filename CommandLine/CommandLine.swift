@@ -59,7 +59,9 @@ class CommandLine {
                 self.license = license
                 /* Initialize locale settings from the environment */
                 setlocale(LC_ALL, "")
-                CommandLog.info("Command line initialized")
+                #if LOG
+                        CLog.info("Command line initialized")
+                #endif
         }
         
         /*
@@ -70,7 +72,7 @@ class CommandLine {
                 for verb in verbs {
                         assert(!self.verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
                         self.verbs.append(verb)
-                        CommandLog.info("Added verb '%{public}@' to command line", args: String(verb.name))
+                        CLog.info("Added verb '%{public}@' to command line", String(verb.name))
                 }
         }
         
@@ -80,7 +82,7 @@ class CommandLine {
                         assert(!flags.contains(flag), "Flag '\(flag)' already in use")
                 }
                 self.options.append(option)
-                CommandLog.info("Added option '%{public}@' to command line", args: String(option.logDescription))
+                CLog.info("Added option '%{public}@' to command line", String(option.logDescription))
                 self.optionMaxWidth = 0
         }
 

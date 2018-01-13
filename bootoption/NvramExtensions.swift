@@ -77,7 +77,7 @@ extension Nvram {
                 if set + sync != 0 {
                         return false
                 }
-                Log.info("Asked the kernel to set a new BootOrder")
+                CLog.info("Asked the kernel to set a new BootOrder")
                 return true
         }
         
@@ -90,17 +90,17 @@ extension Nvram {
                 if set + sync != 0 {
                         return false
                 }
-                Log.info("Asked the kernel to set a new Timeout")
+                CLog.info("Asked the kernel to set a new Timeout")
                 return true
         }
         
         func setBootNext(bootString: String?) -> Bool {
                 guard let string = bootString else {
-                        Log.def("bootString is nil, not setting BootNext")
+                        CLog.log("bootString is nil, not setting BootNext")
                         return false
                 }
                 guard let bootNumber = bootNumberFromBoot(string: string) else {
-                        Log.def("Couldn't find %{public}@, not setting BootNext", string)
+                        CLog.log("Couldn't find %{public}@, not setting BootNext", string)
                         return false
                 }
                 var bootNext = UInt16(bootNumber)
@@ -111,25 +111,25 @@ extension Nvram {
                 if set + sync != 0 {
                         return false
                 }
-                Log.info("Asked the kernel to set BootNext")
+                CLog.info("Asked the kernel to set BootNext")
                 return true
         }
 
         @discardableResult func addToBootOrder(_ number: Int, atIndex index: Int = 0) -> Bool {
                 let name = bootStringFromBoot(number: number)
                 guard self.getBootOption(number) != nil else {
-                        Log.def("Couldn't get %{public}@ data, cancelling add to boot order", name)
+                        CLog.log("Couldn't get %{public}@ data, cancelling add to boot order", name)
                         return false
                 }
                 guard var bootOrder: [UInt16] = getBootOrderArray() else {
-                        Log.def("Error getting BootOrder, cancelling add to boot order")
+                        CLog.log("Error getting BootOrder, cancelling add to boot order")
                         return false
                 }
                 if bootOrder.indices.contains(index) {
-                        Log.info("Inserted to boot order at index %{public}@", index)
+                        CLog.info("Inserted to boot order at index %{public}@", index)
                         bootOrder.insert(UInt16(number), at: index)
                 } else {
-                        Log.def("Index out of range, appending to boot order instead")
+                        CLog.log("Index out of range, appending to boot order instead")
                         bootOrder.append(UInt16(number))
                 }
                 let data = bootOrderData(from: bootOrder)
@@ -147,11 +147,11 @@ extension Nvram {
                 let set = self.options.setDataValue(forProperty: nameWithGuid(name), value: data)
                 let sync = self.nvramSyncNow(withNamedVariable: nameWithGuid(name))
                 if set + sync != 0 {
-                        Log.def("Create new boot option returned nil")
+                        CLog.log("Create new boot option returned nil")
                         return nil
                 }
                 addToBootOrder(bootNumber, atIndex: 0)
-                Log.info("Asked the kernel to set %{public}@", name)
+                CLog.info("Asked the kernel to set %{public}@", name)
                 return bootNumber
         }
         
@@ -166,18 +166,18 @@ extension Nvram {
         func deleteBootOption(_ number: Int) {
                 let name: String = bootStringFromBoot(number: number)
                 self.deleteVariable(key: nameWithGuid(name))
-                Log.info("Asked the kernel to delete %{public}@", name)
+                CLog.info("Asked the kernel to delete %{public}@", name)
                 // to do: needs to be read back to confirm success
         }
         
         func deleteTimeout() {
                 self.deleteVariable(key: nameWithGuid("Timeout"))
-                Log.info("Asked the kernel to delete Timeout")
+                CLog.info("Asked the kernel to delete Timeout")
         }
         
         func deleteBootNext() {
                 self.deleteVariable(key: nameWithGuid("BootNext"))
-                Log.info("Asked the kernel to delete BootNext")
+                CLog.info("Asked the kernel to delete BootNext")
         }
         
         func removeFromBootOrder(number bootNumber: Int) -> [UInt16]? {
@@ -194,11 +194,11 @@ extension Nvram {
                         }
                         /* set the new bootorder */
                         if nvram.setBootOrder(data: newBootOrder) {
-                                Log.info("Remove from boot order returned an updated boot order array")
+                                CLog.info("Remove from boot order returned an updated boot order array")
                                 return bootOrder
                         }
                 }
-                Log.def("Remove from boot order returned nil")
+                CLog.log("Remove from boot order returned nil")
                 return nil
         }
         
@@ -217,7 +217,7 @@ extension Nvram {
                                 continue
                         } else {
                                 if !leavingSpace {
-                                        Log.info("Empty boot option discovered: %{public}X", number)
+                                        CLog.info("Empty boot option discovered: %{public}X", number)
                                         return number
                                 } else {
                                         /*
@@ -231,13 +231,13 @@ extension Nvram {
                                         if counter < 3 {
                                                 continue
                                         } else {
-                                                Log.info("Empty option leaving space: %{public}X", number)
+                                                CLog.info("Empty option leaving space: %{public}X", number)
                                                 return number
                                         }
                                 }
                         }
                 }
-                Log.def("Empty option discovery failed")
+                CLog.log("Empty option discovery failed")
                 return nil
         }
         
@@ -253,21 +253,21 @@ extension Nvram {
                 } else if string.characters.count < 5 {
                         hexString = string
                 } else {
-                        Log.def(logErrorMessage)
+                        CLog.log(logErrorMessage)
                         return nil
                 }
                 let scanner = Scanner.init(string: hexString)
                 var scanned: UInt32 = 0
                 if !scanner.scanHexInt32(&scanned) {
-                        Log.def(logErrorMessage)
+                        CLog.log(logErrorMessage)
                         return nil
                 }
                 let number = Int(scanned)
                 if nvram.getBootOption(number) == nil  {
-                        Log.def(logErrorMessage)
+                        CLog.log(logErrorMessage)
                         return nil
                 }
-                Log.info("boot number from boot string returned: %{public}X", number)
+                CLog.debug("boot number from boot string returned: %{public}X", number)
                 return Int(number)
         }
         
@@ -277,7 +277,7 @@ extension Nvram {
         
         func bootStringFromBoot(number: Int) -> String {
                 let string = "Boot\(String(format:"%04X", number))"
-                Log.info("boot string from boot number returned: %{public}@", string)
+                CLog.debug("boot string from boot number returned: %{public}@", string)
                 return string
         }
         

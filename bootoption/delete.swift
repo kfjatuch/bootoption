@@ -22,7 +22,7 @@ import Foundation
 
 func delete() {
 
-        Log.info("Setting up command line")
+        CLog.info("Setting up command line")
         let variableOption = StringOption(shortFlag: "b", longFlag: "boot", helpMessage: "boot name or number #### to delete (hex)")
         let bootNextOption = BoolOption(shortFlag: "n", longFlag: "bootnext", helpMessage: "delete BootNext")
         let timeoutOption = BoolOption(shortFlag: "t", longFlag: "timeout", helpMessage: "delete the timeout")
@@ -32,7 +32,7 @@ func delete() {
                 try commandLine.parse(strict: true)
         } catch {
                 commandLine.printUsage(withMessageForError: error)
-                logExit(EX_USAGE)
+                CLog.exit(EX_USAGE)
         }
         
         var status: Int32 = 0
@@ -48,7 +48,7 @@ func delete() {
                 guard let bootNumber: Int = result else {
                         print("Supplied Boot#### name is invalid", to: &standardError)
                         commandLine.printUsage()
-                        logExit(EX_USAGE)
+                        CLog.exit(EX_USAGE)
                 }
                 
                 let bootOrder: [UInt16]? = nvram.getBootOrderArray()
@@ -57,14 +57,14 @@ func delete() {
                         let newBootOrder = nvram.removeFromBootOrder(number: bootNumber)
                         if newBootOrder == nil {
                                 status = 1
-                                Log.error("Error removing Boot#### from BootOrder")
+                                CLog.error("Error removing Boot#### from BootOrder")
                         } else {
                                 /* delete the entry variable */
                                 nvram.deleteBootOption(Int(bootNumber))
                         }
                 } else {
                         /* variable is not in the boot order, just 'delete' it */
-                        Log.info("Variable not found in boot order")
+                        CLog.info("Variable not found in boot order")
                         nvram.deleteBootOption(Int(bootNumber))
                 }
         }
@@ -87,9 +87,9 @@ func delete() {
         
         if noop {
                 commandLine.printUsage()
-                logExit(EX_USAGE)
+                CLog.exit(EX_USAGE)
         }
         
-        logExit(status)
+        CLog.exit(status)
 }
 

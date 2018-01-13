@@ -25,7 +25,7 @@ func reorder(from: Int, to: Int) {
                 let i = bootOrder.indices
                 guard i.contains(from) && i.contains(to) else {
                         print("Index out of range")
-                        logExit(1)
+                        CLog.exit(1)
                 }
                 // Re-order array
                 bootOrder.order(from: from, to: to)
@@ -34,12 +34,12 @@ func reorder(from: Int, to: Int) {
                 // Set bootorder
                 if !nvram.setBootOrder(data: data) {
                         print("Error setting new boot order")
-                        logExit(1)
+                        CLog.exit(1)
                 }
-                logExit(0)
+                CLog.exit(0)
         } else {
                 print("Couldn't read boot order")
-                logExit(1)
+                CLog.exit(1)
         }
 }
 
@@ -47,7 +47,7 @@ func order() {
         
         func orderUsage() {
                 print("Usage: bootoption order <current position> to <new position>")
-                logExit(1)
+                CLog.exit(1)
         }
         
         var arguments = commandLine.rawArguments

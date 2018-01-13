@@ -46,7 +46,7 @@ class Nvram {
                         result = self.options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: key)
                 }
                 if result != KERN_SUCCESS {
-                        Log.def("Error syncing %{public}@", key)
+                        CLog.log("Error syncing %{public}@", key)
                 }
                 return result
         }

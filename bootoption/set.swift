@@ -22,7 +22,7 @@ import Foundation
 
 func set() {
 
-        Log.info("Setting up command line")
+        CLog.info("Setting up command line")
         let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", helpMessage: "the PATH to an EFI loader executable")
         let labelOption = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
         let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
@@ -34,7 +34,7 @@ func set() {
                 try commandLine.parse(strict: true)
         } catch {
                 commandLine.printUsage(withMessageForError: error)
-                logExit(EX_USAGE)
+                CLog.exit(EX_USAGE)
         }
         
         var status: Int32 = 0
@@ -81,8 +81,8 @@ func set() {
         
         if noop {
                 commandLine.printUsage()
-                logExit(EX_USAGE)
+                CLog.exit(EX_USAGE)
         }
         
-        logExit(status)
+        CLog.exit(status)
 }

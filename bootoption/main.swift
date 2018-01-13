@@ -24,7 +24,7 @@ let versionString = "0.2.1"
 let programName = "bootoption"
 let copyright = "Copyright © 2017-2018 vulgo"
 let license = "GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law."
-Log.info("*** bootoption version %{public}@", String(versionString))
+CLog.info("*** bootoption version %{public}@", String(versionString))
 
 /* Nvram */
 
@@ -61,17 +61,8 @@ func parseCommandLineVerb() {
         case commandLine.helpVerb:
                 help()
         default:
-                logExit(EX_USAGE)
+                CLog.exit(EX_USAGE)
         }
-}
-
-func logExit(_ status: Int32) -> Never {
-        if status != 0 {
-                Log.def("* exit code: %{public}d", status)
-        } else {
-                Log.info("* exit code: %{public}d", status)
-        }
-        exit(status)
 }
 
 parseCommandLineVerb()

@@ -1,8 +1,8 @@
 /*
  * File: Extensions.swift
  *
- * bootoption © vulgo 2017 - A program to create / save an EFI boot
- * option - so that it might be added to the firmware menu later
+ * bootoption © vulgo 2017 - A command line utility for managing a
+ * firmware's EFI boot menu
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

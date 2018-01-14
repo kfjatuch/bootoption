@@ -17,51 +17,59 @@
 
 import Foundation
 
-
-var standardError = FileHandle.standardError
-
 class CommandLine {
         
+        /* GNU-getopt-like constants */
+        static let shortPrefix = "-"
+        static let longPrefix = "--"
+        static let stopParsing = "--"
+        static let attached: Character = "="
+        
         enum ParserStatus {
-                case noInput
-                case invalidInput
                 case success
-                case invalidArgument(String)
+                case noInput
                 case tooManyOptions
+                case invalidInput(String)
+                case invalidArgument(String)
                 case invalidValueForOption(Option, [String])
                 case missingRequiredOptions([Option])
                 var description: String {
                         switch self {
-                        case .noInput:
-                                Log.info("Parse error: No input")
-                                return "No input"
-                        case .invalidInput:
-                                Log.info("Parse error: Invalid input")
-                                return "Invalid input"
                         case .success:
-                                Log.info("Parse success!")
-                                return "Success"
-                        case let .invalidArgument(arg):
-                                Log.error("Parse error: Invalid argument")
-                                return "Invalid argument: \(arg)"
+                                Log.info("Parse success")
+                                return "OK"
+                        case .noInput:
+                                Log.info("Parse error: Nothing to parse")
+                                return "Invalid input"
                         case .tooManyOptions:
                                 Log.error("Parse error: Too many options")
                                 return "Some options preclude the use of others."
-                        case let .invalidValueForOption(opt, vals):
-                                Log.error("Parse error: Invalid value")
-                                let joined: String = vals.joined(separator: " ")
-                                return "Invalid value(s) for option \(opt.shortDescription): \(joined)"
-                        case let .missingRequiredOptions(opts):
-                                Log.error("Parse error: Missing required options")
-                                let mapped: Array = opts.map { return $0.shortDescription }
-                                let joined: String = mapped.joined(separator: ", ")
-                                return "Missing required option(s): \(joined)"
+                        case let .invalidInput(string):
+                                Log.info("Parse error: Invalid input %{public}@", string)
+                                return "Invalid input: \(string)"
+                        case let .invalidArgument(string):
+                                Log.error("Parse error: Invalid argument %{public}@", string)
+                                return "Invalid argument: \(string)"
+                        case let .invalidValueForOption(option, values):
+                                let string: String = values.joined(separator: " ")
+                                Log.error("Parse error: Invalid value %{public}@", string)
+                                return "Invalid value(s) for option \(option.shortDescription): \(string)"
+                        case let .missingRequiredOptions(options):
+                                var s: String = "s"
+                                if options.count == 1 {
+                                        s = ""
+                                }
+                                let mapped: Array = options.map { return $0.shortDescription }
+                                let string: String = mapped.joined(separator: ", ")
+                                Log.error("Parse error: Missing required options %{public}@", string)
+                                return "Missing required option\(s): \(string)"
                         }
                 }
                 
         }
         
-
+        var baseName = String()
+        var format: ((String, CommandLine.style) -> String)?
         var rawArguments: [String]
         var options: [Option] = Array()
         var verbs: [Verb] = Array()
@@ -74,21 +82,36 @@ class CommandLine {
                 }
                 return flags
         }
-        var precludedOptions: String = ""
+        
+        func verb() -> String? {
+                if rawArguments.count != 0 {
+                        let arg = rawArguments.removeFirst()
+                        return arg
+                } else {
+                        return nil
+                }
+        }
+
 
         /*
          *  init
          */
         
-        init(arguments: [String] = Swift.CommandLine.arguments, invocationHelpMessage: String = "[options]", version: String = "1.0", programName: String = "", copyright: String = "", license: String = "") {
-                self.rawArguments = arguments
+        init(invocationHelpMessage: String = "[options]", version: String = "1.0", programName: String = "", copyright: String = "", license: String = "", format formatUser: ((String, CommandLine.style) -> String)? = nil) {
+                var args = Swift.CommandLine.arguments
+                args.removeFirst()
+                self.baseName = NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent as String
+                self.rawArguments = args
                 self.invocationHelpMessage = invocationHelpMessage
                 self.version = version
                 self.programName = programName
                 self.copyright = copyright
                 self.license = license
-                /* Initialize locale settings from the environment */
-                setlocale(LC_ALL, "")
+                if formatUser == nil {
+                        self.format = formatDefault
+                } else {
+                        self.format = formatUser
+                }
                 Log.info("Command line initialized")
         }
         
@@ -96,41 +119,23 @@ class CommandLine {
          *  Adding options to the command line
          */
         
-        func addVerbs(_ verbs: Verb...) {
-                for verb in verbs {
-                        assert(!self.verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
-                        self.verbs.append(verb)
-                        Log.info("Added verb '%{public}@' to command line", String(verb.name))
-                }
+        func addVerb(_ verb: Verb) {
+                assert(!self.verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
+                self.verbs.append(verb)
+                Log.info("Added verb '%{public}@' to command line", String(verb.name))
         }
         
         func addOption(_ option: Option) {
-                let flags = usedFlags
                 for case let flag? in [option.shortFlag, option.longFlag] {
-                        assert(!flags.contains(flag), "Flag '\(flag)' already in use")
+                        assert(!self.usedFlags.contains(flag), "Flag '\(flag)' already in use")
                 }
                 self.options.append(option)
                 Log.info("Added option '%{public}@' to command line", String(option.logDescription))
-                self.optionMaxWidth = 0
+                self.optionMax = 0
         }
-
-        func addOptions(_ options: [Option]) {
-                for option in options {
-                        addOption(option)
-                }
-        }
-        
-        func addOptions(_ options: Option...) {
-                for option in options {
-                        addOption(option)
-                }
-        }
-
         
         /*
          *  Setting and overwriting existing command line options
-         *
-         *  Sets the command line options [Option]
          */
 
         func setOptions(_ options: [Option]) {
@@ -150,12 +155,17 @@ class CommandLine {
         
         /*
          *  Formatting, usage, messages
+         *
+         *
+         *  Print to standardError
          */
+        var standardError = FileHandle.standardError
+        func printDefault(_ string: String) {
+                print(string, terminator: "", to: &standardError)
+        }
         
-        static let shortPrefix = "-"
-        static let longPrefix = "--"
-        var optionMaxWidth: Int = 0
-        var verbMaxWidth: Int = 0
+        /* Variables */
+
         var listPadding: String = "  "
         var formatUser: ((String, style) -> String)? // If not nil this function will be called when printing usage messages
         var invocationHelpMessage: String
@@ -172,26 +182,32 @@ class CommandLine {
                 }
         }
         
+        var optionMax: Int = 0
+        var optionWidth: Int {
+                if self.optionMax == 0 {
+                        let mapped = self.options.map { $0.optionDescription.characters.count }
+                        let padding = self.listPadding.count
+                        self.optionMax = (mapped.sorted().last ?? 0) + padding
+                }
+                return self.optionMax
+        }
+        
+        var verbMax: Int = 0
+        var verbWidth: Int {
+                if self.verbMax == 0 {
+                        let mapped = self.verbs.map { $0.name.characters.count }
+                        let padding = self.listPadding.count
+                        self.verbMax = (mapped.sorted().last ?? 0) + padding
+                }
+                return self.verbMax
+        }
+        
         enum style {
                 case invocationMessage
                 case errorMessage
                 case verbListItem
                 case optionListItem
                 case helpMessage
-        }
-        
-        var optionWidth: Int {
-                if self.optionMaxWidth == 0 {
-                        self.optionMaxWidth = self.options.map { $0.optionDescription.characters.count }.sorted().last ?? 0
-                }
-                return self.optionMaxWidth + self.listPadding.count
-        }
-        
-        var verbWidth: Int {
-                if self.verbMaxWidth == 0 {
-                        self.verbMaxWidth = self.verbs.map { $0.name.characters.count }.sorted().last ?? 0
-                }
-                return self.verbMaxWidth + self.listPadding.count
         }
        
         func formatDefault(forString string: String, style: style) -> String {
@@ -204,38 +220,26 @@ class CommandLine {
                         let option = string.padding(toLength: self.optionWidth, withPad: " ", startingAt: 0)
                         return "\(self.listPadding)\(option)"
                 case .verbListItem:
-                        let verb = string.padding(toLength: self.verbWidth, withPad: " ", startingAt: 0)
+                        let verb = string.padding(toLength: self.verbWidth, withPad: " ", startingAt: 0).uppercased()
                         return "\(self.listPadding)\(verb)"
                 case .helpMessage:
                         return "\(string)\n"
                 }
         }
         
-        /* Print to standardError */
-        
-        func printDefault(_ string: String) {
-                print(string, terminator: "", to: &standardError)
-        }
-        
         /*  Prints a usage message */
         
-        func printUsage(withMessageForError error: ParserStatus? = nil, verbs: Bool = false) {
-                let format: (String, CommandLine.style) -> String
-                format = formatUser ?? formatDefault
-                if let error: ParserStatus = error {
-                        printDefault(format("\(error.description)", style.errorMessage))
-                }
-                let baseName = NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent
-                printDefault(format("Usage: \(baseName) \(self.invocationHelpMessage)", style.invocationMessage))
+        func printUsage(verbs: Bool = false) {
+                printDefault(self.format!("Usage: \(self.baseName) \(self.invocationHelpMessage)", style.invocationMessage))
                 if verbs {
                         for verb in self.verbs {
-                                printDefault(format(verb.name.uppercased(), style.verbListItem))
-                                printDefault(format(verb.helpMessage, style.helpMessage))
+                                printDefault(self.format!(verb.name, style.verbListItem))
+                                printDefault(self.format!(verb.helpMessage, style.helpMessage))
                         }
                 } else {
                         for option in self.options {
-                                printDefault(format(option.optionDescription, style.optionListItem))
-                                printDefault(format(option.helpMessage, style.helpMessage))
+                                printDefault(self.format!(option.optionDescription, style.optionListItem))
+                                printDefault(self.format!(option.helpMessage, style.helpMessage))
                         }
                 }
         }

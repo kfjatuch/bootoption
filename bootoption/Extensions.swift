@@ -39,7 +39,7 @@ extension String {
                 return NumberFormatter().number(from: self)?.doubleValue
         }
         
-        func toZeroBasedInt() -> Int? {
+        func toZeroBasedIndex() -> Int? {
                 let p = Int(self)
                 if var i: Int = p {
                         i -= 1

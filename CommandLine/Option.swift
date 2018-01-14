@@ -37,20 +37,20 @@ class Option {
         }
         
         var shortDescription: String {
-                if shortFlag != nil {
-                        return String("\(CommandLine.shortPrefix)\(shortFlag!)")
+                if self.shortFlag != nil {
+                        return String("\(CommandLine.shortPrefix)\(self.shortFlag!)")
                 } else if longFlag != nil {
-                        return String("\(CommandLine.longPrefix)\(longFlag!)")
+                        return String("\(CommandLine.longPrefix)\(self.longFlag!)")
                 } else {
                         return String("")
                 }
         }
         
         var logDescription: String {
-                if longFlag != nil {
-                        return longFlag!
-                } else if shortFlag != nil {
-                        return shortFlag!
+                if self.longFlag != nil {
+                        return self.longFlag!
+                } else if self.shortFlag != nil {
+                        return self.shortFlag!
                 } else {
                         return String("")
                 }
@@ -58,14 +58,14 @@ class Option {
         
         var optionDescription: String {
                 var string: String = ""
-                if shortFlag != nil && longFlag != nil {
-                        string.append("\(CommandLine.shortPrefix)\(shortFlag!)")
+                if self.shortFlag != nil && self.longFlag != nil {
+                        string.append("\(CommandLine.shortPrefix)\(self.shortFlag!)")
                         string.append("  ")
-                        string.append("\(CommandLine.longPrefix)\(longFlag!)")
+                        string.append("\(CommandLine.longPrefix)\(self.longFlag!)")
                 } else if longFlag != nil {
-                        string.append("\(CommandLine.longPrefix)\(longFlag!)")
+                        string.append("\(CommandLine.longPrefix)\(self.longFlag!)")
                 } else if shortFlag != nil {
-                        string.append("\(CommandLine.shortPrefix)\(shortFlag!)")
+                        string.append("\(CommandLine.shortPrefix)\(self.shortFlag!)")
                 }
                 return string
         }
@@ -101,7 +101,7 @@ class Option {
         }
         
         func flagMatch(_ flag: String) -> Bool {
-                return flag == shortFlag || flag == longFlag
+                return flag == self.shortFlag || flag == self.longFlag
         }
         
         func setValue(_ values: [String]) -> Bool {
@@ -119,11 +119,11 @@ class BoolOption: Option {
         var value: Bool = false
         
         override var wasSet: Bool {
-                return value
+                return self.value
         }
         
         override func setValue(_ values: [String]) -> Bool {
-                value = true
+                self.value = true
                 return true
         }
 }
@@ -135,11 +135,11 @@ class IntOption: Option {
         var value: Int?
         
         override var wasSet: Bool {
-                return value != nil
+                return self.value != nil
         }
         
         override var claimedValues: Int {
-                return value != nil ? 1 : 0
+                return self.value != nil ? 1 : 0
         }
         
         override func setValue(_ values: [String]) -> Bool {
@@ -149,7 +149,7 @@ class IntOption: Option {
                 }
                 
                 if let val = Int(values[0]) {
-                        value = val
+                        self.value = val
                         return true
                 }
                 
@@ -167,15 +167,15 @@ class CounterOption: Option {
         var value: Int = 0
         
         override var wasSet: Bool {
-                return value > 0
+                return self.value > 0
         }
         
         func reset() {
-                value = 0
+                self.value = 0
         }
         
         override func setValue(_ values: [String]) -> Bool {
-                value += 1
+                self.value += 1
                 return true
         }
 }
@@ -187,11 +187,11 @@ class DoubleOption: Option {
         var value: Double?
         
         override var wasSet: Bool {
-                return value != nil
+                return self.value != nil
         }
         
         override var claimedValues: Int {
-                return value != nil ? 1 : 0
+                return self.value != nil ? 1 : 0
         }
         
         override func setValue(_ values: [String]) -> Bool {
@@ -201,7 +201,7 @@ class DoubleOption: Option {
                 }
                 
                 if let val = values[0].toDouble() {
-                        value = val
+                        self.value = val
                         return true
                 }
                 
@@ -216,11 +216,11 @@ class StringOption: Option {
         var value: String? = nil
         
         override var wasSet: Bool {
-                return value != nil
+                return self.value != nil
         }
         
         override var claimedValues: Int {
-                return value != nil ? 1 : 0
+                return self.value != nil ? 1 : 0
         }
         
         override func setValue(_ values: [String]) -> Bool {
@@ -229,7 +229,7 @@ class StringOption: Option {
                         return false
                 }
                 
-                value = values[0]
+                self.value = values[0]
                 return true
         }
 }
@@ -241,12 +241,12 @@ class MultiStringOption: Option {
         var value: [String]?
         
         override var wasSet: Bool {
-                return value != nil
+                return self.value != nil
         }
         
         override var claimedValues: Int {
                 
-                if let v = value {
+                if let v = self.value {
                         return v.count
                 }
                 
@@ -259,7 +259,7 @@ class MultiStringOption: Option {
                         return false
                 }
                 
-                value = values
+                self.value = values
                 return true
         }
 }
@@ -271,11 +271,11 @@ class EnumOption<T:RawRepresentable>: Option where T.RawValue == String {
         var value: T?
         
         override var wasSet: Bool {
-                return value != nil
+                return self.value != nil
         }
         
         override var claimedValues: Int {
-                return value != nil ? 1 : 0
+                return self.value != nil ? 1 : 0
         }
         
         override func setValue(_ values: [String]) -> Bool {
@@ -285,7 +285,7 @@ class EnumOption<T:RawRepresentable>: Option where T.RawValue == String {
                 }
                 
                 if let v = T(rawValue: values[0]) {
-                        value = v
+                        self.value = v
                         
                         return true
                 }

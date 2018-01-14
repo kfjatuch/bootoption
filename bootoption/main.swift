@@ -20,6 +20,8 @@
 
 import Foundation
 
+var standardError = FileHandle.standardError
+
 let versionString = "0.2.1"
 let programName = "bootoption"
 let copyright = "Copyright © 2017-2018 vulgo"
@@ -43,7 +45,7 @@ func parseCommandLineVerb() {
         let deleteVerb = Verb(withName: "delete", helpMessage: "unset/delete variables in NVRAM")
         let makeVerb = Verb(withName: "make", helpMessage: "print or save boot variable data in different formats")
         commandLine.addVerbs(listVerb, setVerb, orderVerb, deleteVerb, makeVerb)
-        let verbParser = VerbParser(rawArguments: commandLine.rawArguments, verbs: commandLine.verbs)
+        let verbParser = VerbParser(argument: commandLine.verb(), verbs: commandLine.verbs)
         switch verbParser.status {
         case .success:
                 switch verbParser.activeVerb {

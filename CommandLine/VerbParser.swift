@@ -1,5 +1,5 @@
 /*
- * CommandLine.swift
+ * VerbParser.swift
  * Copyright (c) 2014 Ben Gollmer.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,19 +20,23 @@ import Foundation
 class VerbParser {
         
         var status: CommandLine.ParserStatus = .noInput
-        let helpLongOption = "--help"
-        let versionLongOption = "--version"
-        let helpVerb = "help"
-        let versionVerb = "version"
+        var helpVerb = "help"
+        var versionVerb = "version"
         var activeVerb = ""
+        var helpLongOption: String {
+                return "\(CommandLine.longPrefix)\(self.helpVerb)"
+        }
+        var versionLongOption: String {
+                return "\(CommandLine.longPrefix)\(self.versionVerb)"
+        }
         
-        init(rawArguments: [String], verbs: [Verb]) {
+        init(argument: String?, verbs: [Verb]) {
                 Log.info("Parsing command line verb...")
-                if rawArguments.count < 2 {
+                if argument == nil {
                         self.status = .noInput
                         return
                 }
-                let verb = rawArguments[1].lowercased()
+                let verb = argument!.lowercased()
                 if verb == self.helpLongOption {
                         self.activeVerb = "help"
                         self.status = .success
@@ -43,8 +47,8 @@ class VerbParser {
                         self.activeVerb = verb
                         self.status = .success
                 } else {
-                        Log.error("Found invalid verb '%{public}@'", String(verb))
-                        self.status = .invalidInput
+                        self.status = .invalidInput(verb)
+                        return
                 }
                 Log.info("Active verb is '%{public}@'", String(self.activeVerb))
         }

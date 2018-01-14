@@ -52,13 +52,10 @@ func order() {
         
         var arguments = commandLine.rawArguments
         
-        arguments.removeFirst()
-        arguments.removeFirst()
-        
         switch arguments.count {
         case 2:
-                let from = arguments[0].toZeroBasedInt()
-                let to = arguments[1].toZeroBasedInt()
+                let from = arguments[0].toZeroBasedIndex()
+                let to = arguments[1].toZeroBasedIndex()
                 if from == nil || to == nil {
                         orderUsage()
                 }
@@ -67,8 +64,8 @@ func order() {
         case 3:
                 let a = arguments[1].lowercased()
                 if a == "to" || a == "-to" || a == "--to" {
-                        let from = arguments[0].toZeroBasedInt()
-                        let to = arguments[2].toZeroBasedInt()
+                        let from = arguments[0].toZeroBasedIndex()
+                        let to = arguments[2].toZeroBasedIndex()
                         if from == nil || to == nil {
                                 orderUsage()
                         }

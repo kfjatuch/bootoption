@@ -1,5 +1,5 @@
 /*
- * CommandLine.swift
+ * OptionParser.swift
  * Copyright (c) 2014 Ben Gollmer.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,10 +23,6 @@ class OptionParser {
         var errorMessage: String {
                 return self.status.description
         }
-        let shortPrefix = "-"
-        let longPrefix = "--"
-        let stopParsing = "--"
-        let attached: Character = "="
         var precludedOptions: String = ""
         var unparsedArguments: [String] = [String]() // This property will contain any values that weren't captured by an option
         
@@ -40,12 +36,12 @@ class OptionParser {
                 
                 for i in flagIndex + 1 ..< rawArguments.count {
                         if !skipFlagChecks {
-                                if rawArguments[i] == self.stopParsing {
+                                if rawArguments[i] == CommandLine.stopParsing {
                                         skipFlagChecks = true
                                         continue
                                 }
                                 
-                                if rawArguments[i].hasPrefix(self.shortPrefix) && Int(rawArguments[i]) == nil && rawArguments[i].toDouble() == nil {
+                                if rawArguments[i].hasPrefix(CommandLine.shortPrefix) && Int(rawArguments[i]) == nil && rawArguments[i].toDouble() == nil {
                                         break
                                 }
                         }
@@ -56,24 +52,26 @@ class OptionParser {
                 return args
         }
         
+        deinit {
+                Log.info("OptionParser deinit")
+        }
+        
         init(options: [Option], rawArguments: [String], strict: Bool = false) {
-                
                 Log.info("Parsing command line options...")
-                var raw = rawArguments
-                raw[0] = ""
-                raw[1] = ""
                 
+                var raw = rawArguments
                 let argumentsEnumerator = rawArguments.enumerated()
+                
                 for (index, string) in argumentsEnumerator {
-                        if string == stopParsing {
+                        if string == CommandLine.stopParsing {
                                 break
                         }
                         
-                        if !string.hasPrefix(self.shortPrefix) {
+                        if !string.hasPrefix(CommandLine.shortPrefix) {
                                 continue
                         }
                         
-                        let skipChars = string.hasPrefix(self.longPrefix) ? self.longPrefix.characters.count : self.shortPrefix.characters.count
+                        let skipChars = string.hasPrefix(CommandLine.longPrefix) ? CommandLine.longPrefix.characters.count : CommandLine.shortPrefix.characters.count
                         let flagWithArg = string[string.index(string.startIndex, offsetBy: skipChars)..<string.endIndex]
                         
                         /* The argument contained nothing but ShortOptionPrefix or LongOptionPrefix */
@@ -84,7 +82,7 @@ class OptionParser {
                         
                         /* Remove attached argument from flag */
                         
-                        let splitFlag = flagWithArg.split(separator: attached, maxSplits: 1)
+                        let splitFlag = flagWithArg.split(separator: CommandLine.attached, maxSplits: 1)
                         let flag = splitFlag[0]
                         let attachedArgument: String? = splitFlag.count == 2 ? String(splitFlag[1]) : nil
                         var flagMatched = false
@@ -122,7 +120,7 @@ class OptionParser {
                         /* Flags that do not take any arguments can be concatenated */
                         
                         let flagLength = flag.characters.count
-                        if !flagMatched && !string.hasPrefix(self.longPrefix) {
+                        if !flagMatched && !string.hasPrefix(CommandLine.longPrefix) {
                                 let flagCharactersEnumerator = flag.characters.enumerated()
                                 for (i, c) in flagCharactersEnumerator {
                                         for option in options where option.flagMatch(String(c)) {

@@ -43,7 +43,7 @@ struct Dmpstore {
                         self.dataSize.append(UnsafeBufferPointer(start: &dataSizeValue, count: 1))
                         guard let emptyBootOption: Int = nvram.discoverEmptyBootNumber(leavingSpace: true) else {
                                 Log.error("Empty boot option is nil")
-                                Log.logExit(EX_IOERR)
+                                Log.logExit(EX_UNAVAILABLE)
                         }
                         let name = nvram.bootStringFromBoot(number: emptyBootOption)
                         var nameData = name.data(using: String.Encoding.utf16)!
@@ -52,7 +52,7 @@ struct Dmpstore {
                         nameData.append(contentsOf: [0, 0])
                         if nameData.count != Dmpstore.Option.nameSizeConstant {
                                 Log.error("Name size data is wrong")
-                                Log.logExit(EX_IOERR)
+                                Log.logExit(EX_SOFTWARE)
                         }
                         /* store name data */
                         self.name = nameData
@@ -97,12 +97,12 @@ struct Dmpstore {
                         Log.info("Dmpstore.Order.init: Creating a boot order variable for dmpstore")
                         if adding == nil {
                                 Log.error("Option to add is nil")
-                                Log.logExit(EX_IOERR)
+                                Log.logExit(EX_UNAVAILABLE)
                         }
 
                         guard let bootOrder: Data = nvram.getBootOrder() else {
                                 Log.error("Couldn't get boot order from nvram")
-                                Log.logExit(EX_IOERR)
+                                Log.logExit(EX_UNAVAILABLE)
                         }
                         
                         // add to boot order and store variable data

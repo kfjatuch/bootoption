@@ -34,11 +34,10 @@ func delete() {
         case .success:
                 
                 if commandLine.userName != "root" {
-                        print("Only root can delete NVRAM variables.", to: &standardError)
-                        Log.logExit(EX_USAGE)
+                        Log.logExit(EX_NOPERM, "Only root can delete NVRAM variables.")
                 }
                 
-                var status: Int32 = 0
+                var status = EX_OK
                 var noop = true
                 
                 /* Delete a boot option */
@@ -51,7 +50,7 @@ func delete() {
                         guard let bootNumber: Int = result else {
                                 print("Supplied Boot#### name is invalid", to: &standardError)
                                 commandLine.printUsage()
-                                Log.logExit(EX_USAGE)
+                                Log.logExit(EX_DATAERR)
                         }
                         
                         let bootOrder: [UInt16]? = nvram.getBootOrderArray()
@@ -59,7 +58,7 @@ func delete() {
                                 /* remove from boot order */
                                 let newBootOrder = nvram.removeFromBootOrder(number: bootNumber)
                                 if newBootOrder == nil {
-                                        status = 1
+                                        status = EX_DATAERR
                                         Log.error("Error removing Boot#### from BootOrder")
                                 } else {
                                         /* delete the entry variable */

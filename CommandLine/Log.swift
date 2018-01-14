@@ -20,12 +20,19 @@ import os.log
 
 struct Log {
         
-        static func logExit(_ status: Int32) -> Never {
-                let message: StaticString = "* exit status %{public}d"
+        static func logExit(_ status: Int32, _ errorMessage: String? = nil) -> Never {
+                let logMessage: StaticString = "* exit status %{public}d"
                 if status != 0 {
-                        Log.log(message, status)
+                        Log.log(logMessage, status)
+                        if status != 64 {
+                                var description = String()
+                                if let string: String = errorMessage {
+                                         description = "\(string) "
+                                }
+                                print("\(description)(\(status))", to: &standardError)
+                        }
                 } else {
-                        Log.info(message,status)
+                        Log.info(logMessage,status)
                 }
                 exit(status)
         }

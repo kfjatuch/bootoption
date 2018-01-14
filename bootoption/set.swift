@@ -36,11 +36,10 @@ func set() {
         case .success:
                 
                 if commandLine.userName != "root" {
-                        print("Only root can set NVRAM variables.", to: &standardError)
-                        Log.logExit(EX_USAGE)
+                        Log.logExit(EX_NOPERM, "Only root can set NVRAM variables.")
                 }
                 
-                var status: Int32 = 0
+                var status = EX_OK
                 var noop = true
                 
                 /* Set a new load option */
@@ -49,8 +48,8 @@ func set() {
                         noop = false
                         let data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
                         if nvram.createNewAndAddToBootOrder(withData: data) == nil {
-                                print("Error setting boot option")
-                                status = 1
+                                print("Error setting boot option", to: &standardError)
+                                status = EX_DATAERR
                         }
                 }
                 
@@ -59,8 +58,8 @@ func set() {
                 if bootNextOption.wasSet {
                         noop = false
                         if !nvram.setBootNext(bootString: bootNextOption.value) {
-                                print("Error setting BootNext")
-                                status = 1
+                                print("Error setting BootNext", to: &standardError)
+                                status = EX_DATAERR
                         }
                 }
                 
@@ -75,8 +74,8 @@ func set() {
                                 }
                         }
                         if !timeoutResult {
-                                print("Error setting Timeout")
-                                status = 1
+                                print("Error setting Timeout", to: &standardError)
+                                status = EX_DATAERR
                         }
                 }
                 

@@ -37,7 +37,7 @@ class RegistryEntry {
                 guard registryEntry != 0 else {
                         print("Error: Failed to get registry entry from path")
                         Log.error("RegistryEntry: Error getting registry entry from path")
-                        Log.logExit(EX_IOERR)
+                        Log.logExit(EX_UNAVAILABLE)
                 }
         }
   
@@ -51,7 +51,7 @@ class RegistryEntry {
                         guard valueType == type else {
                                 let expected = CFCopyTypeIDDescription(type) as String
                                 let instead = CFCopyTypeIDDescription(valueType) as String
-                                print("RegistryEntry value(key:type:): Expected '\(expected)' type for '\(key)' Instead: '\(instead)'")
+                                print("RegistryEntry value(key:type:): Expected '\(expected)' type for '\(key)' Instead: '\(instead)'", to: &standardError)
                                 Log.error("CFType mismatch")
                                 return nil
                         }

@@ -65,27 +65,27 @@ func make() {
                                 let errorCode = error.code
                                 print(errorDescription)
                                 Log.error("Error serializing to XML (%{public}@)", String(errorCode))
-                                Log.logExit(1)
+                                Log.logExit(EX_UNAVAILABLE)
                         }
                         if let xml = String.init(data: propertyList, encoding: .utf8) {
                                 let outputString = String(xml.characters.filter { !"\n\t\r".characters.contains($0) })
                                 print(outputString)
                         } else {
-                                print("Error printing serialized xml property list representation")
-                                Log.logExit(1)
+                                Log.error("Error printing serialized xml property list representation")
+                                Log.logExit(EX_UNAVAILABLE)
                         }
                 }
                 
                 if labelOption.value == nil || loaderOption.value == nil {
                         Log.error("Required options should no longer be nil")
-                        Log.logExit(1)
+                        Log.logExit(EX_DATAERR)
                 }
                 
                 let testCount: Int = 54
                 let data: Data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
                 if data.count < testCount {
                         Log.error("Variable data is too small")
-                        Log.logExit(1)
+                        Log.logExit(EX_DATAERR)
                 }
                 
                 /* Output to dmpstore format file */
@@ -104,9 +104,9 @@ func make() {
                                 let errorCode = error.code
                                 print(errorDescription)
                                 Log.error("Error writing output file (%{public}@)", String(errorCode))
-                                Log.logExit(1)
+                                Log.logExit(EX_CANTCREAT)
                         }
-                        Log.logExit(0)
+                        Log.logExit(EX_OK)
                 }
                 
                 /* Printed output */
@@ -118,7 +118,7 @@ func make() {
                 } else {
                         printRawHex(data: data)
                 }
-                Log.logExit(0)
+                Log.logExit(EX_OK)
                 
         default:
                 commandLine.printUsage(withMessageForError: optionParser.status)

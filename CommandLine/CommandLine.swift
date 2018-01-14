@@ -33,6 +33,7 @@ class CommandLine {
                 case invalidArgument(String)
                 case invalidValueForOption(Option, [String])
                 case missingRequiredOptions([Option])
+                case missingRequiredOptionGroup
                 var description: String {
                         switch self {
                         case .success:
@@ -63,6 +64,9 @@ class CommandLine {
                                 let string: String = mapped.joined(separator: ", ")
                                 Log.error("Parse error: Missing required options %{public}@", string)
                                 return "Missing required option\(s): \(string)"
+                        case .missingRequiredOptionGroup:
+                                Log.error("Parse error: Missing required option group(s)")
+                                return "Missing required option(s)"
                         }
                 }
                 

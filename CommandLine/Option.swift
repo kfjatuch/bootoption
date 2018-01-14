@@ -23,7 +23,7 @@ class Option {
         
         let shortFlag: String?
         let longFlag: String?
-        let required: Bool
+        let required: Int
         let helpMessage: String
         let precludes: String
         
@@ -70,7 +70,7 @@ class Option {
                 return string
         }
         
-        internal init(_ shortFlag: String?, _ longFlag: String?, _ required: Bool, _ helpMessage: String, _ precludes: String) {
+        internal init(_ shortFlag: String?, _ longFlag: String?, _ required: Int, _ helpMessage: String, _ precludes: String) {
                 if shortFlag != nil {
                         assert(shortFlag!.characters.count == 1, "Short flag must be a single character")
                         assert(Int(shortFlag!) == nil && shortFlag!.toDouble() == nil, "Short flag cannot be a numeric value")
@@ -86,17 +86,17 @@ class Option {
         }
         
         /* Initializes a new Option that has both long and short flags. */
-        convenience init(shortFlag: String, longFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
+        convenience init(shortFlag: String, longFlag: String, required: Int = 0, helpMessage: String, precludes: String = "") {
                 self.init(shortFlag, longFlag, required, helpMessage, precludes)
         }
         
         /* Initializes a new Option that has only a short flag. */
-        convenience init(shortFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
+        convenience init(shortFlag: String, required: Int = 0, helpMessage: String, precludes: String = "") {
                 self.init(shortFlag, nil, required, helpMessage, precludes)
         }
         
         /* Initializes a new Option that has only a long flag. */
-        convenience init(longFlag: String, required: Bool = false, helpMessage: String, precludes: String = "") {
+        convenience init(longFlag: String, required: Int = 0, helpMessage: String, precludes: String = "") {
                 self.init(nil, longFlag, required, helpMessage, precludes)
         }
         

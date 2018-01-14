@@ -23,10 +23,10 @@ import Foundation
 func delete() {
         
         Log.info("Setting up command line")
-        let variableOption = StringOption(shortFlag: "b", longFlag: "boot", helpMessage: "boot name or number #### to delete (hex)")
-        let bootNextOption = BoolOption(shortFlag: "n", longFlag: "bootnext", helpMessage: "delete BootNext")
-        let timeoutOption = BoolOption(shortFlag: "t", longFlag: "timeout", helpMessage: "delete the timeout")
-        commandLine.invocationHelpMessage = "delete [-b ####] [-n] [-t]"
+        let variableOption = StringOption(shortFlag: "b", longFlag: "boot", required: 1, helpMessage: "boot name or number #### to delete (hex)")
+        let bootNextOption = BoolOption(shortFlag: "n", longFlag: "bootnext", required: 2, helpMessage: "delete BootNext")
+        let timeoutOption = BoolOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "delete the timeout")
+        commandLine.invocationHelpMessage = "delete -b #### | -n | -t"
         commandLine.setOptions(variableOption, bootNextOption, timeoutOption)
         
         let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)

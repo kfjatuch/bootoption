@@ -172,11 +172,45 @@ class OptionParser {
                 
                 /* Check to see if any required options were not matched */
                 
-                let missingOptions = options.filter { $0.required && !$0.wasSet }
-                guard missingOptions.count == 0 else {
-                        self.status = .missingRequiredOptions(missingOptions)
-                        return
+                var groups: [Int] = Array()
+                for option in options {
+                        /* Get the unique values of options' required property */
+                        let required = option.required
+                        if required != 0 && !groups.contains(required) {
+                                groups.append(required)
+                        }
                 }
+                if groups.count > 1 {
+                        /* if we have different groups of required options */
+                        for group in groups {
+                                for option in options {
+                                        /*
+                                         *  remove a unique value from the groups array if not
+                                         *  all options specifying it have been set
+                                         */
+                                        if option.required == group && !option.wasSet {
+                                                groups.remove(at: groups.index(where: { $0 == group } )!)
+                                                break
+                                        }
+                                }
+                        }
+                        /* return if there are no groups with all required options set */
+                        if groups.count == 0 {
+                                /* this error ambiguous */
+                                self.status = .missingRequiredOptionGroup
+                                return
+                        }
+                } else {
+                        /* only one set of required options with same required value */
+                        let missingOptions = options.filter { $0.required != 0 && !$0.wasSet }
+                        guard missingOptions.count == 0 else {
+                                /* this error is specific about missing arguments */
+                                self.status = .missingRequiredOptions(missingOptions)
+                                return
+                        }
+                }
+                
+                /* Capture any unparsed arguments */
                 
                 self.unparsedArguments = raw.filter { $0 != "" }
                 self.status = .success

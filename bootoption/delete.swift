@@ -33,6 +33,11 @@ func delete() {
         switch optionParser.status {
         case .success:
                 
+                if commandLine.userName != "root" {
+                        print("Only root can delete NVRAM variables.", to: &standardError)
+                        Log.logExit(EX_USAGE)
+                }
+                
                 var status: Int32 = 0
                 var noop = true
                 

@@ -40,7 +40,7 @@ class CommandLine {
                                 return "OK"
                         case .noInput:
                                 Log.info("Parse error: Nothing to parse")
-                                return "Invalid input"
+                                return ""
                         case .tooManyOptions:
                                 Log.error("Parse error: Too many options")
                                 return "Some options preclude the use of others."
@@ -69,6 +69,7 @@ class CommandLine {
         }
         
         var baseName = String()
+        var userName: String?
         var format: ((String, CommandLine.style) -> String)?
         var rawArguments: [String]
         var options: [Option] = Array()
@@ -112,6 +113,7 @@ class CommandLine {
                 } else {
                         self.format = formatUser
                 }
+                self.userName = NSUserName()
                 Log.info("Command line initialized")
         }
         
@@ -215,7 +217,7 @@ class CommandLine {
                 case .invocationMessage:
                         return "\(string)\n"
                 case .errorMessage:
-                        return "\(string)\n"
+                        return string != "" ? "\(string)\n" : ""
                 case .optionListItem:
                         let option = string.padding(toLength: self.optionWidth, withPad: " ", startingAt: 0)
                         return "\(self.listPadding)\(option)"

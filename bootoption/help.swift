@@ -21,6 +21,6 @@
 import Foundation
 
 func help() {
-        commandLine.printUsage()
+        commandLine.printUsage(verbs: true)
         Log.logExit(0)
 }

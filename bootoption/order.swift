@@ -21,6 +21,10 @@
 import Foundation
 
 func reorder(from: Int, to: Int) {
+        if commandLine.userName != "root" {
+                print("Only root can modify the boot order.", to: &standardError)
+                Log.logExit(EX_USAGE)
+        }
         if var bootOrder = nvram.getBootOrderArray() {
                 let i = bootOrder.indices
                 guard i.contains(from) && i.contains(to) else {
@@ -43,12 +47,12 @@ func reorder(from: Int, to: Int) {
         }
 }
 
+func orderUsage() {
+        print("Usage: bootoption order <current position> to <new position>" , to: &standardError)
+        Log.logExit(1)
+}
+
 func order() {
-        
-        func orderUsage() {
-                print("Usage: bootoption order <current position> to <new position>")
-                Log.logExit(1)
-        }
         
         var arguments = commandLine.rawArguments
         

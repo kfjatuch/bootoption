@@ -60,6 +60,11 @@ class OptionParser {
                 Log.info("Parsing command line options...")
                 
                 var raw = rawArguments
+                
+                if rawArguments.count == 0 {
+                        return
+                }
+                
                 let argumentsEnumerator = rawArguments.enumerated()
                 
                 for (index, string) in argumentsEnumerator {

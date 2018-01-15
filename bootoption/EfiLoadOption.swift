@@ -39,14 +39,12 @@ struct EfiLoadOption {
                 return data
         }
         
-        static func createData(fromLoaderPath loader: String, label: String, unicode: String?) -> Data {
-                
-                var optionalData: Data?
+        init(fromLoaderPath loader: String, label: String, unicode: String?) {
                 
                 /* Attributes */
                 
-                Log.info("Generating attributes")
-                let defaultAttributes = Data.init(bytes: [1, 0, 0, 0])
+                Log.info("Using default attributes")
+                self.attributes = Data.init(bytes: [1, 0, 0, 0])
                 
                 /* Description */
                 
@@ -55,48 +53,34 @@ struct EfiLoadOption {
                         Log.error("Forbidden character(s) found in description")
                 }
                 
-                let description = label.efiStringData()
+                self.description = label.efiStringData()
                 
                 /* Device path list */
                 
                 Log.info("Generating device path list")
-                var devicePathList = Data.init()
                 let hardDrive = HardDriveMediaDevicePath(forFile: loader)
                 let file = FilePathMediaDevicePath(path: loader, mountPoint: hardDrive.mountPoint)
                 let end = EndDevicePath()
-                devicePathList.append(hardDrive.data)
-                devicePathList.append(file.data)
-                devicePathList.append(end.data)
+                self.devicePathList = Data.init()
+                self.devicePathList.append(hardDrive.data)
+                self.devicePathList.append(file.data)
+                self.devicePathList.append(end.data)
                 
                 /* Device path list length */
                 
                 Log.info("Generating device path list length")
-                var devicePathListLength = Data.init()
-                var lengthValue = UInt16(devicePathList.count)
-                devicePathListLength.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
+                var lengthValue = UInt16(self.devicePathList.count)
+                self.devicePathListLength = Data.init()
+                self.devicePathListLength.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
                 
                 /* Optional data */
                 
                 if unicode != nil {
                         Log.info("Generating optional data")
-                        optionalData = unicode!.efiStringData(withNullTerminator: false)
+                        self.optionalData = unicode!.efiStringData(withNullTerminator: false)
                 } else {
                         Log.info("Not generating optional data, none specified")
                 }
-                
-                /* Boot option variable data */
-                
-                Log.info("Generating EFI_LOAD_OPTION structured buffer")
-                var efiLoadOption = Data.init()
-                efiLoadOption.append(defaultAttributes)
-                efiLoadOption.append(devicePathListLength)
-                efiLoadOption.append(description)
-                efiLoadOption.append(devicePathList)
-                if (optionalData != nil) {
-                        efiLoadOption.append(optionalData!)
-                }
-                
-                return efiLoadOption as Data
-                
+   
         }
 }

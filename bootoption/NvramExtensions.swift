@@ -31,7 +31,7 @@ extension Nvram {
                 if var bootOrderBuffer: Data = self.getBootOrder() {
                         let bootOrderBufferSize: Int = bootOrderBuffer.count
                         for _ in 1 ... (bootOrderBufferSize / 2) {
-                                let optionNumber: UInt16 = remove16BitInt(from: &bootOrderBuffer)
+                                let optionNumber: UInt16 = bootOrderBuffer.remove16()
                                 bootOrder.append(optionNumber)
                         }
                 }

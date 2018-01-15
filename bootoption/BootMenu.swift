@@ -30,25 +30,14 @@ class BootMenu {
                 var description: String
                 
                 init(name: String, data: Data, order: Int?) {
-                        func removeOptionDescription(from buffer: inout Data) -> String {
-                                var description: String = ""
-                                for _ in buffer {
-                                        let byte: UInt16 = remove16BitInt(from: &buffer)
-                                        if byte == 0 {
-                                                break
-                                        }
-                                        description.append(Character(UnicodeScalar(byte)!))
-                                }
-                                return description
-                        }
                         self.name = name
                         self.order = order ?? -1
                         var buffer: Data = data
-                        let attributes: UInt32 = remove32BitInt(from: &buffer)
-                        remove16BitInt(from: &buffer)
+                        let attributes: UInt32 = buffer.remove32()
+                        buffer.remove16()
                         self.enabled = (attributes & 0x1 == 0x1 ? true : false) // bit 0
                         self.hidden = (attributes & 0x8 == 0x8 ? true : false)
-                        self.description = removeOptionDescription(from: &buffer)
+                        self.description = buffer.removeEfiString()
                 }
         }
         
@@ -66,15 +55,15 @@ class BootMenu {
                 }
                 /* BootCurrent */
                 if var bootCurrentBuffer: Data = nvram.getBootCurrent() {
-                        bootCurrent = remove16BitInt(from: &bootCurrentBuffer)
+                        bootCurrent = bootCurrentBuffer.remove16()
                 }
                 /* BootNext */
                 if var bootNextBuffer: Data = nvram.getBootNext() {
-                        bootNext = remove16BitInt(from: &bootNextBuffer)
+                        bootNext = bootNextBuffer.remove16()
                 }
                 /* Timeout */
                 if var timeoutBuffer: Data = nvram.getTimeout() {
-                        timeout = remove16BitInt(from: &timeoutBuffer)
+                        timeout = timeoutBuffer.remove16()
                 }
                 /* Get data for options we can find */
                 for n in 0x0 ..< 0xFF {

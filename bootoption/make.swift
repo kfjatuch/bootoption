@@ -82,8 +82,9 @@ func make() {
                 }
                 
                 let testCount: Int = 54
-                let data: Data = EfiLoadOption.createData(fromLoaderPath: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
-                if data.count < testCount {
+                let option = EfiLoadOption(fromLoaderPath: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
+                let loadOptionData = option.data
+                if loadOptionData.count < testCount {
                         Log.error("Variable data is too small")
                         Log.logExit(EX_DATAERR)
                 }
@@ -91,7 +92,7 @@ func make() {
                 /* Output to dmpstore format file */
                 
                 if outputOption.wasSet {
-                        let dmpstoreOption = Dmpstore.Option(fromData: data)
+                        let dmpstoreOption = Dmpstore.Option(fromData: loadOptionData)
                         let dmpstoreOrder = Dmpstore.Order(adding: dmpstoreOption.created)
                         var buffer = Data.init()
                         buffer.append(dmpstoreOption.data)
@@ -112,11 +113,11 @@ func make() {
                 /* Printed output */
                 
                 if appleOption.value {
-                        printFormatString(data: data)
+                        printFormatString(data: loadOptionData)
                 } else if xmlOption.value {
-                        printXml(data: data)
+                        printXml(data: loadOptionData)
                 } else {
-                        printRawHex(data: data)
+                        printRawHex(data: loadOptionData)
                 }
                 Log.logExit(EX_OK)
                 

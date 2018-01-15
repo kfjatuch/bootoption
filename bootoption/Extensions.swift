@@ -20,6 +20,60 @@
 
 import Foundation
 
+extension Data {
+        
+        mutating func removeEfiString() -> String {
+                var string = String()
+                for _ in self {
+                        let byte: UInt16 = self.remove16()
+                        if byte == 0 {
+                                break
+                        }
+                        string.append(Character(UnicodeScalar(byte)!))
+                }
+                return string
+        }
+        
+        @discardableResult mutating func remove64() -> UInt64 {
+                var buffer = Data.init()
+                for _ in 1...8 {
+                        buffer.append(self.remove(at: 0))
+                }
+                return buffer.withUnsafeBytes{$0.pointee}
+                
+        }
+        
+        @discardableResult mutating func remove32() -> UInt32 {
+                var buffer = Data.init()
+                for _ in 1...4 {
+                        buffer.append(self.remove(at: 0))
+                }
+                return buffer.withUnsafeBytes{$0.pointee}
+                
+        }
+        
+        @discardableResult mutating func remove16() -> UInt16 {
+                var buffer = Data.init()
+                for _ in 1...2  {
+                        buffer.append(self.remove(at: 0))
+                }
+                return buffer.withUnsafeBytes{$0.pointee}
+        }
+        
+        @discardableResult mutating func remove8() -> UInt8 {
+                return self.remove(at: 0)
+        }
+        
+        @discardableResult mutating func remove(bytesAsData bytes: Int) -> Data {
+                var buffer = Data.init()
+                for _ in 1...bytes {
+                        buffer.append(self.remove(at: 0))
+                }
+                return buffer
+        }
+        
+}
+
 extension Array {
         mutating func order(from: Int, to: Int) {
                 insert(remove(at: from), at: to)
@@ -123,69 +177,4 @@ extension String {
                 }
         }
         
-}
-
-
-
-
-extension Int {
-        func times(f: () -> ()) {
-                if self > 0 {
-                        for _ in 0..<self {
-                                f()
-                        }
-                }
-        }
-        func times(f: @autoclosure () -> ()) {
-                if self > 0 {
-                        for _ in 0..<self {
-                                f()
-                        }
-                }
-        }
-}
-
-
-
-
-@discardableResult func remove64BitInt(from: inout Data) -> UInt64 {
-        var buffer = Data.init()
-        8.times {
-               buffer.append(from.remove(at: 0))
-        }
-        return buffer.withUnsafeBytes{$0.pointee}
-
-}
-
-@discardableResult func remove32BitInt(from: inout Data) -> UInt32 {
-        var buffer = Data.init()
-        4.times {
-                buffer.append(from.remove(at: 0))
-        }
-        return buffer.withUnsafeBytes{$0.pointee}
-        
-}
-
-@discardableResult func remove16BitInt(from: inout Data) -> UInt16 {
-        var buffer = Data.init()
-        2.times {
-                buffer.append(from.remove(at: 0))
-        }
-        return buffer.withUnsafeBytes{$0.pointee}
-}
-
-@discardableResult func remove8BitInt(from: inout Data) -> UInt8 {
-        return from.remove(at: 0)
-}
-
-/*
- *   Data return type
- */
-
-@discardableResult func remove(from: inout Data, bytes: Int) -> Data {
-        var buffer = Data.init()
-        Int(bytes).times {
-                buffer.append(from.remove(at: 0))
-        }
-        return buffer
 }

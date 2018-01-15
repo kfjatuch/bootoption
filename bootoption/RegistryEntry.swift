@@ -35,7 +35,6 @@ class RegistryEntry {
         init(fromPath path: String) {
                 registryEntry = IORegistryEntryFromPath(kIOMasterPortDefault, path)
                 guard registryEntry != 0 else {
-                        print("Error: Failed to get registry entry from path")
                         Log.error("RegistryEntry: Error getting registry entry from path")
                         Log.logExit(EX_UNAVAILABLE)
                 }
@@ -49,9 +48,6 @@ class RegistryEntry {
                 if let value: CFTypeRef = IORegistryEntryCreateCFProperty(registryEntry, key as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() {
                         let valueType = CFGetTypeID(value)
                         guard valueType == type else {
-                                let expected = CFCopyTypeIDDescription(type) as String
-                                let instead = CFCopyTypeIDDescription(valueType) as String
-                                print("RegistryEntry value(key:type:): Expected '\(expected)' type for '\(key)' Instead: '\(instead)'", to: &standardError)
                                 Log.error("CFType mismatch")
                                 return nil
                         }

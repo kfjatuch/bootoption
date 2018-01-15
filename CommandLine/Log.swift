@@ -22,18 +22,33 @@ struct Log {
         
         static func logExit(_ status: Int32, _ errorMessage: String? = nil) -> Never {
                 let logMessage: StaticString = "* exit status %{public}d"
-                if status != 0 {
-                        Log.log(logMessage, status)
-                        if status != 64 {
-                                var description = String()
-                                if let string: String = errorMessage {
-                                         description = "\(string) "
-                                }
-                                print("\(description)(\(status))", to: &standardError)
-                        }
-                } else {
+                if status == 0 || status == 64 {
                         Log.info(logMessage,status)
+                        exit(status)
                 }
+                var description = String()
+                if let string: String = errorMessage {
+                         description = "\(string) "
+                } else {
+                        switch status {
+                        case EX_SOFTWARE:
+                                description = "Error: Internal "
+                        case EX_NOPERM:
+                                description = "Error: Permission denied "
+                        case EX_NOINPUT:
+                                description = "Error: No input "
+                        case EX_CANTCREAT:
+                                description = "Error: Can't create "
+                        case EX_UNAVAILABLE:
+                                description = "Error: Service unavailable "
+                        case EX_IOERR:
+                                description = "Error: I/O "
+                        default:
+                                description = ""
+                        }
+                }
+                print("\(description)(\(status))", to: &standardError)
+                Log.log(logMessage,status)
                 exit(status)
         }
         

@@ -82,7 +82,7 @@ func make() {
                 }
                 
                 let testCount: Int = 54
-                let data: Data = efiLoadOption(loader: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
+                let data: Data = EfiLoadOption.createData(fromLoaderPath: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
                 if data.count < testCount {
                         Log.error("Variable data is too small")
                         Log.logExit(EX_DATAERR)

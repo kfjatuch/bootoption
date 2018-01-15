@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4D0ADAE2200A80FF00C82104 /* OptionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D0ADAE1200A80FF00C82104 /* OptionParser.swift */; };
 		4D0ADAE4200A96F900C82104 /* Verb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D0ADAE3200A96F900C82104 /* Verb.swift */; };
+		4D18408B200CA7F100C82104 /* EfiLoadOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D18408A200CA7F100C82104 /* EfiLoadOption.swift */; };
 		4D1A549B20033AAC00C82104 /* BootMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D1A549A20033AAB00C82104 /* BootMenu.swift */; };
 		4D2B86801FF98F3900C82104 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2B867F1FF98F3900C82104 /* Extensions.swift */; };
 		4D31ECE22008125400C82104 /* order.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D31ECE12008125400C82104 /* order.swift */; };
@@ -30,7 +31,6 @@
 		4DD5EF791FF91DDF00C82104 /* RegistryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */; };
 		4DE358BA1FFE17C000C82104 /* crc32.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE358B91FFE17C000C82104 /* crc32.swift */; };
 		4DE358BC1FFE214B00C82104 /* Dmpstore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE358BB1FFE214B00C82104 /* Dmpstore.swift */; };
-		4DFE9F212005F37000C82104 /* efiLoadOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DFE9F202005F37000C82104 /* efiLoadOption.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -48,6 +48,7 @@
 /* Begin PBXFileReference section */
 		4D0ADAE1200A80FF00C82104 /* OptionParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionParser.swift; sourceTree = "<group>"; };
 		4D0ADAE3200A96F900C82104 /* Verb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Verb.swift; sourceTree = "<group>"; };
+		4D18408A200CA7F100C82104 /* EfiLoadOption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EfiLoadOption.swift; sourceTree = "<group>"; };
 		4D1A549A20033AAB00C82104 /* BootMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BootMenu.swift; sourceTree = "<group>"; };
 		4D2B867F1FF98F3900C82104 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		4D31ECE12008125400C82104 /* order.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = order.swift; sourceTree = "<group>"; };
@@ -72,7 +73,6 @@
 		4DD5EF7A1FF9238000C82104 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4DE358B91FFE17C000C82104 /* crc32.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = crc32.swift; sourceTree = "<group>"; };
 		4DE358BB1FFE214B00C82104 /* Dmpstore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dmpstore.swift; sourceTree = "<group>"; };
-		4DFE9F202005F37000C82104 /* efiLoadOption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = efiLoadOption.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,7 +127,7 @@
 				4D78F50C20042CE600C82104 /* delete.swift */,
 				4DD5EF751FF91DDE00C82104 /* DevicePath.swift */,
 				4DE358BB1FFE214B00C82104 /* Dmpstore.swift */,
-				4DFE9F202005F37000C82104 /* efiLoadOption.swift */,
+				4D18408A200CA7F100C82104 /* EfiLoadOption.swift */,
 				4D2B867F1FF98F3900C82104 /* Extensions.swift */,
 				4D4EB9012004097B00C82104 /* help.swift */,
 				4D4EB8FD2003FB2800C82104 /* list.swift */,
@@ -211,7 +211,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4D0ADAE4200A96F900C82104 /* Verb.swift in Sources */,
-				4DFE9F212005F37000C82104 /* efiLoadOption.swift in Sources */,
 				4D90D7542006E86600C82104 /* NvramExtensions.swift in Sources */,
 				4D4EB8FE2003FB2800C82104 /* list.swift in Sources */,
 				4D4EB8FC2003FB1000C82104 /* make.swift in Sources */,
@@ -222,6 +221,7 @@
 				4D1A549B20033AAC00C82104 /* BootMenu.swift in Sources */,
 				4DA110C62004D8D000C82104 /* Log.swift in Sources */,
 				4D4EB9022004097B00C82104 /* help.swift in Sources */,
+				4D18408B200CA7F100C82104 /* EfiLoadOption.swift in Sources */,
 				4D461F1A1FFD3A6200C82104 /* Option.swift in Sources */,
 				4DE358BA1FFE17C000C82104 /* crc32.swift in Sources */,
 				4D490431200A2FBC00C82104 /* VerbParser.swift in Sources */,

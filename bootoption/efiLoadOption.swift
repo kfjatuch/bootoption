@@ -36,10 +36,7 @@ func efiLoadOption(loader: String, label: String, unicode: String?) -> Data {
                 Log.error("Forbidden character(s) found in description")
         }
         
-        var description = label.data(using: String.Encoding.utf16)!
-        description.removeFirst()
-        description.removeFirst()
-        description.append(contentsOf: [0, 0])
+        let description = label.efiStringData()
         
         /* Device path list */
         
@@ -63,9 +60,7 @@ func efiLoadOption(loader: String, label: String, unicode: String?) -> Data {
         
         if unicode != nil {
                 Log.info("Generating optional data")
-                optionalData = unicode!.data(using: String.Encoding.utf16)!
-                optionalData?.removeFirst()
-                optionalData?.removeFirst()
+                optionalData = unicode!.efiStringData(withNullTerminator: false)
         } else {
                 Log.info("Not generating optional data, none specified")
         }

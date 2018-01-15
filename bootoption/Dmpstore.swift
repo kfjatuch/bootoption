@@ -46,16 +46,14 @@ struct Dmpstore {
                                 Log.logExit(EX_UNAVAILABLE)
                         }
                         let name = nvram.bootStringFromBoot(number: emptyBootOption)
-                        var nameData = name.data(using: String.Encoding.utf16)!
-                        nameData.removeFirst()
-                        nameData.removeFirst()
-                        nameData.append(contentsOf: [0, 0])
-                        if nameData.count != Dmpstore.Option.nameSizeConstant {
-                                Log.error("Name size data is wrong")
+                        
+                        /* store name data */
+                        self.name = name.efiStringData()
+                        if self.name.count != Dmpstore.Option.nameSizeConstant {
+                                Log.error("Name is an incorrect size")
                                 Log.logExit(EX_SOFTWARE)
                         }
-                        /* store name data */
-                        self.name = nameData
+
                         
                         /* store variable data */
                         self.variableData.append(variable)

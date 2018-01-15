@@ -34,6 +34,19 @@ extension FileHandle : TextOutputStream {
 }
 
 extension String {
+        
+        func efiStringData(withNullTerminator: Bool = true) -> Data {
+                var cstring = self.utf8CString
+                if !withNullTerminator {
+                        cstring.removeLast()
+                }
+                var data = Data()
+                for c in cstring {
+                        data.append(UInt8(c))
+                        data.append(UInt8(0))
+                }
+                return data
+        }
 
         func toDouble() -> Double? {
                 return NumberFormatter().number(from: self)?.doubleValue

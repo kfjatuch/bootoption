@@ -186,15 +186,11 @@ struct FilePathMediaDevicePath {
                         Log.error("Forbidden character(s) found in path")
                         Log.logExit(EX_DATAERR)
                 }
-                var pathData: Data = efiPath.data(using: String.Encoding.utf16)!
-                pathData.removeFirst()
-                pathData.removeFirst()
-                pathData.append(contentsOf: [0, 0])
-                path = pathData
+                path = efiPath.efiStringData()
                 
                 /* Length */
                 
-                var lengthValue = UInt16(pathData.count + 4)
+                var lengthValue = UInt16(path.count + 4)
                 length.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
         }   
 }

@@ -22,30 +22,11 @@ import Foundation
 
 class BootMenu {
         
-        struct Option {
-                var name: String
-                var order: Int
-                var enabled: Bool
-                var hidden: Bool
-                var description: String
-                
-                init(name: String, data: Data, order: Int?) {
-                        self.name = name
-                        self.order = order ?? -1
-                        var buffer: Data = data
-                        let attributes: UInt32 = buffer.remove32()
-                        buffer.remove16()
-                        self.enabled = (attributes & 0x1 == 0x1 ? true : false) // bit 0
-                        self.hidden = (attributes & 0x8 == 0x8 ? true : false)
-                        self.description = buffer.removeEfiString()
-                }
-        }
-        
         var bootOrder: [UInt16]?
         var bootCurrent: UInt16?
         var bootNext: UInt16?
         var timeout: UInt16?
-        var options: [Option] = Array()
+        var options: [EfiLoadOption] = Array()
 
         init() {
                 Log.info("Initialising boot menu")
@@ -66,15 +47,14 @@ class BootMenu {
                         timeout = timeoutBuffer.remove16()
                 }
                 /* Get data for options we can find */
-                for n in 0x0 ..< 0xFF {
-                        if let data: Data = nvram.getBootOption(n) {
-                                let order: Int? = self.bootOrder?.index(of: UInt16(n))
-                                options.append(Option.init(name: nvram.bootStringFromBoot(number: n), data: data, order: order))
+                for bootNumber in 0x0 ..< 0xFF {
+                        if let data: Data = nvram.getBootOption(bootNumber) {
+                                options.append(EfiLoadOption.init(fromBootNumber: bootNumber, data: data))
                         }
                         
                 }
                 /* Sort options by BootOrder */
-                options.sort(by: { $0.order < $1.order } )
+                options.sort(by: { $0.order! < $1.order! } )
         }
         
         var string: String {
@@ -107,18 +87,18 @@ class BootMenu {
                         let separator = " "
                         var paddedOrder = " --"
                         if option.order != -1 {
-                                paddedOrder = String(option.order + 1).leftPadding(toLength: 3, withPad: " ")
+                                paddedOrder = String(option.order! + 1).leftPadding(toLength: 3, withPad: " ")
                         }
                         string.append(paddedOrder)
                         string.append(":")
                         string.append(separator)
-                        string.append(option.name)
+                        string.append(nvram.bootStringFromBoot(number: option.bootNumber!))
                         string.append(separator)
-                        string.append(option.description.padding(toLength: 28, withPad: " ", startingAt: 0))
-                        if !option.enabled {
+                        string.append(option.descriptionString.padding(toLength: 28, withPad: " ", startingAt: 0))
+                        if !option.enabled! {
                                 string.append(" *D")
                         }
-                        if option.hidden {
+                        if option.hidden! {
                                 string.append(" *H")
                         }
                         string.append("\n")

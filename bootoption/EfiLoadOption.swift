@@ -22,15 +22,20 @@ import Foundation
 
 struct EfiLoadOption {
         
-        var attributes: Data
-        var devicePathListLength: Data
-        var description: Data
-        var devicePathList: Data
+        var bootNumber: Int?
+        
+        /* data */
+        var attributes: UInt32
+        var devicePathListLength: UInt16
+        var description = Data()
+        var devicePathList = Data()
         var optionalData: Data?
         var data: Data {
                 var data = Data.init()
-                data.append(attributes)
-                data.append(devicePathListLength)
+                var buffer32: UInt32 = self.attributes
+                data.append(UnsafeBufferPointer(start: &buffer32, count: 1))
+                var buffer16: UInt16 = self.devicePathListLength
+                data.append(UnsafeBufferPointer(start: &buffer16, count: 1))
                 data.append(description)
                 data.append(devicePathList)
                 if (optionalData != nil) {
@@ -39,12 +44,56 @@ struct EfiLoadOption {
                 return data
         }
         
-        init(fromLoaderPath loader: String, label: String, unicode: String?) {
+        /* properties */
+        var order: Int?
+        var enabled: Bool? {
+                return self.attributes & 0x1 == 0x1 ? true : false
+        }
+        var hidden: Bool? {
+                return self.attributes & 0x8 == 0x8 ? true : false
+        }
+        var descriptionString: String {
+                var data = self.description
+                let string = data.removeEfiString()
+                return string
+        }
+        var optionalDataString: String {
+                if self.optionalData != nil {
+                        var data = self.optionalData
+                        let string = data!.removeEfiString()
+                        return string
+                } else {
+                        return ""
+                }
+        }
+        
+        init(fromBootNumber number: Int, data: Data) {
+                self.bootNumber = number
+                self.order = nvram.positionInBootOrder(number: number) ?? -1
+                var buffer: Data = data
+                // attributes
+                self.attributes = buffer.remove32()
+                // device path list
+                self.devicePathListLength = buffer.remove16()
+                // description
+                for _ in buffer {
+                        var bytes: UInt16 = buffer.remove16()
+                        self.description.append(UnsafeBufferPointer(start: &bytes, count: 1))
+                        if bytes == 0 {
+                                break
+                        }
+                }
+                // device path list
                 
+
+        }
+        
+        init(createFromLoaderPath loader: String, label: String, unicode: String?) {
+
                 /* Attributes */
                 
                 Log.info("Using default attributes")
-                self.attributes = Data.init(bytes: [1, 0, 0, 0])
+                self.attributes = 0x1
                 
                 /* Description */
                 
@@ -69,9 +118,7 @@ struct EfiLoadOption {
                 /* Device path list length */
                 
                 Log.info("Generating device path list length")
-                var lengthValue = UInt16(self.devicePathList.count)
-                self.devicePathListLength = Data.init()
-                self.devicePathListLength.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
+                self.devicePathListLength = UInt16(self.devicePathList.count)
                 
                 /* Optional data */
                 

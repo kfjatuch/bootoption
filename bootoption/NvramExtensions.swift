@@ -27,6 +27,9 @@ extension Nvram {
          */
         
         func getBootOrderArray() -> [UInt16]? {
+                if self.savedBootOrder != nil {
+                        return self.savedBootOrder
+                }
                 var bootOrder: [UInt16] = Array()
                 if var bootOrderBuffer: Data = self.getBootOrder() {
                         let bootOrderBufferSize: Int = bootOrderBuffer.count
@@ -36,7 +39,8 @@ extension Nvram {
                         }
                 }
                 if !bootOrder.isEmpty {
-                        return bootOrder
+                        self.savedBootOrder = bootOrder
+                        return self.savedBootOrder
                 } else {
                         return nil
                 }
@@ -291,6 +295,16 @@ extension Nvram {
                         data.append(UnsafeBufferPointer(start: &bootNumber, count: 1))
                 }
                 return data
+        }
+        
+        /*
+         *  Helper: Position in boot order
+         */
+        
+        func positionInBootOrder(number: Int) -> Int? {
+                let bootOrder = self.getBootOrderArray()
+                let order: Int? = bootOrder?.index(of: UInt16(number))
+                return order
         }
         
 }

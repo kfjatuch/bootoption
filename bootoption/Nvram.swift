@@ -22,6 +22,8 @@ import Foundation
 
 class Nvram {
         
+        var savedBootOrder: [UInt16]?
+        
         let ioNvramForceSyncNowPropertyKey = "IONVRAM-FORCESYNCNOW-PROPERTY"
         let efiGlobalGuid:String = "8BE4DF61-93CA-11D2-AA0D-00E098032B8C"
         let options = RegistryEntry(fromPath: "IODeviceTree:/options")

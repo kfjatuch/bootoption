@@ -24,7 +24,8 @@ struct EfiLoadOption {
         
         var bootNumber: Int?
         
-        /* data */
+        /* Data */
+        
         var attributes: UInt32
         var devicePathListLength: UInt16
         var description = Data()
@@ -44,7 +45,8 @@ struct EfiLoadOption {
                 return data
         }
         
-        /* properties */
+        /* Properties */
+        
         var order: Int?
         var enabled: Bool? {
                 return self.attributes & 0x1 == 0x1 ? true : false
@@ -67,13 +69,20 @@ struct EfiLoadOption {
                 }
         }
         
-        init(fromBootNumber number: Int, data: Data) {
+        /* Device paths */
+        
+        var hardDriveDevicePath: HardDriveMediaDevicePath?
+        var fileDevicePath = Data.init()
+        
+        /* Init from variable */
+        
+        init(fromBootNumber number: Int, data: Data, details: Bool = false) {
                 self.bootNumber = number
                 self.order = nvram.positionInBootOrder(number: number) ?? -1
                 var buffer: Data = data
                 // attributes
                 self.attributes = buffer.remove32()
-                // device path list
+                // device path list length
                 self.devicePathListLength = buffer.remove16()
                 // description
                 for _ in buffer {
@@ -83,10 +92,19 @@ struct EfiLoadOption {
                                 break
                         }
                 }
-                // device path list
-                
+                if details {
+                        // device path list
+                        self.devicePathList = buffer.remove(bytesAsData: Int(self.devicePathListLength))
+                        parseDevicePathList(rawDevicePathList: self.devicePathList)
+                        if !buffer.isEmpty {
+                                self.optionalData = buffer
+                        }
+                }
+
 
         }
+        
+        /* Init create from path */
         
         init(createFromLoaderPath loader: String, label: String, unicode: String?) {
 
@@ -107,8 +125,8 @@ struct EfiLoadOption {
                 /* Device path list */
                 
                 Log.info("Generating device path list")
-                let hardDrive = HardDriveMediaDevicePath(forFile: loader)
-                let file = FilePathMediaDevicePath(path: loader, mountPoint: hardDrive.mountPoint)
+                let hardDrive = HardDriveMediaDevicePath(createUsingFilePath: loader)
+                let file = FilePathMediaDevicePath(createUsingFilePath: loader, mountPoint: hardDrive.mountPoint)
                 let end = EndDevicePath()
                 self.devicePathList = Data.init()
                 self.devicePathList.append(hardDrive.data)
@@ -128,6 +146,56 @@ struct EfiLoadOption {
                 } else {
                         Log.info("Not generating optional data, none specified")
                 }
-   
+                
+        }
+        
+        /* Device path parsing */
+        
+        mutating func parseDevicePathList(rawDevicePathList: Data) {
+                var buffer = rawDevicePathList
+                while !(buffer.isEmpty) {
+                        let type = buffer.remove8()
+                        let subType = buffer.remove8()
+                        let length = buffer.remove16()
+                        // Right now we only care about paths to files on GPT hard drives
+                        switch type {
+                        case 4: // Found type 4, media device path
+                                switch subType {
+                                case 1: // Found type 4, sub-type 1, hard drive device path
+                                        var hardDriveDevicePath = buffer.remove(bytesAsData: Int(length) - 4)
+                                        if !parseHardDriveDevicePath(buffer: &hardDriveDevicePath) {
+                                                Log.logExit(EX_IOERR, "Error parsing hard drive device path")
+                                        }
+                                        break;
+                                case 4: // Found type 4, sub-type 4, file path
+                                        let pathData = buffer.remove(bytesAsData: Int(length) - 4)
+                                        self.fileDevicePath = pathData
+                                        buffer = Data.init()
+                                        break;
+                                default: // Found some other sub-type
+                                        buffer = Data.init()
+                                        break; 
+                                }
+                                break;
+                        default: // Found some other type
+                                buffer = Data.init()
+                                break;
+                        }
+                }
+        }
+        
+        mutating func parseHardDriveDevicePath(buffer: inout Data) -> Bool {
+                self.hardDriveDevicePath = HardDriveMediaDevicePath.init()
+                self.hardDriveDevicePath?.partitionNumber = buffer.remove32()
+                self.hardDriveDevicePath?.partitionStart = buffer.remove64()
+                self.hardDriveDevicePath?.partitionSize = buffer.remove64()
+                self.hardDriveDevicePath?.partitionSignature = buffer.remove(bytesAsData: 16)
+                self.hardDriveDevicePath?.partitionFormat = buffer.remove8()
+                self.hardDriveDevicePath?.signatureType = buffer.remove8()
+                if !buffer.isEmpty || self.hardDriveDevicePath?.signatureType != 2 {
+                        print("parseHardDriveDevicePath(): Error", to: &standardError)
+                        return false
+                }
+                return true
         }
 }

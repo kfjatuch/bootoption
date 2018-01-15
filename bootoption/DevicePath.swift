@@ -25,12 +25,15 @@ struct HardDriveMediaDevicePath {
         var data: Data {
                 get {
                         var data = Data.init()
+                        var partitionStartValue: UInt64 = self.partitionStart
+                        var partitionSizeValue: UInt64 = self.partitionSize
+                        var partitionNumberValue: UInt32 = self.partitionNumber
                         data.append(type)
                         data.append(subType)
                         data.append(length)
-                        data.append(partitionNumber)
-                        data.append(partitionStart)
-                        data.append(partitionSize)
+                        data.append(UnsafeBufferPointer(start: &partitionNumberValue, count: 1))
+                        data.append(UnsafeBufferPointer(start: &partitionStartValue, count: 1))
+                        data.append(UnsafeBufferPointer(start: &partitionSizeValue, count: 1))
                         data.append(partitionSignature)
                         data.append(partitionFormat)
                         data.append(signatureType)
@@ -38,33 +41,32 @@ struct HardDriveMediaDevicePath {
                 }
         }
         
-        let mountPoint: String
+        var mountPoint = String()
         let type = Data.init(bytes: [4])
         let subType = Data.init(bytes: [1])
         let length = Data.init(bytes: [42, 0])
-        var partitionNumber = Data.init()
-        var partitionStart = Data.init()
-        var partitionSize = Data.init()
+        var partitionNumber: UInt32 = 0
+        var partitionStart: UInt64 = 0
+        var partitionSize: UInt64 = 0
         var partitionSignature = Data.init()
-        let partitionFormat = Data.init(bytes: [2])
-        let signatureType = Data.init(bytes: [2])
+        var partitionFormat: UInt8 = 2 // GPT
+        var signatureType: UInt8 = 2 // GPT GUID
         
-        init(forFile path: String) {
+        init() {
+                // using default values
+        }
+        
+        init(createUsingFilePath path: String) {
+                
                 let fileManager: FileManager = FileManager()
-                
                 guard fileManager.fileExists(atPath: path) else {
-                        Log.error("Loader not found at specified path")
-                        Log.logExit(EX_IOERR)
+                        Log.logExit(EX_IOERR, "Loader not found at specified path")
                 }
-                
                 guard let session:DASession = DASessionCreate(kCFAllocatorDefault) else {
-                        Log.error("Failed to create DASession")
-                        Log.logExit(EX_UNAVAILABLE)
+                        Log.logExit(EX_UNAVAILABLE, "Failed to create DASession")
                 }
-                
                 guard var volumes:[URL] = fileManager.mountedVolumeURLs(includingResourceValuesForKeys: nil) else {
-                        Log.error("Failed to get mounted volume URLs")
-                        Log.logExit(EX_UNAVAILABLE)
+                        Log.logExit(EX_UNAVAILABLE, "Failed to get mounted volume URLs")
                 }
                 volumes = volumes.filter { $0.isFileURL }
 
@@ -99,24 +101,19 @@ struct HardDriveMediaDevicePath {
                 let cfMountPoint: CFString = mountPoint as CFString
                 
                 guard let url: CFURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfMountPoint, CFURLPathStyle(rawValue: 0)!, true) else {
-                        Log.error("Failed to create CFURL for mount point")
-                        Log.logExit(EX_UNAVAILABLE)
+                        Log.logExit(EX_UNAVAILABLE, "Failed to create CFURL for mount point")
                 }
                 guard let disk: DADisk = DADiskCreateFromVolumePath(kCFAllocatorDefault, session, url) else {
-                        Log.error("Failed to create DADisk from volume URL")
-                        Log.logExit(EX_UNAVAILABLE)
+                        Log.logExit(EX_UNAVAILABLE, "Failed to create DADisk from volume URL")
                 }
                 guard let cfDescription: CFDictionary = DADiskCopyDescription(disk) else {
-                        Log.error("Failed to get volume description CFDictionary")
-                        Log.logExit(EX_UNAVAILABLE)
+                        Log.logExit(EX_UNAVAILABLE, "Failed to get volume description CFDictionary")
                 }
                 guard let description: [String: Any] = cfDescription as? Dictionary else {
-                        Log.error("Failed to get volume description as Dictionary")
-                        Log.logExit(EX_UNAVAILABLE)
+                        Log.logExit(EX_UNAVAILABLE, "Failed to get volume description as Dictionary")
                 }
                 guard let daMediaPath = description["DAMediaPath"] as? String else {
-                        Log.error("Failed to get DAMediaPath as String")
-                        Log.logExit(EX_UNAVAILABLE)
+                        Log.logExit(EX_UNAVAILABLE, "Failed to get DAMediaPath as String")
                 }
 
                 /* Get the registry object for our partition */
@@ -132,21 +129,17 @@ struct HardDriveMediaDevicePath {
                 let ioUUID: String? = partitionProperties.getStringValue(forProperty: "UUID")
                 
                 if (ioPreferredBlockSize == nil || ioPartitionID == nil || ioBase == nil || ioSize == nil || ioUUID == nil) {
-                        Log.error("Failed to get registry values")
-                        Log.logExit(EX_UNAVAILABLE)
+                        Log.logExit(EX_UNAVAILABLE, "Failed to get registry values")
                 }
                 
                 let blockSize: Int = ioPreferredBlockSize!
-                let uuid: String = ioUUID!
-                var idValue = UInt32(ioPartitionID!)
-                partitionNumber.append(UnsafeBufferPointer(start: &idValue, count: 1))
-                var startValue = UInt64(ioBase! / blockSize)
-                partitionStart.append(UnsafeBufferPointer(start: &startValue, count: 1))
-                var sizeValue = UInt64(ioSize! / blockSize)
-                partitionSize.append(UnsafeBufferPointer(start: &sizeValue, count: 1))
+                partitionNumber = UInt32(ioPartitionID!)
+                partitionStart = UInt64(ioBase! / blockSize)
+                partitionSize = UInt64(ioSize! / blockSize)
 
                 /*  EFI Signature from volume GUID string */
-
+                
+                let uuid: String = ioUUID!
                 var part: [String] = uuid.components(separatedBy: "-")
                 partitionSignature.append(part[0].hexToData(swap: true)!)
                 partitionSignature.append(part[1].hexToData(swap: true)!)
@@ -155,6 +148,9 @@ struct HardDriveMediaDevicePath {
                 partitionSignature.append(part[4].hexToData()!)
         }
 }
+
+
+
 
 struct FilePathMediaDevicePath {
         
@@ -168,13 +164,12 @@ struct FilePathMediaDevicePath {
                         return data
                 }
         }
-        
         let type = Data.init(bytes: [4])
         let subType = Data.init(bytes: [4])
         var path = Data.init()
         var length = Data.init()
         
-        init(path localPath: String, mountPoint: String) {
+        init(createUsingFilePath localPath: String, mountPoint: String) {
                 
                 /* Path */
                 
@@ -183,8 +178,7 @@ struct FilePathMediaDevicePath {
                 var efiPath: String = "/" + localPath[i...]
                 efiPath = efiPath.uppercased().replacingOccurrences(of: "/", with: "\\")
                 if efiPath.containsOutlawedCharacters() {
-                        Log.error("Forbidden character(s) found in path")
-                        Log.logExit(EX_DATAERR)
+                        Log.logExit(EX_DATAERR, "Forbidden character(s) found in path")
                 }
                 path = efiPath.efiStringData()
                 
@@ -194,6 +188,9 @@ struct FilePathMediaDevicePath {
                 length.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
         }   
 }
+
+
+
 
 struct EndDevicePath {
         let data = Data.init(bytes: [127, 255, 4, 0])

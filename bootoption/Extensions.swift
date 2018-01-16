@@ -36,7 +36,7 @@ extension Data {
                                 break
                         }
                         if let unicode = UnicodeScalar(bytes) {
-                                if unicode.isASCII {
+                                if unicode.isASCII { // to do: properly differentiate raw data and ascii/unicode text
                                         string.append(Character(unicode))
                                 } else {
                                         return nil

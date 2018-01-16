@@ -99,7 +99,7 @@ struct HardDriveMediaDevicePath {
         var partitionFormat: UInt8 = 2 // GPT
         var signatureType: UInt8 = 2 // GPT GUID
         
-        var guid: String {
+        var partitionUuid: String {
                 var buffer = self.partitionSignature
                 var string = String()
                 if !self.partitionSignature.isEmpty {

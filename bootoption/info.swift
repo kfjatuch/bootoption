@@ -60,7 +60,7 @@ func info() {
                         properties.append(("Loader path", option.pathString))
                 }
                 if option.hardDriveDevicePath.partitionNumber > 0 {
-                        properties.append(("Partition GUID", String(option.hardDriveDevicePath.guid)))
+                        properties.append(("Partition UUID", String(option.hardDriveDevicePath.partitionUuid)))
                 }
                 if let string = option.optionalDataString {
                         properties.append(("Optional data", string))

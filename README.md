@@ -9,51 +9,23 @@ A command line utility for managing a firmware's boot menu. Report bugs [here](h
 bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one from the following:
 
 - <strong>LIST</strong>&nbsp;&nbsp;show the firmware boot menu
-- <strong>SET</strong>&nbsp;&nbsp;set/create variables in NVRAM
-- <strong>ORDER</strong>&nbsp;&nbsp;change the boot order
+- <strong>INFO</strong>&nbsp;&nbsp;show an option's properties
+- <strong>SET</strong>&nbsp;&nbsp;set/modify variables in NVRAM
+- <strong>CREATE</strong>&nbsp;&nbsp;create a new boot option
+- <strong>ORDER</strong>&nbsp;&nbsp;re-arrange the boot order
 - <strong>DELETE</strong>&nbsp;&nbsp;unset/delete variables in NVRAM
 - <strong>MAKE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
 
+bootoption <strong>VERB</strong> without options will show the usage or options for that verb, where available
 
-### Set
 
-bootoption set &nbsp;[ -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] ] &nbsp;[ -n <em>####</em> ] &nbsp;[ -t <em>SECONDS</em> ]
-
-<table>
-        <tr>
-                        <td style="width: 3em">-l</td>
-                        <td style="width: 8.5em">--loader</td>
-                        <td>the <em>PATH</em> to an EFI loader executable</td>
-        </tr>
-        <tr>
-                        <td>-L</td>
-                        <td>--label</td>
-                        <td>display <em>LABEL</em> in firmware boot manager</td>
-        </tr>
-        <tr>
-                        <td>-u</td>
-                        <td>--unicode</td>
-                        <td>an optional <em>STRING</em> passed to the loader command line</td>
-        </tr>
-        <tr>
-                        <td>-n</td>
-                        <td>--bootnext</td>
-                        <td>set BootNext to <em>####</em> (hex)</td>
-        </tr>
-        <tr>
-                        <td>-t</td>
-                        <td>--timeout</td>
-                        <td>set the boot menu timeout in <em>SECONDS</em></td>
-        </tr>
-</table>
-
-#### Set a new boot option in NVRAM and add it to the boot order
+### Create a new boot option in NVRAM and add it to the boot order
 
 ```
-sudo bootoption set -l "/Volumes/EFI/shell.efi" -L "EFI Shell"
+sudo bootoption create -l "/Volumes/EFI/shell.efi" -L "EFI Shell"
 ```
 
-Set requires working hardware NVRAM - for instance, emulated NVRAM will not work.
+Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
 
 ### Make
 

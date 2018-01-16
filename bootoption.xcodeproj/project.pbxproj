@@ -128,6 +128,7 @@
 			isa = PBXGroup;
 			children = (
 				4D1A549A20033AAB00C82104 /* BootMenu.swift */,
+				4D64CF4B200E325400C82104 /* create.swift */,
 				4D78F50C20042CE600C82104 /* delete.swift */,
 				4DD5EF751FF91DDE00C82104 /* DevicePath.swift */,
 				4DE358BB1FFE214B00C82104 /* Dmpstore.swift */,
@@ -144,7 +145,6 @@
 				4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */,
 				4D4EB8F92003FB0700C82104 /* set.swift */,
 				4D4EB8FF200407FE00C82104 /* version.swift */,
-				4D64CF4B200E325400C82104 /* create.swift */,
 			);
 			path = bootoption;
 			sourceTree = "<group>";

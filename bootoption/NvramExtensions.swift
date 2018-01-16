@@ -251,16 +251,14 @@ extension Nvram {
         
         func bootNumberFromBoot(string: String) -> Int? {
                 let logErrorMessage: StaticString = "Parsing user provided Boot#### failed"
-                var hexString = String()
-                if string.characters.count == 8 && string.uppercased().hasPrefix("BOOT") {
-                        hexString = string.subString(from: 4, to: 8)
-                } else if string.characters.count < 5 {
-                        hexString = string
-                } else {
+                var mutableString = string.uppercased()
+                mutableString = mutableString.replacingOccurrences(of: "0X", with: "")
+                mutableString = mutableString.replacingOccurrences(of: "BOOT", with: "")
+                if mutableString.containsNonHexCharacters() || mutableString.characters.count > 4 {
                         Log.log(logErrorMessage)
                         return nil
                 }
-                let scanner = Scanner.init(string: hexString)
+                let scanner = Scanner.init(string: mutableString)
                 var scanned: UInt32 = 0
                 if !scanner.scanHexInt32(&scanned) {
                         Log.log(logErrorMessage)

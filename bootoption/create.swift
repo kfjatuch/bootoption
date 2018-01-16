@@ -1,7 +1,7 @@
 /*
- * File: set.swift
+ * File: create.swift
  *
- * bootoption © vulgo 2017-2018 - A command line utility for managing a
+ * bootoption © vulgo 2018 - A command line utility for managing a
  * firmware's EFI boot menu
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,16 +20,14 @@
 
 import Foundation
 
-func set() {
+func create() {
         
         Log.info("Setting up command line")
-        let bootnumOption = StringOption(shortFlag: "b", longFlag: "bootnum", required: 1,  helpMessage: "the PATH to an EFI loader executable")
+        let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1,  helpMessage: "the PATH to an EFI loader executable")
         let labelOption = StringOption(shortFlag: "L", longFlag: "label", required: 1, helpMessage: "display LABEL in firmware boot manager")
         let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-        let bootNextOption = StringOption(shortFlag: "n", longFlag: "bootnext", required: 2, helpMessage: "set BootNext to #### (hex)")
-        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "set the boot menu timeout in SECONDS")
-        commandLine.invocationHelpMessage = "set -b #### [-L LABEL] [-u STRING] | -t SECONDS | -n ####"
-        commandLine.setOptions(bootnumOption, labelOption, unicodeOption, bootNextOption, timeoutOption)
+        commandLine.invocationHelpMessage = "create -l PATH -L LABEL [-u STRING]"
+        commandLine.setOptions(loaderOption, labelOption, unicodeOption)
         
         let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
         switch optionParser.status {
@@ -42,28 +40,13 @@ func set() {
                 var status = EX_OK
                 var noop = true
                 
-                /* Set BootNext */
+                /* Set a new load option */
                 
-                if bootNextOption.wasSet {
+                if loaderOption.wasSet && labelOption.wasSet {
                         noop = false
-                        if !nvram.setBootNext(bootString: bootNextOption.value) {
-                                print("Error setting BootNext", to: &standardError)
-                                status = EX_DATAERR
-                        }
-                }
-                
-                /* Set the timeout */
-                
-                if timeoutOption.wasSet {
-                        noop = false
-                        var timeoutResult = false
-                        if let timeout: Int = timeoutOption.value {
-                                if 1 ... 65534 ~= timeout {
-                                        timeoutResult = nvram.setTimeout(seconds: timeout)
-                                }
-                        }
-                        if !timeoutResult {
-                                print("Error setting Timeout", to: &standardError)
+                        let option = EfiLoadOption(createFromLoaderPath: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
+                        if nvram.createNewAndAddToBootOrder(withData: option.data) == nil {
+                                print("Error setting boot option", to: &standardError)
                                 status = EX_DATAERR
                         }
                 }

@@ -21,6 +21,7 @@
 		4D4EB8FE2003FB2800C82104 /* list.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D4EB8FD2003FB2800C82104 /* list.swift */; };
 		4D4EB900200407FE00C82104 /* version.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D4EB8FF200407FE00C82104 /* version.swift */; };
 		4D4EB9022004097B00C82104 /* help.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D4EB9012004097B00C82104 /* help.swift */; };
+		4D64CF4C200E325400C82104 /* create.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D64CF4B200E325400C82104 /* create.swift */; };
 		4D706DDA2002223A00C82104 /* Nvram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D706DD92002223A00C82104 /* Nvram.swift */; };
 		4D78F50D20042CE600C82104 /* delete.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D78F50C20042CE600C82104 /* delete.swift */; };
 		4D843482200B739A00C82104 /* CommandLineExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D843481200B739A00C82104 /* CommandLineExtensions.swift */; };
@@ -62,6 +63,7 @@
 		4D4EB8FD2003FB2800C82104 /* list.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = list.swift; sourceTree = "<group>"; };
 		4D4EB8FF200407FE00C82104 /* version.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = version.swift; sourceTree = "<group>"; };
 		4D4EB9012004097B00C82104 /* help.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = help.swift; sourceTree = "<group>"; };
+		4D64CF4B200E325400C82104 /* create.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = create.swift; sourceTree = "<group>"; };
 		4D706DD92002223A00C82104 /* Nvram.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Nvram.swift; sourceTree = "<group>"; };
 		4D78F50C20042CE600C82104 /* delete.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = delete.swift; sourceTree = "<group>"; };
 		4D843481200B739A00C82104 /* CommandLineExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommandLineExtensions.swift; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 				4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */,
 				4D4EB8F92003FB0700C82104 /* set.swift */,
 				4D4EB8FF200407FE00C82104 /* version.swift */,
+				4D64CF4B200E325400C82104 /* create.swift */,
 			);
 			path = bootoption;
 			sourceTree = "<group>";
@@ -236,6 +239,7 @@
 				4DD5EF791FF91DDF00C82104 /* RegistryEntry.swift in Sources */,
 				4D4EB900200407FE00C82104 /* version.swift in Sources */,
 				4D2B86801FF98F3900C82104 /* Extensions.swift in Sources */,
+				4D64CF4C200E325400C82104 /* create.swift in Sources */,
 				4D4EB8FA2003FB0700C82104 /* set.swift in Sources */,
 				4DE358BC1FFE214B00C82104 /* Dmpstore.swift in Sources */,
 			);

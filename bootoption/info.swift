@@ -62,8 +62,10 @@ func info() {
                 if option.hardDriveDevicePath.partitionNumber > 0 {
                         properties.append(("Partition GUID", String(option.hardDriveDevicePath.guid)))
                 }
-                if !option.optionalDataString.isEmpty {
-                        properties.append(("Optional data", String(option.optionalDataString)))
+                if let string = option.optionalDataString {
+                        properties.append(("Optional data", string))
+                } else if let string = option.optionalDataBytesString {
+                        properties.append(("Optional data", string))
                 }
                 
                 for property in properties {

@@ -60,28 +60,41 @@ struct EfiLoadOption {
                 let string = data.removeEfiString()
                 return string ?? (data as NSData).debugDescription
         }
-        var optionalDataString: String {
+        var optionalDataString: String? {
                 if self.optionalData != nil {
                         var data = self.optionalData!
                         if let string = data.removeEfiString() {
                                 return string
                         } else {
-                                var dataString = String()
-                                while !data.isEmpty {
-                                        if data.count == 1 {
-                                                let byte = data.remove8()
-                                                let byteString = NSString(format: "%02x", byte) as String
-                                                dataString.append(byteString)
-                                        } else {
-                                                let bytes = data.remove16()
-                                                let byteString = NSString(format: "%04x", bytes) as String
-                                                dataString.append(byteString + " ")
-                                        }
-                                }
-                                return dataString
+                                return nil
                         }
                 } else {
-                       return ""
+                       return nil
+                }
+        }
+        var optionalDataBytesString: String? {
+                if self.optionalData != nil {
+                        var dataString = String()
+                        var data = self.optionalData!
+                        var n: Int = 0
+                        while !data.isEmpty {
+                                if n != 0 && n % 8 == 0 {
+                                        dataString.append("\n               ")
+                                }
+                                if data.count == 1 {
+                                        let byte = data.remove8()
+                                        let byteString = NSString(format: "%02x", byte) as String
+                                        dataString.append(byteString)
+                                } else {
+                                        let bytes = data.remove16()
+                                        let byteString = NSString(format: "%04x", bytes) as String
+                                        dataString.append(byteString + " ")
+                                }
+                                n += 1
+                        }
+                        return dataString
+                } else {
+                        return nil
                 }
         }
         

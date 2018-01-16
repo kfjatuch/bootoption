@@ -41,11 +41,12 @@ var commandLine = CommandLine(invocationHelpMessage: "VERB [options] where VERB 
 func parseCommandLineVerb() {
         let listVerb = Verb(withName: "list", helpMessage: "show the firmware boot menu")
         let infoVerb = Verb(withName: "info", helpMessage: "show option details")
-        let setVerb = Verb(withName: "set", helpMessage: "set/create variables in NVRAM")
+        let setVerb = Verb(withName: "set", helpMessage: "set/modify variables in NVRAM")
+        let createVerb = Verb(withName: "create", helpMessage: "create a new boot option")
         let orderVerb = Verb(withName: "order", helpMessage: "change the boot order")
         let deleteVerb = Verb(withName: "delete", helpMessage: "unset/delete variables in NVRAM")
         let makeVerb = Verb(withName: "make", helpMessage: "print or save boot variable data in different formats")
-        commandLine.addVerbs(listVerb, infoVerb, setVerb, orderVerb, deleteVerb, makeVerb)
+        commandLine.addVerbs(listVerb, infoVerb, setVerb, createVerb, orderVerb, deleteVerb, makeVerb)
         let verbParser = VerbParser(argument: commandLine.verb(), verbs: commandLine.verbs)
         switch verbParser.status {
         case .success:
@@ -56,6 +57,8 @@ func parseCommandLineVerb() {
                                 info()
                         case setVerb.name:
                                 set()
+                        case createVerb.name:
+                                create()
                         case orderVerb.name:
                                 order()
                         case deleteVerb.name:

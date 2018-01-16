@@ -79,7 +79,7 @@ struct EfiLoadOption {
                         var n: Int = 0
                         while !data.isEmpty {
                                 if n != 0 && n % 8 == 0 {
-                                        dataString.append("\n               ")
+                                        dataString.append("\n")
                                 }
                                 if data.count == 1 {
                                         let byte = data.remove8()

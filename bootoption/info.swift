@@ -63,9 +63,10 @@ func info() {
                         properties.append(("Partition UUID", String(option.hardDriveDevicePath.partitionUuid)))
                 }
                 if let string = option.optionalDataString {
-                        properties.append(("Optional data", string))
+                        properties.append(("Arguments", string))
                 } else if let string = option.optionalDataBytesString {
-                        properties.append(("Optional data", string))
+                        let paddedString = string.replacingOccurrences(of: "\n", with: "\n      ")
+                        properties.append(("Data", paddedString))
                 }
                 
                 for property in properties {

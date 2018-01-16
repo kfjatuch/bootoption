@@ -22,14 +22,28 @@ import Foundation
 
 extension Data {
         
-        mutating func removeEfiString() -> String {
+        mutating func removeEfiString() -> String? {
+                if self.count < 2 {
+                        return nil
+                }
                 var string = String()
-                for _ in self {
-                        let byte: UInt16 = self.remove16()
-                        if byte == 0 {
+                for _ in 1...(self.count / 2) {
+                        if self.count < 2 {
                                 break
                         }
-                        string.append(Character(UnicodeScalar(byte)!))
+                        let bytes: UInt16 = self.remove16()
+                        if bytes == 0 {
+                                break
+                        }
+                        if let unicode = UnicodeScalar(bytes) {
+                                if unicode.isASCII {
+                                        string.append(Character(unicode))
+                                } else {
+                                        return nil
+                                }
+                        } else {
+                                return nil
+                        }
                 }
                 return string
         }

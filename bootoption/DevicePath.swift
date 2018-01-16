@@ -20,6 +20,53 @@
 
 import Foundation
 
+enum devicePathTypes {
+        case hardware
+        case acpi
+        case messaging
+        case media
+        case bbs
+        case end
+        var description: String {
+                switch self {
+                case .hardware:
+                        return "Hardware"
+                case .acpi:
+                        return "ACPI"
+                case .messaging:
+                        return "Messaging"
+                case .media:
+                        return "Media"
+                case .bbs:
+                        return "BBS"
+                case .end:
+                        return "End"
+                }
+        }
+}
+
+enum mediaSubTypes {
+        case mediaHardDrive
+        case mediaCdRom
+        case mediaVendor
+        case mediaFilePath
+        case mediaProtocol
+        var description: String {
+                switch self {
+                case .mediaHardDrive:
+                        return "Hard Drive"
+                case .mediaCdRom:
+                        return "CD ROM"
+                case .mediaVendor:
+                        return "Vendor"
+                case .mediaFilePath:
+                        return "File Path"
+                case .mediaProtocol:
+                        return "Protocol"
+                }
+        }
+}
+
 struct HardDriveMediaDevicePath {
         
         var data: Data {
@@ -51,6 +98,20 @@ struct HardDriveMediaDevicePath {
         var partitionSignature = Data.init()
         var partitionFormat: UInt8 = 2 // GPT
         var signatureType: UInt8 = 2 // GPT GUID
+        
+        var guid: String {
+                var buffer = self.partitionSignature
+                var string = String()
+                if !self.partitionSignature.isEmpty {
+                        string += String(format:"%08X", buffer.remove32()) + "-"
+                        string += String(format:"%04X", buffer.remove16()) + "-"
+                        string += String(format:"%04X", buffer.remove16()) + "-"
+                        string += String(format:"%04X", buffer.remove16().byteSwapped) + "-"
+                        string += String(format:"%04X", buffer.remove16().byteSwapped)
+                        string += String(format:"%08X", buffer.remove32().byteSwapped)
+                }
+                return string
+        }
         
         init() {
                 // using default values

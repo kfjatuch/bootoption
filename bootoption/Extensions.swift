@@ -103,15 +103,22 @@ extension FileHandle : TextOutputStream {
 
 extension String {
         
-        func efiStringData(withNullTerminator: Bool = true) -> Data {
-                var cstring = self.utf8CString
-                if !withNullTerminator {
-                        cstring.removeLast()
-                }
+        func efiStringData(withNullTerminator: Bool = true) -> Data? {
+                let characters = self.characters
                 var data = Data()
-                for c in cstring {
-                        data.append(UInt8(c))
-                        data.append(UInt8(0))
+                for c in characters {
+                        if let scalar: Unicode.Scalar = UnicodeScalar(String(c)) {
+                                if scalar.value > 0xFFFF {
+                                        Log.log("efiStringData(): unicode scalar value out of range")
+                                        return nil
+                                }
+                                var bytes = UInt16(scalar.value)
+                                data.append(UnsafeBufferPointer(start: &bytes, count: 1))
+                        }
+                }
+                if withNullTerminator {
+                        var null = UInt16(0)
+                        data.append(UnsafeBufferPointer(start: &null, count: 1))
                 }
                 return data
         }

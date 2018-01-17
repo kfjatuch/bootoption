@@ -246,7 +246,9 @@ struct MediaFilePathDevicePath {
                 if efiPath.containsOutlawedCharacters() {
                         Log.logExit(EX_DATAERR, "Forbidden character(s) found in path")
                 }
-                devicePath = efiPath.efiStringData()
+                if let path = efiPath.efiStringData() {
+                        devicePath = path
+                }
                 
                 /* Device path length */
                 

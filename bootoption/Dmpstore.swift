@@ -30,7 +30,7 @@ struct Dmpstore {
                 var created: Int? = nil
                 let nameSize = Data.init(bytes: [UInt8(Dmpstore.Option.nameSizeConstant), 0x0, 0x0, 0x0])
                 var dataSize = Data.init()
-                var name = Data.init()
+                var name: Data?
                 let guid = Data.init(bytes: [0x61, 0xdf, 0xe4, 0x8b, 0xca, 0x93, 0xd2, 0x11, 0xaa, 0xd, 0x0, 0xe0, 0x98, 0x3, 0x2b, 0x8c])
                 let attributes = Data.init(bytes: [0x7, 0x0, 0x0, 0x0])
                 var variableData = Data.init()
@@ -45,15 +45,17 @@ struct Dmpstore {
                                 Log.error("Empty boot option is nil")
                                 Log.logExit(EX_UNAVAILABLE)
                         }
-                        let name = nvram.bootStringFromBoot(number: emptyBootOption)
                         
-                        /* store name data */
-                        self.name = name.efiStringData()
-                        if self.name.count != Dmpstore.Option.nameSizeConstant {
+                        let name = nvram.bootStringFromBoot(number: emptyBootOption)
+                        if let nameData = name.efiStringData() {
+                                self.name = nameData
+                        } else {
+                                Log.logExit(EX_SOFTWARE, "Failed to set name, did String.efiStringData() return nil?")
+                        }
+                        guard let nameData = self.name, nameData.count == Dmpstore.Option.nameSizeConstant else {
                                 Log.error("Name is an incorrect size")
                                 Log.logExit(EX_SOFTWARE)
                         }
-
                         
                         /* store variable data */
                         self.variableData.append(variable)
@@ -61,7 +63,7 @@ struct Dmpstore {
                         var buffer = Data.init()
                         buffer.append(self.nameSize)
                         buffer.append(self.dataSize)
-                        buffer.append(self.name)
+                        buffer.append(nameData)
                         buffer.append(self.guid)
                         buffer.append(self.attributes)
                         buffer.append(self.variableData)

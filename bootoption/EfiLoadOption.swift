@@ -41,7 +41,7 @@ struct EfiLoadOption {
         
         var attributes: UInt32
         var devicePathListLength: UInt16
-        var description = Data()
+        var description: Data?
         var devicePathList = Data()
         var optionalData: Data?
         var data: Data {
@@ -50,10 +50,12 @@ struct EfiLoadOption {
                 data.append(UnsafeBufferPointer(start: &buffer32, count: 1))
                 var buffer16: UInt16 = self.devicePathListLength
                 data.append(UnsafeBufferPointer(start: &buffer16, count: 1))
-                data.append(description)
+                if let description: Data = self.description {
+                        data.append(description)
+                }
                 data.append(devicePathList)
-                if (optionalData != nil) {
-                        data.append(optionalData!)
+                if let buffer: Data = self.optionalData {
+                        data.append(buffer)
                 }
                 return data
         }
@@ -68,14 +70,15 @@ struct EfiLoadOption {
         var hidden: Bool? {
                 return self.attributes & 0x8 == 0x8 ? true : false
         }
-        var descriptionString: String {
-                var data = self.description
-                let string = data.removeEfiString()
-                return string ?? (data as NSData).debugDescription
+        var descriptionString: String? {
+                if var data: Data = self.description {
+                        let string = data.removeEfiString()
+                        return string
+                }
+                return nil
         }
         var optionalDataAsString: String? {
-                if self.optionalData != nil {
-                        var data = self.optionalData!
+                if var data: Data = self.optionalData {
                         if let string = data.removeEfiString(ignoringNull: true) {
                                 return string
                         } else {
@@ -86,8 +89,7 @@ struct EfiLoadOption {
                 }
         }
         var optionalDataAsBytes: String? {
-                if self.optionalData != nil {
-                        var data = self.optionalData!
+                if var data: Data = self.optionalData {
                         var dataString = String()
                         var ascii = String()
                         var n: Int = 0
@@ -139,9 +141,10 @@ struct EfiLoadOption {
                 // device path list length
                 self.devicePathListLength = buffer.remove16()
                 // description
+                self.description = Data()
                 for _ in buffer {
                         var bytes: UInt16 = buffer.remove16()
-                        self.description.append(UnsafeBufferPointer(start: &bytes, count: 1))
+                        self.description!.append(UnsafeBufferPointer(start: &bytes, count: 1))
                         if bytes == 0 {
                                 break
                         }
@@ -175,6 +178,9 @@ struct EfiLoadOption {
                 }
                 
                 self.description = label.efiStringData()
+                guard self.description != nil else {
+                        Log.logExit(EX_SOFTWARE, "Failed to set description, did String.efiStringData() return nil?")
+                }
                 
                 /* Device path list */
                 
@@ -194,9 +200,13 @@ struct EfiLoadOption {
                 
                 /* Optional data */
                 
-                if unicode != nil {
+                if let string: String = unicode {
                         Log.info("Generating optional data")
-                        self.optionalData = unicode!.efiStringData(withNullTerminator: false)
+                        if let stringData = string.efiStringData(withNullTerminator: false) {
+                                self.optionalData = stringData
+                        } else {
+                                Log.logExit(EX_SOFTWARE, "Failed to set optional data, did String.efiStringData() return nil?")
+                        }
                 } else {
                         Log.info("Not generating optional data, none specified")
                 }

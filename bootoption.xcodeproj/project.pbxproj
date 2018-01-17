@@ -138,11 +138,11 @@
 				4DA4A070200D2FC700C82104 /* info.swift */,
 				4D4EB8FD2003FB2800C82104 /* list.swift */,
 				4DD5EF741FF91DDE00C82104 /* main.swift */,
-				4D4EB8FB2003FB1000C82104 /* save.swift */,
 				4D706DD92002223A00C82104 /* Nvram.swift */,
 				4D90D7532006E86600C82104 /* NvramExtensions.swift */,
 				4D31ECE12008125400C82104 /* order.swift */,
 				4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */,
+				4D4EB8FB2003FB1000C82104 /* save.swift */,
 				4D4EB8F92003FB0700C82104 /* set.swift */,
 				4D4EB8FF200407FE00C82104 /* version.swift */,
 			);

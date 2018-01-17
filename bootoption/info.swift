@@ -54,7 +54,9 @@ func info() {
                 
                 var properties: [(String, String)] = Array()
                 properties.append(("Name", name))
-                properties.append(("Description", option.descriptionString))
+                if let string: String = option.descriptionString {
+                        properties.append(("Description", string))
+                }
                 properties.append(("Type", option.devicePathDescription))
                 if let string: String = option.loaderPathString {
                         properties.append(("Loader path", string))

@@ -94,7 +94,7 @@ class BootMenu {
                         string.append(separator)
                         string.append(nvram.bootStringFromBoot(number: option.bootNumber!))
                         string.append(separator)
-                        string.append(option.descriptionString.padding(toLength: 28, withPad: " ", startingAt: 0))
+                        string.append(option.descriptionString!.padding(toLength: 28, withPad: " ", startingAt: 0))
                         if !option.enabled! {
                                 string.append(" *D")
                         }

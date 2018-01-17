@@ -40,45 +40,6 @@ A stored representation of the variable data can be used to work around situatio
 
 bootoption make -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FILE</em> | -a | -x [ -k <em>KEY</em> ] ]
 
-<table>
-        <tr>
-                <td style="width: 3em">-l</td>
-                <td style="width: 8.5em">--loader</td>
-                <td>the <em>PATH</em> to an EFI loader executable</td>
-        </tr>
-        <tr>
-                <td>-L</td>
-                <td>--label</td>
-                <td>display <em>LABEL</em> in firmware boot manager</td>
-        </tr>
-        <tr>
-                <td>-u</td>
-                <td>--unicode</td>
-                <td>an optional <em>STRING</em> passed to the loader command line</td>
-        </tr>
-        <tr>
-                <td>-o</td>
-                <td>--output</td>
-                <td>write to <em>FILE</em> for use with EDK2 dmpstore</td>
-        </tr>
-        <tr>
-                <td>-a</td>
-                <td>--apple</td>
-                <td>print Apple nvram-style string instead of raw hex</td>
-        </tr>
-        <tr>
-                <td>-x</td>
-                <td>--xml</td>
-                <td>print an XML serialization instead of raw hex</td>
-        </tr>
-        <tr>
-                <td>-k</td>
-                <td>--key</td>
-                <td>specify named <em>KEY</em>, for use with option -x</td>
-        </tr>
-</table>
-
-
 #### Store to XML property list
 
 ```

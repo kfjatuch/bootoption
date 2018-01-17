@@ -79,7 +79,7 @@ struct EfiLoadOption {
         }
         var optionalDataAsString: String? {
                 if var data: Data = self.optionalData {
-                        if let string = data.removeEfiString(ignoringNull: true) {
+                        if let string = data.removeEfiString() {
                                 return string
                         } else {
                                 return nil

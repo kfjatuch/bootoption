@@ -24,7 +24,7 @@ func set() {
         
         Log.info("Setting up command line")
         let bootnumOption = StringOption(shortFlag: "b", longFlag: "bootnum", required: 1,  helpMessage: "Boot#### number to modify (hex)")
-        let labelOption = StringOption(shortFlag: "L", longFlag: "label", required: 1, helpMessage: "display LABEL in firmware boot manager")
+        let labelOption = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
         let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
         let bootNextOption = StringOption(shortFlag: "n", longFlag: "bootnext", required: 2, helpMessage: "set BootNext to #### (hex)")
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "set the boot menu timeout in SECONDS")

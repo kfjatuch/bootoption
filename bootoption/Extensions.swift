@@ -22,7 +22,7 @@ import Foundation
 
 extension Data {
         
-        mutating func removeEfiString() -> String? {
+        mutating func removeEfiString(ignoringNull: Bool = false) -> String? {
                 if self.count < 2 {
                         return nil
                 }
@@ -32,7 +32,7 @@ extension Data {
                                 break
                         }
                         let bytes: UInt16 = self.remove16()
-                        if bytes == 0 {
+                        if bytes == 0 && !ignoringNull {
                                 break
                         }
                         if let unicode = UnicodeScalar(bytes) {

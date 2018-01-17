@@ -76,7 +76,7 @@ struct EfiLoadOption {
         var optionalDataAsString: String? {
                 if self.optionalData != nil {
                         var data = self.optionalData!
-                        if let string = data.removeEfiString() {
+                        if let string = data.removeEfiString(ignoringNull: true) {
                                 return string
                         } else {
                                 return nil
@@ -89,10 +89,12 @@ struct EfiLoadOption {
                 if self.optionalData != nil {
                         var data = self.optionalData!
                         var dataString = String()
+                        var ascii = String()
                         var n: Int = 0
                         while !data.isEmpty {
                                 if n != 0 && n % 8 == 0 {
-                                        dataString.append("\n")
+                                        dataString.append("\(ascii)\n")
+                                        ascii = String()
                                 }
                                 if data.count == 1 {
                                         let byte = data.remove8()
@@ -101,10 +103,25 @@ struct EfiLoadOption {
                                 } else {
                                         let bytes = data.remove16()
                                         let byteString = NSString(format: "%04x", bytes) as String
+                                        
+                                        if bytes > 0x20 {
+                                                if let c = UnicodeScalar(bytes), c.isASCII {
+                                                        let str = String(c)
+                                                        ascii.append(str)
+                                                } else {
+                                                        ascii.append(" ")
+                                                }
+                                        } else {
+                                                ascii.append(" ")
+                                        }
                                         dataString.append(byteString + " ")
                                 }
                                 n += 1
                         }
+                        for _ in 1...(8 - n % 8) {
+                                dataString.append("     ")
+                        }
+                        dataString.append("\(ascii)")
                         return dataString
                 } else {
                         return nil

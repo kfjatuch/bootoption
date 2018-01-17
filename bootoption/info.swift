@@ -56,15 +56,15 @@ func info() {
                 properties.append(("Name", name))
                 properties.append(("Description", option.descriptionString))
                 properties.append(("Type", option.devicePathDescription))
-                if !option.pathString.isEmpty {
-                        properties.append(("Loader path", option.pathString))
+                if let string: String = option.loaderPathString {
+                        properties.append(("Loader path", string))
                 }
-                if option.hardDriveDevicePath.partitionNumber > 0 {
-                        properties.append(("Partition UUID", String(option.hardDriveDevicePath.partitionUuid)))
+                if let string: String = option.hardDrive?.partitionUuid {
+                        properties.append(("Partition UUID", string))
                 }
-                if let string = option.optionalDataString {
+                if let string: String = option.optionalDataAsString, !string.isEmpty {
                         properties.append(("Arguments", string))
-                } else if let string = option.optionalDataBytesString {
+                } else if let string: String = option.optionalDataAsBytes {
                         let paddedString = string.replacingOccurrences(of: "\n", with: "\n      ")
                         properties.append(("Data", paddedString))
                 }

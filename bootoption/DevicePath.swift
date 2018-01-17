@@ -54,20 +54,20 @@ enum mediaSubTypes {
         var description: String {
                 switch self {
                 case .mediaHardDrive:
-                        return "Hard Drive"
+                        return "HardDrive"
                 case .mediaCdRom:
-                        return "CD ROM"
+                        return "CDROM"
                 case .mediaVendor:
                         return "Vendor"
                 case .mediaFilePath:
-                        return "File Path"
+                        return "FilePath"
                 case .mediaProtocol:
                         return "Protocol"
                 }
         }
 }
 
-struct HardDriveMediaDevicePath {
+struct MediaHardDriveDevicePath {
         
         var data: Data {
                 get {
@@ -99,18 +99,19 @@ struct HardDriveMediaDevicePath {
         var partitionFormat: UInt8 = 2 // GPT
         var signatureType: UInt8 = 2 // GPT GUID
         
-        var partitionUuid: String {
+        var partitionUuid: String? {
                 var buffer = self.partitionSignature
-                var string = String()
                 if !self.partitionSignature.isEmpty {
+                        var string = String()
                         string += String(format:"%08X", buffer.remove32()) + "-"
                         string += String(format:"%04X", buffer.remove16()) + "-"
                         string += String(format:"%04X", buffer.remove16()) + "-"
                         string += String(format:"%04X", buffer.remove16().byteSwapped) + "-"
                         string += String(format:"%04X", buffer.remove16().byteSwapped)
                         string += String(format:"%08X", buffer.remove32().byteSwapped)
+                        return string
                 }
-                return string
+                return nil
         }
         
         init() {
@@ -213,7 +214,7 @@ struct HardDriveMediaDevicePath {
 
 
 
-struct FilePathMediaDevicePath {
+struct MediaFilePathDevicePath {
         
         var data: Data {
                 get {
@@ -221,14 +222,18 @@ struct FilePathMediaDevicePath {
                         data.append(type)
                         data.append(subType)
                         data.append(length)
-                        data.append(path)
+                        data.append(devicePath)
                         return data
                 }
         }
         let type = Data.init(bytes: [4])
         let subType = Data.init(bytes: [4])
-        var path = Data.init()
         var length = Data.init()
+        var devicePath = Data.init()
+        
+        init() {
+                // using default values
+        }
         
         init(createUsingFilePath localPath: String, mountPoint: String) {
                 
@@ -241,11 +246,11 @@ struct FilePathMediaDevicePath {
                 if efiPath.containsOutlawedCharacters() {
                         Log.logExit(EX_DATAERR, "Forbidden character(s) found in path")
                 }
-                path = efiPath.efiStringData()
+                devicePath = efiPath.efiStringData()
                 
-                /* Length */
+                /* Device path length */
                 
-                var lengthValue = UInt16(path.count + 4)
+                var lengthValue = UInt16(devicePath.count + 4)
                 length.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
         }   
 }

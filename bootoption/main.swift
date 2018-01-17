@@ -45,8 +45,8 @@ func parseCommandLineVerb() {
         let createVerb = Verb(withName: "create", helpMessage: "create a new boot option")
         let orderVerb = Verb(withName: "order", helpMessage: "re-arrange the boot order")
         let deleteVerb = Verb(withName: "delete", helpMessage: "unset/delete variables in NVRAM")
-        let makeVerb = Verb(withName: "make", helpMessage: "print or save boot variable data in different formats")
-        commandLine.addVerbs(listVerb, infoVerb, setVerb, createVerb, orderVerb, deleteVerb, makeVerb)
+        let saveVerb = Verb(withName: "save", helpMessage: "print or save boot variable data in different formats")
+        commandLine.addVerbs(listVerb, infoVerb, setVerb, createVerb, orderVerb, deleteVerb, saveVerb)
         let verbParser = VerbParser(argument: commandLine.verb(), verbs: commandLine.verbs)
         switch verbParser.status {
         case .success:
@@ -63,8 +63,8 @@ func parseCommandLineVerb() {
                                 order()
                         case deleteVerb.name:
                                 delete()
-                        case makeVerb.name:
-                                make()
+                        case saveVerb.name:
+                                save()
                         case verbParser.versionVerb:
                                 version()
                         case verbParser.helpVerb:

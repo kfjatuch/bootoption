@@ -14,7 +14,7 @@ bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one fr
 - <strong>CREATE</strong>&nbsp;&nbsp;create a new boot option
 - <strong>ORDER</strong>&nbsp;&nbsp;re-arrange the boot order
 - <strong>DELETE</strong>&nbsp;&nbsp;unset/delete variables in NVRAM
-- <strong>MAKE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
+- <strong>SAVE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
 
 bootoption <strong>VERB</strong> without options will show the usage or options for that verb, where available
 
@@ -27,7 +27,7 @@ sudo bootoption create -l "/Volumes/EFI/shell.efi" -L "EFI Shell"
 
 Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
 
-### Make
+### Save
 
 Supported output modes:
 
@@ -38,12 +38,12 @@ Supported output modes:
 
 A stored representation of the variable data can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from inside the operating system (for instance, generated during loader installation, stored and then added from an EFI context - see also [Punchdrum](https://github.com/vulgo/Punchdrum)).
 
-bootoption make -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FILE</em> | -a | -x [ -k <em>KEY</em> ] ]
+bootoption save -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FILE</em> | -a | -x [ -k <em>KEY</em> ] ]
 
 #### Store to XML property list
 
 ```
-bootoption make -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -x -k "Payload" > /Volumes/EFI/boot.plist
+bootoption save -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -x -k "Payload" > /Volumes/EFI/boot.plist
 ```
 #### /Volumes/EFI/boot.plist
 
@@ -67,7 +67,7 @@ The data element contains the base 64 encoded variable data conforming to the EF
 #### Store to EDK2 dmpstore format
 
 ```
-bootoption make -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -o "/Volumes/USB-FAT32/vars.dmpstore"
+bootoption save -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -o "/Volumes/USB-FAT32/vars.dmpstore"
 ````
 
 The resulting file can be read from the EFI shell. To load and set the variables:

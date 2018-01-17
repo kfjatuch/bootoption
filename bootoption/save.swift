@@ -20,7 +20,7 @@
 
 import Foundation
 
-func make() {
+func save() {
 
         Log.info("Setting up command line")
         let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1, helpMessage: "the PATH to an EFI loader executable")
@@ -30,7 +30,7 @@ func make() {
         let appleOption = BoolOption(shortFlag: "a", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "ox")
         let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "oa")
         let keyOption = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
-        commandLine.invocationHelpMessage = "make -l PATH -L LABEL [-u STRING] [-o FILE | -a | -x [-k KEY]]"
+        commandLine.invocationHelpMessage = "save -l PATH -L LABEL [-u STRING] [-o FILE | -a | -x [-k KEY]]"
         commandLine.setOptions(loaderOption, labelOption, unicodeOption, outputOption, appleOption, xmlOption, keyOption)
 
         let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)

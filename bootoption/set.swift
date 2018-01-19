@@ -24,12 +24,12 @@ func set() {
         
         Log.info("Setting up command line")
         let bootnumOption = StringOption(shortFlag: "b", longFlag: "bootnum", required: 1,  helpMessage: "Boot#### number to modify (hex)")
-        let labelOption = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
-        let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
+        let descriptionOption = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
+        let dataStringOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
         let bootNextOption = StringOption(shortFlag: "n", longFlag: "bootnext", required: 2, helpMessage: "set BootNext to #### (hex)")
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "set the boot menu timeout in SECONDS")
         commandLine.invocationHelpMessage = "set -b #### [-L LABEL] [-u STRING] | -t SECONDS | -n ####"
-        commandLine.setOptions(bootnumOption, labelOption, unicodeOption, bootNextOption, timeoutOption)
+        commandLine.setOptions(bootnumOption, descriptionOption, dataStringOption, bootNextOption, timeoutOption)
         
         func setMain() {
                 
@@ -37,8 +37,8 @@ func set() {
                 let bootNextString: String = bootNextOption.value ?? ""
                 var bootNextValue: Int = -1
                 let timeoutValue: Int = timeoutOption.value ?? -1
-                let labelValue: String = labelOption.value ?? ""
-                let unicodeValue: String = unicodeOption.value ?? ""
+                let descriptionValue: String = descriptionOption.value ?? ""
+                let dataStringValue: String = dataStringOption.value ?? ""
                 var updateOption = false
                 
                 /*
@@ -68,8 +68,8 @@ func set() {
                 }
                 
                 /*  Boot number */
-                if bootnumOption.wasSet && (labelValue.isEmpty && unicodeValue.isEmpty) {
-                        print("Option \(bootnumOption.shortDescription) specified without \(labelOption.shortDescription) or \(unicodeOption.shortDescription)", to: &standardError)
+                if bootnumOption.wasSet && (descriptionValue.isEmpty && dataStringValue.isEmpty) {
+                        print("Option \(bootnumOption.shortDescription) specified without \(descriptionOption.shortDescription) or \(dataStringOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
                 }
@@ -88,16 +88,16 @@ func set() {
                         }
                 }
                 
-                /* Label */
-                if (!labelValue.isEmpty && option == nil) {
-                        print("Option \(labelOption.shortDescription) requires \(bootnumOption.shortDescription)", to: &standardError)
+                /* Description */
+                if (!descriptionValue.isEmpty && option == nil) {
+                        print("Option \(descriptionOption.shortDescription) requires \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
                 }
                 
-                /* Optional data */
-                if (!unicodeValue.isEmpty && option == nil) {
-                        print("Option \(unicodeOption.shortDescription) requires \(bootnumOption.shortDescription)", to: &standardError)
+                /* Optional data string */
+                if (!dataStringValue.isEmpty && option == nil) {
+                        print("Option \(dataStringOption.shortDescription) requires \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
                 }
@@ -136,16 +136,16 @@ func set() {
                 
                 /* Set description */
                 
-                if !labelValue.isEmpty {
-                        option?.descriptionString = labelValue
+                if !descriptionValue.isEmpty {
+                        option?.descriptionString = descriptionValue
                         updateOption = true
                         
                 }
                 
-                /* Set optional data to string */
+                /* Set optional data string */
                 
-                if !unicodeValue.isEmpty {
-                        option?.optionalDataString = unicodeValue
+                if !dataStringValue.isEmpty {
+                        option?.optionalDataString = dataStringValue
                         updateOption = true
                         
                 }
@@ -158,6 +158,7 @@ func set() {
                         }
                 }
                 
+                Log.logExit(EX_OK)
                 
         }
         

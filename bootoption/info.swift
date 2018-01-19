@@ -26,22 +26,7 @@ func infoUsage() -> Never {
 }
 
 func info() {
-        
-        /*
-         Log.info("Setting up command line")
-         let bootnumOption = StringOption(shortFlag: "b", longFlag: "bootnum", required: 1,  helpMessage: "hex")
-         commandLine.invocationHelpMessage = "info -b ####"
-         commandLine.setOptions(bootnumOption)
-         
-         let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
-         switch optionParser.status {
-         case .success:
-         default:
-         commandLine.printUsage(withMessageForError: optionParser.status)
-         Log.logExit(EX_USAGE)
-         }
-         */
-        
+
         guard let string = commandLine.rawArguments.first else {
                 infoUsage()
         }
@@ -74,7 +59,6 @@ func info() {
                 for property in properties {
                         print("\(property.0): \(property.1)")
                 }
-                
                 
                 Log.logExit(EX_OK)
         }

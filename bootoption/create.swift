@@ -24,10 +24,10 @@ func create() {
         
         Log.info("Setting up command line")
         let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1,  helpMessage: "the PATH to an EFI loader executable")
-        let labelOption = StringOption(shortFlag: "L", longFlag: "label", required: 1, helpMessage: "display LABEL in firmware boot manager")
-        let unicodeOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
+        let descriptionOption = StringOption(shortFlag: "L", longFlag: "label", required: 1, helpMessage: "display LABEL in firmware boot manager")
+        let dataStringOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
         commandLine.invocationHelpMessage = "create -l PATH -L LABEL [-u STRING]"
-        commandLine.setOptions(loaderOption, labelOption, unicodeOption)
+        commandLine.setOptions(loaderOption, descriptionOption, dataStringOption)
         
         let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
         switch optionParser.status {
@@ -42,9 +42,9 @@ func create() {
                 
                 /* Set a new load option */
                 
-                if loaderOption.wasSet && labelOption.wasSet {
+                if loaderOption.wasSet && descriptionOption.wasSet {
                         noop = false
-                        let option = EfiLoadOption(createFromLoaderPath: loaderOption.value!, label: labelOption.value!, unicode: unicodeOption.value)
+                        let option = EfiLoadOption(createFromLoaderPath: loaderOption.value!, description: descriptionOption.value!, optionalData: dataStringOption.value)
                         if nvram.createNewAndAddToBootOrder(withData: option.data) == nil {
                                 print("Error setting boot option", to: &standardError)
                                 status = EX_DATAERR

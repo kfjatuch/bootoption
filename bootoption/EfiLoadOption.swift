@@ -163,7 +163,7 @@ struct EfiLoadOption {
         
         /* Init create from path */
         
-        init(createFromLoaderPath loader: String, label: String, unicode: String?) {
+        init(createFromLoaderPath loader: String, description: String, optionalData: String?) {
 
                 /* Attributes */
                 
@@ -173,11 +173,11 @@ struct EfiLoadOption {
                 /* Description */
                 
                 Log.info("Generating description")
-                if label.containsOutlawedCharacters() {
+                if description.containsOutlawedCharacters() {
                         Log.error("Forbidden character(s) found in description")
                 }
                 
-                self.description = label.efiStringData()
+                self.description = description.efiStringData()
                 guard self.description != nil else {
                         Log.logExit(EX_SOFTWARE, "Failed to set description, did String.efiStringData() return nil?")
                 }
@@ -200,7 +200,7 @@ struct EfiLoadOption {
                 
                 /* Optional data */
                 
-                if let string: String = unicode {
+                if let string: String = optionalData {
                         Log.info("Generating optional data")
                         if let stringData = string.efiStringData(withNullTerminator: false) {
                                 self.optionalData = stringData

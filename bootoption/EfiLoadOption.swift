@@ -71,24 +71,24 @@ struct EfiLoadOption {
                 return self.attributes & 0x8 == 0x8 ? true : false
         }
         var descriptionString: String? {
-                if var data: Data = self.description {
-                        let string = data.removeEfiString()
-                        return string
+                get {
+                        var data: Data? = self.description
+                        return data?.removeEfiString() ?? nil
                 }
-                return nil
-        }
-        var optionalDataAsString: String? {
-                if var data: Data = self.optionalData {
-                        if let string = data.removeEfiString() {
-                                return string
-                        } else {
-                                return nil
-                        }
-                } else {
-                       return nil
+                set {
+                        self.description = newValue?.efiStringData() ?? nil
                 }
         }
-        var optionalDataAsBytes: String? {
+        var optionalDataString: String? {
+                get {
+                        var data: Data? = self.optionalData
+                        return data?.removeEfiString() ?? nil
+                }
+                set {
+                        self.optionalData = newValue?.efiStringData(withNullTerminator: false) ?? nil
+                }
+        }
+        var optionalDataHexView: String? {
                 if var data: Data = self.optionalData {
                         var dataString = String()
                         var ascii = String()

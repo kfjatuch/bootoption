@@ -52,10 +52,6 @@ class OptionParser {
                 return args
         }
         
-        deinit {
-                Log.info("OptionParser deinit")
-        }
-        
         init(options: [Option], rawArguments: [String], strict: Bool = false) {
                 Log.info("Parsing command line options...")
                 

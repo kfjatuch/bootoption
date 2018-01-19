@@ -156,6 +156,20 @@ extension Nvram {
                 return bootNumber
         }
         
+        func setOption(option: EfiLoadOption) -> Bool {
+                if let bootNumber: Int = option.bootNumber {
+                        let name: String = bootStringFromBoot(number: bootNumber)
+                        let set = self.options.setDataValue(forProperty: nameWithGuid(name), value: option.data)
+                        let sync = self.nvramSyncNow(withNamedVariable: nameWithGuid(name))
+                        if set + sync != 0 {
+                                Log.log("Error setting and syncing %{public}@", name)
+                                return false
+                        }
+                        return true
+                }
+                return false
+        }
+        
         
         
         

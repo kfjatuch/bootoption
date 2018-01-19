@@ -64,9 +64,9 @@ func info() {
                 if let string: String = option.hardDrive?.partitionUuid {
                         properties.append(("Partition UUID", string))
                 }
-                if let string: String = option.optionalDataAsString, !string.isEmpty {
+                if let string: String = option.optionalDataString, !string.isEmpty {
                         properties.append(("Arguments", string))
-                } else if let string: String = option.optionalDataAsBytes {
+                } else if let string: String = option.optionalDataHexView {
                         let paddedString = string.replacingOccurrences(of: "\n", with: "\n      ")
                         properties.append(("Data", paddedString))
                 }

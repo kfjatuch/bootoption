@@ -39,6 +39,7 @@ func set() {
                 let timeoutValue: Int = timeoutOption.value ?? -1
                 let labelValue: String = labelOption.value ?? ""
                 let unicodeValue: String = unicodeOption.value ?? ""
+                var updateOption = false
                 
                 /*
                  *  Check arguments are valid
@@ -136,14 +137,25 @@ func set() {
                 /* Set description */
                 
                 if !labelValue.isEmpty {
-                        print("Setting option description is not implemented", to: &standardError)
+                        option?.descriptionString = labelValue
+                        updateOption = true
+                        
                 }
-                
                 
                 /* Set optional data to string */
                 
                 if !unicodeValue.isEmpty {
-                        print("Setting optional data to string is not implemented", to: &standardError)
+                        option?.optionalDataString = unicodeValue
+                        updateOption = true
+                        
+                }
+                
+                /* Update option */
+                
+                if updateOption && option != nil {
+                        if !nvram.setOption(option: option!) {
+                                print("Error updating option, check logs", to: &standardError)
+                        }
                 }
                 
                 

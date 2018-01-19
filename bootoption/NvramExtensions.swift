@@ -98,13 +98,10 @@ extension Nvram {
                 return true
         }
         
-        func setBootNext(bootString: String?) -> Bool {
-                guard let string = bootString else {
-                        Log.log("bootString is nil, not setting BootNext")
-                        return false
-                }
-                guard let bootNumber = bootNumberFromBoot(string: string) else {
-                        Log.log("Couldn't find %{public}@, not setting BootNext", string)
+        func setBootNext(number: Int?) -> Bool {
+                let bootNumber: Int = number ?? -1
+                guard self.getBootOption(bootNumber) != nil else {
+                        Log.log("Couldn't get %{public}@ data, cancelling add to boot order", self.bootStringFromBoot(number: bootNumber))
                         return false
                 }
                 var bootNext = UInt16(bootNumber)

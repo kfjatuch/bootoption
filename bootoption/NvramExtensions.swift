@@ -165,8 +165,10 @@ extension Nvram {
                                 Log.log("Error setting and syncing %{public}@", name)
                                 return false
                         }
+                        Log.info("Asked the kernel to set %{public}@", name)
                         return true
                 }
+                Log.log("Error setting and syncing boot option")
                 return false
         }
         

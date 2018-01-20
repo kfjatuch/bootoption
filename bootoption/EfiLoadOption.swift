@@ -213,6 +213,42 @@ struct EfiLoadOption {
                 
         }
         
+        mutating func appendUnsupportedDescription(type: UInt8, subType: UInt8) {
+                switch type {
+                case DevicePath.HARDWARE_DEVICE_PATH.rawValue:
+                        if let string: String = HardwareDevicePath(rawValue: subType)?.description {
+                                self.devicePathDescription.append("/" + string)
+                        } else {
+                                self.devicePathDescription.append("/HW_UNKNOWN")
+                        }
+                case DevicePath.ACPI_DEVICE_PATH.rawValue:
+                        if let string: String = AcpiDevicePath(rawValue: subType)?.description {
+                                self.devicePathDescription.append("/" + string)
+                        } else {
+                                self.devicePathDescription.append("/ACPI_UNKNOWN")
+                        }
+                case DevicePath.MESSAGING_DEVICE_PATH.rawValue:
+                        if let string: String = MessagingDevicePath(rawValue: subType)?.description {
+                                self.devicePathDescription.append("/" + string)
+                        } else {
+                                self.devicePathDescription.append("/MSG_UNKNOWN")
+                        }
+                case DevicePath.MEDIA_DEVICE_PATH.rawValue:
+                        if let string: String = MediaDevicePath(rawValue: subType)?.description {
+                                self.devicePathDescription.append("/" + string)
+                        } else {
+                                self.devicePathDescription.append("/MEDIA_UNKNOWN")
+                        }
+                case DevicePath.BBS_DEVICE_PATH.rawValue:
+                        self.devicePathDescription.append("/BIOS")
+                case DevicePath.END_DEVICE_PATH_TYPE.rawValue:
+                        break
+                default:
+                        self.devicePathDescription.append("/UNKNOWN_DP_TYPE")
+                        break
+                }
+        }
+        
         /* Device path parsing */
         
         mutating func parseDevicePathList(rawDevicePathList: Data) {
@@ -223,62 +259,45 @@ struct EfiLoadOption {
                         let length = buffer.remove16()
                         // Right now we only care about paths to files on GPT hard drives
                         switch type {
-                        
-                        case 0x4: // Found type 4, media device path
-                                if self.devicePathDescription.isEmpty {
-                                        self.devicePathDescription.append("\(devicePathTypes.media.description)")
-                                }
+                        case DevicePath.MEDIA_DEVICE_PATH.rawValue: // Found type 4, media device path
                                 switch subType {
-                                case 0x1: // Found type 4, sub-type 1, hard drive device path
+                                case MediaDevicePath.MEDIA_HARDDRIVE_DP.rawValue: // Found type 4, sub-type 1, hard drive device path
                                         self.hardDrive = MediaHardDriveDevicePath()
-                                        self.devicePathDescription.append("\(mediaSubTypes.mediaHardDrive.description)")
                                         var hardDriveDevicePath = buffer.remove(bytesAsData: Int(length) - 4)
                                         if !parseHardDriveDevicePath(buffer: &hardDriveDevicePath) {
                                                 Log.logExit(EX_IOERR, "Error parsing hard drive device path")
                                         }
+                                        if let string: String = MediaDevicePath(rawValue: subType)?.description {
+                                                self.devicePathDescription.append("/" + string)
+                                        }
                                         break;
-                                case 0x4: // Found type 4, sub-type 4, file path
+                                case MediaDevicePath.MEDIA_FILEPATH_DP.rawValue: // Found type 4, sub-type 4, file path
                                         self.loaderPath = MediaFilePathDevicePath()
-                                        self.devicePathDescription.append("\(mediaSubTypes.mediaFilePath.description)")
                                         let pathData = buffer.remove(bytesAsData: Int(length) - 4)
                                         self.loaderPath?.devicePath = pathData
-                                        buffer = Data.init()
-                                        break;
-                                case 0x2, 0x3, 0x5:
-                                        switch subType {
-                                        case 0x2:
-                                                self.devicePathDescription.append("\(mediaSubTypes.mediaCdRom.description)")
-                                        case 0x3:
-                                                self.devicePathDescription.append("\(mediaSubTypes.mediaVendor.description)")
-                                        case 0x5:
-                                                self.devicePathDescription.append("\(mediaSubTypes.mediaProtocol.description)")
-                                        default:
-                                                break
+                                        if let string: String = MediaDevicePath(rawValue: subType)?.description {
+                                                self.devicePathDescription.append("/" + string)
                                         }
+                                        break;
                                 default: // Found some other sub-type
-                                        buffer = Data.init()
+                                        appendUnsupportedDescription(type: type, subType: subType)
+                                        let numberOfBytes = (Int(length) - 4 <= buffer.count) ? Int(length) - 4 : 0
+                                        if numberOfBytes > 0 {
+                                                buffer.remove(bytesAsData: numberOfBytes)
+                                        } else {
+                                                buffer = Data.init()
+                                        }
                                         break; 
                                 }
                                 break;
-                        
-                        case 0x1, 0x2, 0x3, 0x5, 0x7f:
-                                switch type {
-                                case 0x1:
-                                        self.devicePathDescription.append("\(devicePathTypes.hardware.description)")
-                                case 0x2:
-                                        self.devicePathDescription.append("\(devicePathTypes.acpi.description)")
-                                case 0x3:
-                                        self.devicePathDescription.append("\(devicePathTypes.messaging.description)")
-                                case 0x5:
-                                        self.devicePathDescription.append("\(devicePathTypes.bbs.description)")
-                                case 0x7f:
-                                        self.devicePathDescription.append("\(devicePathTypes.end.description)")
-                                default:
-                                        break
-                                }
-                                fallthrough
                         default: // Found some other type
-                                buffer = Data.init()
+                                appendUnsupportedDescription(type: type, subType: subType)
+                                let numberOfBytes = (Int(length) - 4 <= buffer.count) ? Int(length) - 4 : 0
+                                if numberOfBytes > 0 {
+                                        buffer.remove(bytesAsData: numberOfBytes)
+                                } else {
+                                        buffer = Data.init()
+                                }
                                 break;
                         }
                 }

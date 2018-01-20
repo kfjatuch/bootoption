@@ -67,6 +67,7 @@
 		4D706DD92002223A00C82104 /* Nvram.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Nvram.swift; sourceTree = "<group>"; };
 		4D78F50C20042CE600C82104 /* delete.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = delete.swift; sourceTree = "<group>"; };
 		4D843481200B739A00C82104 /* CommandLineExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommandLineExtensions.swift; sourceTree = "<group>"; };
+		4D862BD42013914E00C82104 /* bootoption-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "bootoption-Bridging-Header.h"; sourceTree = "<group>"; };
 		4D90D7532006E86600C82104 /* NvramExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NvramExtensions.swift; sourceTree = "<group>"; };
 		4DA110C52004D8D000C82104 /* Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		4DA4A070200D2FC700C82104 /* info.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = info.swift; sourceTree = "<group>"; };
@@ -108,6 +109,7 @@
 		4DD5EF611FF91D8600C82104 = {
 			isa = PBXGroup;
 			children = (
+				4D862BD42013914E00C82104 /* bootoption-Bridging-Header.h */,
 				4DE358B81FFE17A700C82104 /* crc32 */,
 				4D461F131FFD398D00C82104 /* CommandLine */,
 				4DD5EF6C1FF91D8600C82104 /* bootoption */,
@@ -301,6 +303,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "bootoption-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -350,6 +353,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "bootoption-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;

@@ -177,19 +177,19 @@ struct MediaHardDriveDevicePath {
                 guard let daMediaPath = description["DAMediaPath"] as? String else {
                         Log.logExit(EX_UNAVAILABLE, "Failed to get DAMediaPath as String")
                 }
-
+                
                 /* Get the registry object for our partition */
 
                 let partitionProperties: RegistryEntry = RegistryEntry.init(fromPath: daMediaPath)
-                
-                /* To do - Check disk is GPT */
+                if (partitionProperties.getIntValue(forProperty: "GPT Attributes")) == nil {
+                        Log.logExit(EX_UNAVAILABLE, "Only GPT is supported at this time")
+                }
                 
                 let ioPreferredBlockSize: Int? = partitionProperties.getIntValue(forProperty: "Preferred Block Size")
                 let ioPartitionID: Int? = partitionProperties.getIntValue(forProperty: "Partition ID")
                 let ioBase: Int? = partitionProperties.getIntValue(forProperty: "Base")
                 let ioSize: Int? = partitionProperties.getIntValue(forProperty: "Size")
                 let ioUUID: String? = partitionProperties.getStringValue(forProperty: "UUID")
-                
                 if (ioPreferredBlockSize == nil || ioPartitionID == nil || ioBase == nil || ioSize == nil || ioUUID == nil) {
                         Log.logExit(EX_UNAVAILABLE, "Failed to get registry values")
                 }

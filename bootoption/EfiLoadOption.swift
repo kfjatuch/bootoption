@@ -291,8 +291,12 @@ struct EfiLoadOption {
                 self.hardDrive?.partitionSignature = buffer.remove(bytesAsData: 16)
                 self.hardDrive?.partitionFormat = buffer.remove8()
                 self.hardDrive?.signatureType = buffer.remove8()
-                if !buffer.isEmpty || self.hardDrive?.signatureType != 2 {
+                if !buffer.isEmpty {
                         print("parseHardDriveDevicePath(): Error", to: &standardError)
+                        return false
+                }
+                if self.hardDrive?.signatureType != 2 || self.hardDrive?.partitionFormat != 2 {
+                        print("parseHardDriveDevicePath(): Only GPT is supported at this time", to: &standardError)
                         return false
                 }
                 return true

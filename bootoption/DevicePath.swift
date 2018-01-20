@@ -97,7 +97,7 @@ struct MediaHardDriveDevicePath {
         var partitionSize: UInt64 = 0
         var partitionSignature = Data.init()
         var partitionFormat: UInt8 = 2 // GPT
-        var signatureType: UInt8 = 2 // GPT GUID
+        var signatureType: UInt8 = 2 // GPT UUID
         
         var partitionUuid: String? {
                 var buffer = self.partitionSignature

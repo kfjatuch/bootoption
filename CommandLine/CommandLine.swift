@@ -20,9 +20,9 @@ import Foundation
 class CommandLine {
         
         /* GNU-getopt-like constants */
-        static let shortPrefix = "-"
-        static let longPrefix = "--"
-        static let stopParsing = "--"
+        static let shortPrefix: String = "-"
+        static let longPrefix: String = "--"
+        static let stopParsing: String = "--"
         static let attached: Character = "="
         
         enum ParserStatus {
@@ -103,10 +103,10 @@ class CommandLine {
          */
         
         init(invocationHelpMessage: String = "[options]", version: String = "1.0", programName: String = "", copyright: String = "", license: String = "", format formatUser: ((String, CommandLine.style) -> String)? = nil) {
-                var args = Swift.CommandLine.arguments
-                args.removeFirst()
+                var arguments: [String] = Swift.CommandLine.arguments
+                arguments.removeFirst()
                 baseName = NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent as String
-                rawArguments = args
+                rawArguments = arguments
                 self.invocationHelpMessage = invocationHelpMessage
                 self.version = version
                 self.programName = programName

@@ -25,7 +25,7 @@ func set() {
         Log.info("Setting up command line")
         let bootnumOption = StringOption(shortFlag: "b", longFlag: "bootnum", required: 1,  helpMessage: "Boot#### number to modify (hex)")
         let descriptionOption = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
-        let dataStringOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
+        let dataStringOption = OptionalStringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
         let bootNextOption = StringOption(shortFlag: "n", longFlag: "bootnext", required: 2, helpMessage: "set BootNext to #### (hex)")
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "set the boot menu timeout in SECONDS")
         commandLine.invocationHelpMessage = "set -b #### [-L LABEL] [-u STRING] | -t SECONDS | -n ####"
@@ -38,7 +38,6 @@ func set() {
                 var bootNextValue: Int = -1
                 let timeoutValue: Int = timeoutOption.value ?? -1
                 let descriptionValue: String = descriptionOption.value ?? ""
-                let dataStringValue: String = dataStringOption.value ?? ""
                 var updateOption = false
                 
                 /*
@@ -68,7 +67,7 @@ func set() {
                 }
                 
                 /*  Boot number */
-                if bootnumOption.wasSet && (descriptionValue.isEmpty && dataStringValue.isEmpty) {
+                if bootnumOption.wasSet && (descriptionValue.isEmpty && !dataStringOption.wasSet) {
                         print("Option \(bootnumOption.shortDescription) specified without \(descriptionOption.shortDescription) or \(dataStringOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
@@ -96,7 +95,7 @@ func set() {
                 }
                 
                 /* Optional data string */
-                if (!dataStringValue.isEmpty && option == nil) {
+                if (dataStringOption.wasSet && option == nil) {
                         print("Option \(dataStringOption.shortDescription) requires \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
@@ -144,10 +143,19 @@ func set() {
                 
                 /* Set optional data string */
                 
-                if !dataStringValue.isEmpty {
-                        option?.optionalDataString = dataStringValue
-                        updateOption = true
-                        
+                if let dataStringValue: String = dataStringOption.value {
+                        if !dataStringValue.isEmpty {
+                                option?.optionalDataString = dataStringValue
+                                updateOption = true
+                        } else {
+                                option?.optionalData = nil
+                                updateOption = true
+                        }
+                } else {
+                        if dataStringOption.wasSet {
+                                option?.optionalData = nil
+                                updateOption = true
+                        }
                 }
                 
                 /* Update option */

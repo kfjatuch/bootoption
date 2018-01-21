@@ -133,7 +133,7 @@ extension Nvram {
                         Log.log("Index out of range, appending to boot order instead")
                         bootOrder.append(UInt16(number))
                 }
-                let data = bootOrderData(from: bootOrder)
+                let data = bootOrderData(fromArray: bootOrder)
                 if !self.setBootOrder(data: data) {
                         return false
                 }
@@ -300,7 +300,7 @@ extension Nvram {
          *  Helper: Array to BootOrder data
          */
         
-        func bootOrderData(from bootOrder: [UInt16]) -> Data {
+        func bootOrderData(fromArray bootOrder: [UInt16]) -> Data {
                 var data = Data.init()
                 for var bootNumber in bootOrder {
                         data.append(UnsafeBufferPointer(start: &bootNumber, count: 1))

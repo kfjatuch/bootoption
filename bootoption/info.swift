@@ -52,6 +52,7 @@ func info() {
                 if let string: String = option.optionalDataString, !string.isEmpty {
                         properties.append(("Arguments", string))
                 } else if let string: String = option.optionalDataHexView {
+                        /* Insert spaces to align subsequent lines with first line content */
                         let paddedString = string.replacingOccurrences(of: "\n", with: "\n      ")
                         properties.append(("Data", paddedString))
                 }

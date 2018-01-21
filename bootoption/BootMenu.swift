@@ -55,56 +55,57 @@ class BootMenu {
                 }
                 /* Sort options by BootOrder */
                 options.sort(by: { $0.order! < $1.order! } )
+                
+                Log.info("Boot menu initialised")
         }
         
-        var string: String {
-                var string = String()
-                var current = String()
-                var next = String()
-                var timeout = String()
+        var outputString: String {
+                var output = String()
                 let notSet = "Not set"
-                /* Boot */
-                if self.bootCurrent != nil {
-                        current = nvram.bootStringFromBoot(number: Int(self.bootCurrent!))
-                } else {
-                        current = notSet
+                
+                /* BootCurrent, BootNext, Timeout */
+                
+                var bootCurrentString: String {
+                        return bootCurrent != nil ? nvram.bootStringFromBoot(number: Int(bootCurrent!)) : notSet
                 }
-                if self.bootNext != nil {
-                        next = nvram.bootStringFromBoot(number: Int(self.bootNext!))
-                } else {
-                        next = notSet
+                var bootNextString: String {
+                        return bootNext != nil ? nvram.bootStringFromBoot(number: Int(bootNext!)) : notSet
                 }
-                if self.timeout != nil {
-                        timeout = String(self.timeout!)
-                } else {
-                        timeout = notSet
+                var timeoutString: String {
+                        if let timeoutValue: UInt16 = timeout {
+                                return String(timeoutValue)
+                        } else {
+                                return notSet
+                        }
                 }
-                string.append("BootCurrent: \(current)\n")
-                string.append("BootNext: \(next)\n")
-                string.append("Timeout: \(timeout)\n")
-                for option in self.options {
+                output.append("BootCurrent: \(bootCurrentString)\n")
+                output.append("BootNext: \(bootNextString)\n")
+                output.append("Timeout: \(timeoutString)\n")
+                
+                /* List of options */
+                
+                for option in options {
                         /* Menu */
                         let separator = " "
                         var paddedOrder = " --"
                         if option.order != -1 {
                                 paddedOrder = String(option.order! + 1).leftPadding(toLength: 3, withPad: " ")
                         }
-                        string.append(paddedOrder)
-                        string.append(":")
-                        string.append(separator)
-                        string.append(nvram.bootStringFromBoot(number: option.bootNumber!))
-                        string.append(separator)
-                        string.append(option.descriptionString!.padding(toLength: 28, withPad: " ", startingAt: 0))
+                        output.append(paddedOrder)
+                        output.append(":")
+                        output.append(separator)
+                        output.append(nvram.bootStringFromBoot(number: option.bootNumber!))
+                        output.append(separator)
+                        output.append(option.descriptionString!.padding(toLength: 28, withPad: " ", startingAt: 0))
                         if !option.enabled! {
-                                string.append(" *D")
+                                output.append(" *D")
                         }
                         if option.hidden! {
-                                string.append(" *H")
+                                output.append(" *H")
                         }
-                        string.append("\n")
+                        output.append("\n")
                 }
-                string.removeLast()
-                Log.info("Boot menu initialised")
-                return string
+                output.removeLast()
+                return output
         }
 }

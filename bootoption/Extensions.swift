@@ -128,15 +128,12 @@ extension String {
         }
         
         func toZeroBasedIndex() -> Int? {
-                let p = Int(self)
-                if var i: Int = p {
-                        i -= 1
-                        return i
-                } else {
-                        return nil
+                if let intVal = Int(self) {
+                        return intVal - 1
                 }
-                
+                return nil
         }
+        
         func containsOutlawedCharacters() -> Bool {
                 let allowed: Set<Character> = Set("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLKMNOPQRSTUVWXYZ1234567890+-=(),.!_\\".characters)
                 for char in self.characters {

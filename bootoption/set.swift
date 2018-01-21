@@ -37,7 +37,7 @@ func set() {
                 let bootNextString: String = bootNextOption.value ?? ""
                 var bootNextValue: Int = -1
                 let timeoutValue: Int = timeoutOption.value ?? -1
-                let descriptionValue: String = descriptionOption.value ?? ""
+                let description: String = descriptionOption.value ?? ""
                 var updateOption = false
                 
                 /*
@@ -67,7 +67,7 @@ func set() {
                 }
                 
                 /*  Boot number */
-                if bootnumOption.wasSet && (descriptionValue.isEmpty && !dataStringOption.wasSet) {
+                if bootnumOption.wasSet && (description.isEmpty && !dataStringOption.wasSet) {
                         print("Option \(bootnumOption.shortDescription) specified without \(descriptionOption.shortDescription) or \(dataStringOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
@@ -88,7 +88,7 @@ func set() {
                 }
                 
                 /* Description */
-                if (!descriptionValue.isEmpty && option == nil) {
+                if (!description.isEmpty && option == nil) {
                         print("Option \(descriptionOption.shortDescription) requires \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
@@ -135,8 +135,8 @@ func set() {
                 
                 /* Set description */
                 
-                if !descriptionValue.isEmpty {
-                        option?.descriptionString = descriptionValue
+                if !description.isEmpty {
+                        option?.descriptionString = description
                         updateOption = true
                         
                 }
@@ -175,10 +175,10 @@ func set() {
          */
         
         let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
+        
         switch optionParser.status {
         case .success:
-                setMain()
-                
+                setMain()    
         default:
                 commandLine.printUsage(withMessageForError: optionParser.status)
                 Log.logExit(EX_USAGE)

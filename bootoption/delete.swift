@@ -29,9 +29,9 @@ func delete() {
         commandLine.invocationHelpMessage = "delete [-b ####] [-n] [-t]"
         commandLine.setOptions(variableOption, bootNextOption, timeoutOption)
         
-        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
-        switch optionParser.status {
-        case .success:
+        func deleteMain() {
+                
+                /* Check root */
                 
                 if commandLine.userName != "root" {
                         Log.logExit(EX_NOPERM, "Only root can delete NVRAM variables.")
@@ -93,7 +93,17 @@ func delete() {
                 }
                 
                 Log.logExit(status)
+        }
         
+        /*
+         *  Parse command line
+         */
+        
+        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
+        
+        switch optionParser.status {
+        case .success:
+                deleteMain()
         default:
                 commandLine.printUsage(withMessageForError: optionParser.status)
                 Log.logExit(EX_USAGE)

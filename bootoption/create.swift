@@ -29,37 +29,43 @@ func create() {
         commandLine.invocationHelpMessage = "create -l PATH -L LABEL [-u STRING]"
         commandLine.setOptions(loaderOption, descriptionOption, dataStringOption)
         
-        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
-        switch optionParser.status {
-        case .success:
+        func createMain() {
+                
+                let loaderPath = loaderOption.value ?? ""
+                let description = descriptionOption.value ?? ""
+                
+                /* Check root */
                 
                 if commandLine.userName != "root" {
                         Log.logExit(EX_NOPERM, "Only root can set NVRAM variables.")
                 }
                 
                 var status = EX_OK
-                var noop = true
                 
                 /* Set a new load option */
                 
-                if loaderOption.wasSet && descriptionOption.wasSet {
-                        noop = false
-                        let option = EfiLoadOption(createFromLoaderPath: loaderOption.value!, description: descriptionOption.value!, optionalData: dataStringOption.value)
+                if !loaderPath.isEmpty && !description.isEmpty {
+                        let option = EfiLoadOption(createFromLoaderPath: loaderPath, description: description, optionalData: dataStringOption.value)
                         if nvram.createNewAndAddToBootOrder(withData: option.data) == nil {
                                 print("Error setting boot option", to: &standardError)
                                 status = EX_DATAERR
                         }
-                }
-                
-                /* After all functions, exit some way */
-                
-                if noop {
-                        commandLine.printUsage()
-                        Log.logExit(EX_USAGE)
+                } else {
+                        status = EX_NOINPUT
                 }
                 
                 Log.logExit(status)
-                
+        }
+        
+        /*
+         *  Parse command line
+         */
+        
+        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
+        
+        switch optionParser.status {
+        case .success:
+                createMain()     
         default:
                 commandLine.printUsage(withMessageForError: optionParser.status)
                 Log.logExit(EX_USAGE)

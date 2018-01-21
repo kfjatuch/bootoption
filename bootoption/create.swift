@@ -45,7 +45,7 @@ func create() {
                 /* Set a new load option */
                 
                 if !loaderPath.isEmpty && !description.isEmpty {
-                        let option = EfiLoadOption(createFromLoaderPath: loaderPath, description: description, optionalData: dataStringOption.value)
+                        let option = EfiLoadOption(createFromLoaderPath: loaderPath, descriptionString: description, optionalDataString: dataStringOption.value)
                         if nvram.createNewAndAddToBootOrder(withData: option.data) == nil {
                                 print("Error setting boot option", to: &standardError)
                                 status = EX_DATAERR

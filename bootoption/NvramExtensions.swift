@@ -27,11 +27,11 @@ extension Nvram {
          */
         
         func getBootOrderArray() -> [UInt16]? {
-                if self.savedBootOrder != nil {
-                        return self.savedBootOrder
+                if savedBootOrder != nil {
+                        return savedBootOrder
                 }
                 var bootOrder: [UInt16] = Array()
-                if var bootOrderBuffer: Data = self.getBootOrder() {
+                if var bootOrderBuffer: Data = getBootOrder() {
                         let bootOrderBufferSize: Int = bootOrderBuffer.count
                         for _ in 1 ... (bootOrderBufferSize / 2) {
                                 let optionNumber: UInt16 = bootOrderBuffer.remove16()
@@ -39,8 +39,8 @@ extension Nvram {
                         }
                 }
                 if !bootOrder.isEmpty {
-                        self.savedBootOrder = bootOrder
-                        return self.savedBootOrder
+                        savedBootOrder = bootOrder
+                        return savedBootOrder
                 } else {
                         return nil
                 }
@@ -48,23 +48,23 @@ extension Nvram {
         
         func getBootOption(_ number: Int) -> Data? {
                 let name: String = bootStringFromBoot(number: number)
-                return self.options.getDataValue(forProperty: nameWithGuid(name))
+                return options.getDataValue(forProperty: nameWithGuid(name))
         }
         
         func getBootCurrent() -> Data? {
-                return self.options.getDataValue(forProperty: nameWithGuid("BootCurrent"))
+                return options.getDataValue(forProperty: nameWithGuid("BootCurrent"))
         }
         
         func getBootNext() -> Data? {
-                return self.options.getDataValue(forProperty: nameWithGuid("BootNext"))
+                return options.getDataValue(forProperty: nameWithGuid("BootNext"))
         }
         
         func getTimeout() -> Data? {
-                return self.options.getDataValue(forProperty: nameWithGuid("Timeout"))
+                return options.getDataValue(forProperty: nameWithGuid("Timeout"))
         }
         
         func getBootOrder() -> Data? {
-                return self.options.getDataValue(forProperty: nameWithGuid("BootOrder"))
+                return options.getDataValue(forProperty: nameWithGuid("BootOrder"))
         }
         
         
@@ -76,8 +76,8 @@ extension Nvram {
          */
         
         func setBootOrder(data: Data) -> Bool {
-                let set = self.options.setDataValue(forProperty: nameWithGuid("BootOrder"), value: data)
-                let sync = self.nvramSyncNow(withNamedVariable: nameWithGuid("BootOrder"))
+                let set = options.setDataValue(forProperty: nameWithGuid("BootOrder"), value: data)
+                let sync = nvramSyncNow(withNamedVariable: nameWithGuid("BootOrder"))
                 if set + sync != 0 {
                         return false
                 }
@@ -89,8 +89,8 @@ extension Nvram {
                 var timeoutValue = UInt16(seconds)
                 var data = Data.init()
                 data.append(UnsafeBufferPointer(start: &timeoutValue, count: 1))
-                let set = self.options.setDataValue(forProperty: nameWithGuid("Timeout"), value: data)
-                let sync = self.nvramSyncNow(withNamedVariable: nameWithGuid("Timeout"))
+                let set = options.setDataValue(forProperty: nameWithGuid("Timeout"), value: data)
+                let sync = nvramSyncNow(withNamedVariable: nameWithGuid("Timeout"))
                 if set + sync != 0 {
                         return false
                 }
@@ -100,15 +100,15 @@ extension Nvram {
         
         func setBootNext(number: Int?) -> Bool {
                 let bootNumber: Int = number ?? -1
-                guard self.getBootOption(bootNumber) != nil else {
-                        Log.log("Couldn't get %{public}@ data, cancelling add to boot order", self.bootStringFromBoot(number: bootNumber))
+                guard getBootOption(bootNumber) != nil else {
+                        Log.log("Couldn't get %{public}@ data, cancelling add to boot order", bootStringFromBoot(number: bootNumber))
                         return false
                 }
                 var bootNext = UInt16(bootNumber)
                 var data = Data.init()
                 data.append(UnsafeBufferPointer(start: &bootNext, count: 1))
-                let set = self.options.setDataValue(forProperty: nameWithGuid("BootNext"), value: data)
-                let sync = self.nvramSyncNow(withNamedVariable: nameWithGuid("BootNext"))
+                let set = options.setDataValue(forProperty: nameWithGuid("BootNext"), value: data)
+                let sync = nvramSyncNow(withNamedVariable: nameWithGuid("BootNext"))
                 if set + sync != 0 {
                         return false
                 }
@@ -118,7 +118,7 @@ extension Nvram {
 
         @discardableResult func addToBootOrder(_ number: Int, atIndex index: Int = 0) -> Bool {
                 let name = bootStringFromBoot(number: number)
-                guard self.getBootOption(number) != nil else {
+                guard getBootOption(number) != nil else {
                         Log.log("Couldn't get %{public}@ data, cancelling add to boot order", name)
                         return false
                 }
@@ -134,19 +134,19 @@ extension Nvram {
                         bootOrder.append(UInt16(number))
                 }
                 let data = bootOrderData(fromArray: bootOrder)
-                if !self.setBootOrder(data: data) {
+                if !setBootOrder(data: data) {
                         return false
                 }
                 return true
         }
         
         func createNewAndAddToBootOrder(withData data: Data) -> Int? {
-                guard let bootNumber: Int = self.discoverEmptyBootNumber() else {
+                guard let bootNumber: Int = discoverEmptyBootNumber() else {
                         return nil
                 }
                 let name: String = bootStringFromBoot(number: bootNumber)
-                let set = self.options.setDataValue(forProperty: nameWithGuid(name), value: data)
-                let sync = self.nvramSyncNow(withNamedVariable: nameWithGuid(name))
+                let set = options.setDataValue(forProperty: nameWithGuid(name), value: data)
+                let sync = nvramSyncNow(withNamedVariable: nameWithGuid(name))
                 if set + sync != 0 {
                         Log.log("Create new boot option returned nil")
                         return nil
@@ -159,8 +159,8 @@ extension Nvram {
         func setOption(option: EfiLoadOption) -> Bool {
                 if let bootNumber: Int = option.bootNumber {
                         let name: String = bootStringFromBoot(number: bootNumber)
-                        let set = self.options.setDataValue(forProperty: nameWithGuid(name), value: option.data)
-                        let sync = self.nvramSyncNow(withNamedVariable: nameWithGuid(name))
+                        let set = options.setDataValue(forProperty: nameWithGuid(name), value: option.data)
+                        let sync = nvramSyncNow(withNamedVariable: nameWithGuid(name))
                         if set + sync != 0 {
                                 Log.log("Error setting and syncing %{public}@", name)
                                 return false
@@ -182,23 +182,23 @@ extension Nvram {
         
         func deleteBootOption(_ number: Int) {
                 let name: String = bootStringFromBoot(number: number)
-                self.deleteVariable(key: nameWithGuid(name))
+                deleteVariable(key: nameWithGuid(name))
                 Log.info("Asked the kernel to delete %{public}@", name)
                 // to do: needs to be read back to confirm success
         }
         
         func deleteTimeout() {
-                self.deleteVariable(key: nameWithGuid("Timeout"))
+                deleteVariable(key: nameWithGuid("Timeout"))
                 Log.info("Asked the kernel to delete Timeout")
         }
         
         func deleteBootNext() {
-                self.deleteVariable(key: nameWithGuid("BootNext"))
+                deleteVariable(key: nameWithGuid("BootNext"))
                 Log.info("Asked the kernel to delete BootNext")
         }
         
         func removeFromBootOrder(number bootNumber: Int) -> [UInt16]? {
-                var bootOrder = self.getBootOrderArray()
+                var bootOrder = getBootOrderArray()
                 if let index: Int = bootOrder?.index(of: UInt16(bootNumber)) {
                         bootOrder?.remove(at: index)
                         /* make the new bootorder */
@@ -230,7 +230,7 @@ extension Nvram {
         func discoverEmptyBootNumber(leavingSpace: Bool = false) -> Int? {
                 var counter: Int = 0
                 for number: Int in 0x0 ..< 0xFF {
-                        if let _: Data = self.getBootOption(number) {
+                        if let _: Data = getBootOption(number) {
                                 continue
                         } else {
                                 if !leavingSpace {
@@ -313,7 +313,7 @@ extension Nvram {
          */
         
         func positionInBootOrder(number: Int) -> Int? {
-                let bootOrder = self.getBootOrderArray()
+                let bootOrder = getBootOrderArray()
                 let order: Int? = bootOrder?.index(of: UInt16(number))
                 return order
         }

@@ -37,15 +37,15 @@ class Nvram {
          */
         
         func deleteVariable(key: String) {
-                let _ = self.options.setStringValue(forProperty: kIONVRAMDeletePropertyKey, value: key)
+                let _ = options.setStringValue(forProperty: kIONVRAMDeletePropertyKey, value: key)
         }
 
         func nvramSyncNow(withNamedVariable key: String, useForceSync: Bool = true) -> kern_return_t {
                 var result: kern_return_t
                 if (useForceSync) {
-                        result = self.options.setStringValue(forProperty: ioNvramForceSyncNowPropertyKey, value: key)
+                        result = options.setStringValue(forProperty: ioNvramForceSyncNowPropertyKey, value: key)
                 } else {
-                        result = self.options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: key)
+                        result = options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: key)
                 }
                 if result != KERN_SUCCESS {
                         Log.log("Error syncing %{public}@", key)

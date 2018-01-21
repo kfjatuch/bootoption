@@ -57,28 +57,28 @@ class RegistryEntry {
         }
 
         func getIntValue(forProperty key: String) -> Int? {
-                guard let int = self.getValue(forProperty: key, type: typeId.number) as? Int else {
+                guard let int = getValue(forProperty: key, type: typeId.number) as? Int else {
                         return nil
                 }
                 return int
         }
         
         func getStringValue(forProperty key: String) -> String? {
-                guard let string = self.getValue(forProperty: key, type: typeId.string) as? String else {
+                guard let string = getValue(forProperty: key, type: typeId.string) as? String else {
                         return nil
                 }
                 return string
         }
         
         func getDataValue(forProperty key: String) -> Data? {
-                guard let data = self.getValue(forProperty: key, type: typeId.data) as? Data else {
+                guard let data = getValue(forProperty: key, type: typeId.data) as? Data else {
                         return nil
                 }
                 return data
         }
         
         func getBoolValue(forProperty key: String) -> Bool? {
-                guard let bool = self.getValue(forProperty: key, type: typeId.bool) as? Bool else {
+                guard let bool = getValue(forProperty: key, type: typeId.bool) as? Bool else {
                         return nil
                 }
                 return bool
@@ -112,25 +112,25 @@ class RegistryEntry {
         
         func setIntValue(forProperty key: String, value: Int) -> kern_return_t {
                 let type = typeId.number
-                let result = self.setValue(forProperty: key, value: value as CFNumber, type: type)
+                let result = setValue(forProperty: key, value: value as CFNumber, type: type)
                 return result
         }
         
         func setStringValue(forProperty key: String, value: String) -> kern_return_t {
                 let type = typeId.string
-                let result = self.setValue(forProperty: key, value: value as CFString, type: type)
+                let result = setValue(forProperty: key, value: value as CFString, type: type)
                 return result
         }
         
         func setDataValue(forProperty key: String, value: Data) -> kern_return_t {
                 let type = typeId.data
-                let result = self.setValue(forProperty: key, value: value as CFData, type: type)
+                let result = setValue(forProperty: key, value: value as CFData, type: type)
                 return result
         }
         
         func setBoolValue(forKey key: String, value: Bool) -> kern_return_t {
                 let type = typeId.bool
-                let result = self.setValue(forProperty: key, value: value as CFBoolean, type: type)
+                let result = setValue(forProperty: key, value: value as CFBoolean, type: type)
                 return result
                 
         }

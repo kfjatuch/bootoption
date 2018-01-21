@@ -234,9 +234,9 @@ struct MediaHardDriveDevicePath {
         var data: Data {
                 get {
                         var data = Data.init()
-                        var partitionStartValue: UInt64 = self.partitionStart
-                        var partitionSizeValue: UInt64 = self.partitionSize
-                        var partitionNumberValue: UInt32 = self.partitionNumber
+                        var partitionStartValue: UInt64 = partitionStart
+                        var partitionSizeValue: UInt64 = partitionSize
+                        var partitionNumberValue: UInt32 = partitionNumber
                         data.append(type)
                         data.append(subType)
                         data.append(length)
@@ -262,8 +262,8 @@ struct MediaHardDriveDevicePath {
         var signatureType: UInt8 = 2 // GPT UUID
         
         var partitionUuid: String? {
-                var buffer = self.partitionSignature
-                if !self.partitionSignature.isEmpty {
+                var buffer = partitionSignature
+                if !partitionSignature.isEmpty {
                         var string = String()
                         string += String(format:"%08X", buffer.remove32()) + "-"
                         string += String(format:"%04X", buffer.remove16()) + "-"

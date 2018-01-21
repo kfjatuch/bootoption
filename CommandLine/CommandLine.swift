@@ -89,12 +89,7 @@ class CommandLine {
         }
         
         func verb() -> String? {
-                if rawArguments.count != 0 {
-                        let arg = rawArguments.removeFirst()
-                        return arg
-                } else {
-                        return nil
-                }
+                return rawArguments.count != 0 ? rawArguments.removeFirst() : nil
         }
 
 

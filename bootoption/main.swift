@@ -44,7 +44,7 @@ func parseCommandLineVerb() {
         let setVerb = Verb(withName: "set", helpMessage: "set/modify variables in NVRAM")
         let createVerb = Verb(withName: "create", helpMessage: "create a new boot option")
         let orderVerb = Verb(withName: "order", helpMessage: "re-arrange the boot order")
-        let deleteVerb = Verb(withName: "delete", helpMessage: "unset/delete variables in NVRAM")
+        let deleteVerb = Verb(withName: "delete", helpMessage: "delete variables from NVRAM")
         let saveVerb = Verb(withName: "save", helpMessage: "print or save boot variable data in different formats")
         commandLine.addVerbs(listVerb, infoVerb, setVerb, createVerb, orderVerb, deleteVerb, saveVerb)
         let verbParser = VerbParser(argument: commandLine.verb(), verbs: commandLine.verbs)

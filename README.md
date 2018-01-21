@@ -13,7 +13,7 @@ bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one fr
 - <strong>SET</strong>&nbsp;&nbsp;set/modify variables in NVRAM
 - <strong>CREATE</strong>&nbsp;&nbsp;create a new boot option
 - <strong>ORDER</strong>&nbsp;&nbsp;re-arrange the boot order
-- <strong>DELETE</strong>&nbsp;&nbsp;unset/delete variables in NVRAM
+- <strong>DELETE</strong>&nbsp;&nbsp;delete variables from NVRAM
 - <strong>SAVE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
 
 bootoption <strong>VERB</strong> without options will show the usage or options for that verb, where available

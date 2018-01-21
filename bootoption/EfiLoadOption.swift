@@ -240,7 +240,7 @@ struct EfiLoadOption {
                                 self.devicePathDescription.append("/MEDIA_UNKNOWN")
                         }
                 case DevicePath.BBS_DEVICE_PATH.rawValue:
-                        self.devicePathDescription.append("/BIOS")
+                        self.devicePathDescription.append("/BIOS_BOOT_SPECIFICATION")
                 case DevicePath.END_DEVICE_PATH_TYPE.rawValue:
                         break
                 default:

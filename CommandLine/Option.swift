@@ -234,6 +234,39 @@ class StringOption: Option {
         }
 }
 
+/* An option that accepts a string value or no value  */
+
+class OptionalStringOption: Option {
+        
+        var value: String? = nil
+        
+        var wasSetToNil: Bool = false
+        
+        override var wasSet: Bool {
+                if wasSetToNil {
+                        return true
+                }
+                if value != nil {
+                        return true
+                }
+                return false
+        }
+        
+        override var claimedValues: Int {
+                return self.value != nil ? 1 : 0
+        }
+        
+        override func setValue(_ values: [String]) -> Bool {
+                
+                if values.count == 0 {
+                        wasSetToNil = true
+                } else {
+                        value = values[0]
+                }
+                return true
+        }
+}
+
 /* An option that accepts one or more string values. */
 
 class MultiStringOption: Option {

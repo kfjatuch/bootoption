@@ -24,9 +24,9 @@ func create() {
         
         Log.info("Setting up command line")
         let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1,  helpMessage: "the PATH to an EFI loader executable")
-        let descriptionOption = StringOption(shortFlag: "L", longFlag: "label", required: 1, helpMessage: "display LABEL in firmware boot manager")
-        let dataStringOption = StringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-        commandLine.invocationHelpMessage = "create -l PATH -L LABEL [-u STRING]"
+        let descriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
+        let dataStringOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
+        commandLine.invocationHelpMessage = "create -l PATH -d LABEL [-a STRING]"
         commandLine.setOptions(loaderOption, descriptionOption, dataStringOption)
         
         func createMain() {

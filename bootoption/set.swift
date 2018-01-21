@@ -23,12 +23,12 @@ import Foundation
 func set() {
         
         Log.info("Setting up command line")
-        let bootnumOption = StringOption(shortFlag: "b", longFlag: "bootnum", required: 1,  helpMessage: "Boot#### number to modify (hex)")
-        let descriptionOption = StringOption(shortFlag: "L", longFlag: "label", helpMessage: "display LABEL in firmware boot manager")
-        let dataStringOption = OptionalStringOption(shortFlag: "u", longFlag: "unicode", helpMessage: "an optional STRING passed to the loader command line")
-        let bootNextOption = StringOption(shortFlag: "n", longFlag: "bootnext", required: 2, helpMessage: "set BootNext to #### (hex)")
+        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", required: 1,  helpMessage: "variable to manipulate, Boot####")
+        let descriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
+        let dataStringOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
+        let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", required: 2, helpMessage: "set BootNext, #### (hex)")
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "set the boot menu timeout in SECONDS")
-        commandLine.invocationHelpMessage = "set -b #### [-L LABEL] [-u STRING] | -t SECONDS | -n ####"
+        commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] | -t SECONDS | -x ####"
         commandLine.setOptions(bootnumOption, descriptionOption, dataStringOption, bootNextOption, timeoutOption)
         
         func setMain() {

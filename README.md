@@ -22,7 +22,7 @@ bootoption <strong>VERB</strong> without options will show the usage or options 
 ### Create a new boot option in NVRAM and add it to the boot order
 
 ```
-sudo bootoption create -l "/Volumes/EFI/shell.efi" -L "EFI Shell"
+sudo bootoption create -l "/Volumes/EFI/shell.efi" -d "EFI Shell"
 ```
 
 Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
@@ -38,12 +38,12 @@ Supported output modes:
 
 A stored representation of the variable data can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from inside the operating system (for instance, generated during loader installation, stored and then added from an EFI context - see also [Punchdrum](https://github.com/vulgo/Punchdrum)).
 
-bootoption save -l <em>PATH</em> -L <em>LABEL</em> [ -u <em>STRING</em> ] [ -o <em>FILE</em> | -a | -x [ -k <em>KEY</em> ] ]
+bootoption save -l <em>PATH</em> -d <em>LABEL</em> [ -a <em>STRING</em> ] [ -o <em>FILE</em> | -% | -x [ -k <em>KEY</em> ] ]
 
 #### Store to XML property list
 
 ```
-bootoption save -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -x -k "Payload" > /Volumes/EFI/boot.plist
+bootoption save -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -xk "Payload" > "/Volumes/EFI/boot.plist"
 ```
 #### /Volumes/EFI/boot.plist
 
@@ -67,7 +67,7 @@ The data element contains the base 64 encoded variable data conforming to the EF
 #### Store to EDK2 dmpstore format
 
 ```
-bootoption save -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -L "Clover" -o "/Volumes/USB-FAT32/vars.dmpstore"
+bootoption save -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -o "/Volumes/USB-FAT32/vars.dmpstore"
 ````
 
 The resulting file can be read from the EFI shell. To load and set the variables:

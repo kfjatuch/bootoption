@@ -24,33 +24,33 @@ class VerbParser {
         var versionVerb = "version"
         var activeVerb = ""
         var helpLongOption: String {
-                return "\(CommandLine.longPrefix)\(self.helpVerb)"
+                return "\(CommandLine.longPrefix)\(helpVerb)"
         }
         var versionLongOption: String {
-                return "\(CommandLine.longPrefix)\(self.versionVerb)"
+                return "\(CommandLine.longPrefix)\(versionVerb)"
         }
         
         init(argument: String?, verbs: [Verb]) {
                 Log.info("Parsing command line verb...")
                 if argument == nil {
-                        self.status = .noInput
+                        status = .noInput
                         return
                 }
                 let verb = argument!.lowercased()
-                if verb == self.helpLongOption {
-                        self.activeVerb = "help"
-                        self.status = .success
-                } else if verb == self.versionLongOption {
-                        self.activeVerb = "version"
-                        self.status = .success
+                if verb == helpLongOption {
+                        activeVerb = "help"
+                        status = .success
+                } else if verb == versionLongOption {
+                        activeVerb = "version"
+                        status = .success
                 } else if verbs.contains(where: { $0.name.uppercased() == verb.uppercased() } ) {
-                        self.activeVerb = verb
-                        self.status = .success
+                        activeVerb = verb
+                        status = .success
                 } else {
-                        self.status = .invalidInput(verb)
+                        status = .invalidInput(verb)
                         return
                 }
-                Log.info("Active verb is '%{public}@'", String(self.activeVerb))
+                Log.info("Active verb is '%{public}@'", String(activeVerb))
         }
         
         

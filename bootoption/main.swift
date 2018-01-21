@@ -70,14 +70,14 @@ func parseCommandLineVerb() {
                         case verbParser.helpVerb:
                                 help()
                         default:
-                                commandLine.printUsage(verbs: true)
+                                commandLine.printUsage(showingVerbs: true)
                                 Log.logExit(EX_USAGE)
                 }
         case .noInput:
-                commandLine.printUsage(verbs: true)
+                commandLine.printUsage(showingVerbs: true)
                 Log.logExit(EX_USAGE)
         default:
-                commandLine.printUsage(withMessageForError: verbParser.status, verbs: true)
+                commandLine.printUsage(withMessageForError: verbParser.status, showingVerbs: true)
                 Log.logExit(EX_USAGE)
         }
 }

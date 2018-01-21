@@ -21,7 +21,7 @@ class OptionParser {
         
         var status: CommandLine.ParserStatus = .noInput
         var errorMessage: String {
-                return self.status.description
+                return status.description
         }
         var precludedOptions: String = ""
         var unparsedArguments: [String] = [String]() // This property will contain any values that weren't captured by an option
@@ -93,17 +93,17 @@ class OptionParser {
                                 
                                 if let c = option.shortFlag?.characters.first {
                                         
-                                        if self.precludedOptions.characters.contains(c) {
-                                                self.status = .tooManyOptions
+                                        if precludedOptions.characters.contains(c) {
+                                                status = .tooManyOptions
                                                 return
                                         }
                                         
-                                        self.precludedOptions.append(option.precludes)
+                                        precludedOptions.append(option.precludes)
                                 }
                                 
-                                let values = self.getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument)
+                                let values = getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument)
                                 guard option.setValue(values) else {
-                                        self.status = .invalidValueForOption(option, values)
+                                        status = .invalidValueForOption(option, values)
                                         return
                                 }
                                 
@@ -128,11 +128,11 @@ class OptionParser {
                                                 
                                                 /* preclude */
                                                 if let c = option.shortFlag?.characters.first {
-                                                        if self.precludedOptions.characters.contains(c) {
-                                                                self.status = .tooManyOptions
+                                                        if precludedOptions.characters.contains(c) {
+                                                                status = .tooManyOptions
                                                                 return
                                                         }
-                                                        self.precludedOptions.append(option.precludes)
+                                                        precludedOptions.append(option.precludes)
                                                 }
                                                 
                                                 /*
@@ -140,9 +140,9 @@ class OptionParser {
                                                  *  -xvf <file1> <file2>
                                                  */
                                                 
-                                                let values = (i == flagLength - 1) ? self.getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument) : [String]()
+                                                let values = (i == flagLength - 1) ? getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument) : [String]()
                                                 guard option.setValue(values) else {
-                                                        self.status = .invalidValueForOption(option, values)
+                                                        status = .invalidValueForOption(option, values)
                                                         return
                                                 }
                                                 
@@ -161,7 +161,7 @@ class OptionParser {
                         /* Invalid flag */
                         
                         guard !strict || flagMatched else {
-                                self.status = .invalidArgument(string)
+                                status = .invalidArgument(string)
                                 return
                         }
                 }
@@ -193,7 +193,7 @@ class OptionParser {
                         /* return if there are no groups with all required options set */
                         if groups.count == 0 {
                                 /* this error ambiguous */
-                                self.status = .missingRequiredOptionGroup
+                                status = .missingRequiredOptionGroup
                                 return
                         }
                 } else {
@@ -201,15 +201,15 @@ class OptionParser {
                         let missingOptions = options.filter { $0.required != 0 && !$0.wasSet }
                         guard missingOptions.count == 0 else {
                                 /* this error is specific about missing arguments */
-                                self.status = .missingRequiredOptions(missingOptions)
+                                status = .missingRequiredOptions(missingOptions)
                                 return
                         }
                 }
                 
                 /* Capture any unparsed arguments */
                 
-                self.unparsedArguments = raw.filter { $0 != "" }
-                self.status = .success
+                unparsedArguments = raw.filter { $0 != "" }
+                status = .success
         }
         
 }

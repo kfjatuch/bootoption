@@ -79,8 +79,8 @@ class CommandLine {
         var options: [Option] = Array()
         var verbs: [Verb] = Array()
         var usedFlags: Set<String> {
-                var flags = Set<String>(minimumCapacity: self.options.count * 2)
-                for option in self.options {
+                var flags = Set<String>(minimumCapacity: options.count * 2)
+                for option in options {
                         for case let flag? in [option.shortFlag, option.longFlag] {
                                 flags.insert(flag)
                         }
@@ -105,19 +105,19 @@ class CommandLine {
         init(invocationHelpMessage: String = "[options]", version: String = "1.0", programName: String = "", copyright: String = "", license: String = "", format formatUser: ((String, CommandLine.style) -> String)? = nil) {
                 var args = Swift.CommandLine.arguments
                 args.removeFirst()
-                self.baseName = NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent as String
-                self.rawArguments = args
+                baseName = NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent as String
+                rawArguments = args
                 self.invocationHelpMessage = invocationHelpMessage
                 self.version = version
                 self.programName = programName
                 self.copyright = copyright
                 self.license = license
                 if formatUser == nil {
-                        self.format = formatDefault
+                        format = formatDefault
                 } else {
-                        self.format = formatUser
+                        format = formatUser
                 }
-                self.userName = NSUserName()
+                userName = NSUserName()
                 Log.info("Command line initialized")
         }
         
@@ -126,18 +126,18 @@ class CommandLine {
          */
         
         func addVerb(_ verb: Verb) {
-                assert(!self.verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
-                self.verbs.append(verb)
+                assert(!verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
+                verbs.append(verb)
                 Log.info("Added verb '%{public}@' to command line", String(verb.name))
         }
         
         func addOption(_ option: Option) {
                 for case let flag? in [option.shortFlag, option.longFlag] {
-                        assert(!self.usedFlags.contains(flag), "Flag '\(flag)' already in use")
+                        assert(!usedFlags.contains(flag), "Flag '\(flag)' already in use")
                 }
-                self.options.append(option)
+                options.append(option)
                 Log.info("Added option '%{public}@' to command line", String(option.logDescription))
-                self.optionMax = 0
+                optionMax = 0
         }
         
         /*
@@ -181,31 +181,31 @@ class CommandLine {
         var license: String
         var versionMessage: String {
                 get {
-                        var string = "\(self.programName) \(self.version)\n"
-                        string.append("\(self.copyright)\n")
-                        string.append(self.license)
+                        var string = "\(programName) \(version)\n"
+                        string.append("\(copyright)\n")
+                        string.append(license)
                         return string
                 }
         }
         
         var optionMax: Int = 0
         var optionWidth: Int {
-                if self.optionMax == 0 {
-                        let mapped = self.options.map { $0.optionDescription.characters.count }
-                        let padding = self.listPadding.count
-                        self.optionMax = (mapped.sorted().last ?? 0) + padding
+                if optionMax == 0 {
+                        let mapped = options.map { $0.optionDescription.characters.count }
+                        let padding = listPadding.count
+                        optionMax = (mapped.sorted().last ?? 0) + padding
                 }
-                return self.optionMax
+                return optionMax
         }
         
         var verbMax: Int = 0
         var verbWidth: Int {
-                if self.verbMax == 0 {
-                        let mapped = self.verbs.map { $0.name.characters.count }
-                        let padding = self.listPadding.count
-                        self.verbMax = (mapped.sorted().last ?? 0) + padding
+                if verbMax == 0 {
+                        let mapped = verbs.map { $0.name.characters.count }
+                        let padding = listPadding.count
+                        verbMax = (mapped.sorted().last ?? 0) + padding
                 }
-                return self.verbMax
+                return verbMax
         }
         
         enum style {
@@ -223,11 +223,11 @@ class CommandLine {
                 case .errorMessage:
                         return string != "" ? "\(string)\n" : ""
                 case .optionListItem:
-                        let option = string.padding(toLength: self.optionWidth, withPad: " ", startingAt: 0)
-                        return "\(self.listPadding)\(option)"
+                        let option = string.padding(toLength: optionWidth, withPad: " ", startingAt: 0)
+                        return "\(listPadding)\(option)"
                 case .verbListItem:
-                        let verb = string.padding(toLength: self.verbWidth, withPad: " ", startingAt: 0).uppercased()
-                        return "\(self.listPadding)\(verb)"
+                        let verb = string.padding(toLength: verbWidth, withPad: " ", startingAt: 0).uppercased()
+                        return "\(listPadding)\(verb)"
                 case .helpMessage:
                         return "\(string)\n"
                 }
@@ -235,17 +235,17 @@ class CommandLine {
         
         /*  Prints a usage message */
         
-        func printUsage(verbs: Bool = false) {
-                printDefault(self.format!("Usage: \(self.baseName) \(self.invocationHelpMessage)", style.invocationMessage))
-                if verbs {
-                        for verb in self.verbs {
-                                printDefault(self.format!(verb.name, style.verbListItem))
-                                printDefault(self.format!(verb.helpMessage, style.helpMessage))
+        func printUsage(showingVerbs: Bool = false) {
+                printDefault(format!("Usage: \(baseName) \(invocationHelpMessage)", style.invocationMessage))
+                if showingVerbs {
+                        for verb in verbs {
+                                printDefault(format!(verb.name, style.verbListItem))
+                                printDefault(format!(verb.helpMessage, style.helpMessage))
                         }
                 } else {
-                        for option in self.options {
-                                printDefault(self.format!(option.optionDescription, style.optionListItem))
-                                printDefault(self.format!(option.helpMessage, style.helpMessage))
+                        for option in options {
+                                printDefault(format!(option.optionDescription, style.optionListItem))
+                                printDefault(format!(option.helpMessage, style.helpMessage))
                         }
                 }
         }

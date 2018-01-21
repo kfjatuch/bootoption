@@ -41,9 +41,9 @@ extension CommandLine {
                 }
         }
         
-        func printUsage(withMessageForError error: ParserStatus, verbs: Bool = false) {
+        func printUsage(withMessageForError error: ParserStatus, showingVerbs: Bool = false) {
                 printDefault(self.format!("\(error.description)", style.errorMessage))
-                printUsage(verbs: verbs)
+                printUsage(showingVerbs: showingVerbs)
         }
         
 }

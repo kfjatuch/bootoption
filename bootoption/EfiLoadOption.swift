@@ -64,11 +64,38 @@ struct EfiLoadOption {
         /* Properties */
         
         var order: Int?
-        var enabled: Bool? {
-                return attributes & 0x1 == 0x1 ? true : false
+        var active: Bool? {
+                /*
+                 *  LOAD_OPTION_ACTIVE 0x00000001
+                 */
+                get {
+                        return attributes & 0x1 == 0x1 ? true : false
+                }
+                set {
+                        if newValue == true {
+                                attributes = attributes | 0x1
+                        }
+                        if newValue == false {
+                                attributes = attributes & 0xFFFFFFFE
+                        }
+                }
         }
         var hidden: Bool? {
-                return attributes & 0x8 == 0x8 ? true : false
+                /*
+                 *  LOAD_OPTION_HIDDEN 0x00000008
+                 */
+                get {
+                        return attributes & 0x8 == 0x8 ? true : false
+                }
+                set {
+                        if newValue == true {
+                                attributes = attributes | 0x8
+                        }
+                        if newValue == false {
+                                attributes = attributes & 0xFFFFFFF7
+                        }
+                }
+
         }
         var descriptionString: String? {
                 get {

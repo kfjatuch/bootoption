@@ -26,10 +26,12 @@ func set() {
         let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", required: 1,  helpMessage: "variable to manipulate, Boot####")
         let descriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
         let dataStringOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
+        let activeOption = BinaryOption(longFlag: "active", helpMessage: "active attribute, 0 or 1")
+        let hiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "hidden attribute, 0 or 1")
         let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", required: 2, helpMessage: "set BootNext, #### (hex)")
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "set the boot menu timeout in SECONDS")
         commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] | -t SECONDS | -x ####"
-        commandLine.setOptions(bootnumOption, descriptionOption, dataStringOption, bootNextOption, timeoutOption)
+        commandLine.setOptions(bootnumOption, descriptionOption, dataStringOption, activeOption, hiddenOption, bootNextOption, timeoutOption)
         
         func setMain() {
                 
@@ -67,8 +69,8 @@ func set() {
                 }
                 
                 /*  Boot number */
-                if bootnumOption.wasSet && (description.isEmpty && !dataStringOption.wasSet) {
-                        print("Option \(bootnumOption.shortDescription) specified without \(descriptionOption.shortDescription) or \(dataStringOption.shortDescription)", to: &standardError)
+                if bootnumOption.wasSet && (description.isEmpty && !dataStringOption.wasSet && !activeOption.wasSet && !hiddenOption.wasSet) {
+                        print("Option \(bootnumOption.shortDescription) specified without \(descriptionOption.shortDescription), \(dataStringOption.shortDescription) or attribute options", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
                 }
@@ -85,6 +87,13 @@ func set() {
                         guard option != nil else {
                                 Log.logExit(EX_SOFTWARE)
                         }
+                }
+                
+                /* Attribute options */
+                if (activeOption.wasSet || hiddenOption.wasSet) && option == nil {
+                        print("Setting attribute(s) requires \(bootnumOption.shortDescription)", to: &standardError)
+                        commandLine.printUsage()
+                        Log.logExit(EX_USAGE)
                 }
                 
                 /* Description */
@@ -137,8 +146,7 @@ func set() {
                 
                 if !description.isEmpty {
                         option?.descriptionString = description
-                        updateOption = true
-                        
+                        updateOption = true  
                 }
                 
                 /* Set optional data string */
@@ -156,6 +164,18 @@ func set() {
                                 option?.optionalData = nil
                                 updateOption = true
                         }
+                }
+                
+                /* Set attributes */
+                
+                if hiddenOption.wasSet {
+                        option?.hidden = hiddenOption.value
+                        updateOption = true
+                }
+                
+                if activeOption.wasSet {
+                        option?.active = activeOption.value
+                        updateOption = true
                 }
                 
                 /* Update option */

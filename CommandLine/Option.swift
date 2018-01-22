@@ -63,6 +63,7 @@ class Option {
                         string.append("  ")
                         string.append("\(CommandLine.longPrefix)\(longFlag!)")
                 } else if longFlag != nil {
+                        string.append("    ")
                         string.append("\(CommandLine.longPrefix)\(longFlag!)")
                 } else if shortFlag != nil {
                         string.append("\(CommandLine.shortPrefix)\(shortFlag!)")
@@ -125,6 +126,40 @@ class BoolOption: Option {
         override func setValue(_ values: [String]) -> Bool {
                 value = true
                 return true
+        }
+}
+
+/*
+ *  Option with an optional Bool value that is set with 1 | 0
+ */
+
+class BinaryOption: Option {
+        
+        var value: Bool? = nil
+        
+        override var wasSet: Bool {
+                return value != nil
+        }
+        
+        override func setValue(_ values: [String]) -> Bool {
+                
+                if values.count == 0 {
+                        return false
+                }
+                
+                if let val = Int(values[0]) {
+                        switch val {
+                        case 0:
+                                value = false
+                                return true
+                        case 1:
+                                value = true
+                                return true
+                        default:
+                                return false
+                        }
+                }
+                return false
         }
 }
 

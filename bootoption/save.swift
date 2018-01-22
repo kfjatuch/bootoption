@@ -32,10 +32,8 @@ func save() {
         let keyOption = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
         commandLine.invocationHelpMessage = "save -l PATH -d LABEL [-a STRING] [-o FILE | -% | -x [-k KEY]]"
         commandLine.setOptions(loaderOption, descriptionOption, dataStringOption, outputOption, appleOption, xmlOption, keyOption)
-
-        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
-        switch optionParser.status {
-        case .success:
+        
+        func saveMain() {
                 
                 /* Printed output functions */
                 
@@ -121,6 +119,12 @@ func save() {
                 }
                 Log.logExit(EX_OK)
                 
+        }
+
+        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
+        switch optionParser.status {
+        case .success:
+                saveMain()
         default:
                 commandLine.printUsage(withMessageForError: optionParser.status)
                 Log.logExit(EX_USAGE)

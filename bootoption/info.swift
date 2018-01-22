@@ -42,7 +42,7 @@ func info() {
                 if let string: String = option.descriptionString {
                         properties.append(("Description", string))
                 }
-                properties.append(("Type", option.devicePathDescription))
+                properties.append(("Device path", option.devicePathDescription))
                 if let string: String = option.hardDriveDevicePath?.partitionUuid {
                         properties.append(("Partition UUID", string))
                 }

@@ -141,6 +141,10 @@ class BinaryOption: Option {
                 return value != nil
         }
         
+        override var claimedValues: Int {
+                return value != nil ? 1 : 0
+        }
+        
         override func setValue(_ values: [String]) -> Bool {
                 
                 if values.count == 0 {

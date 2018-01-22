@@ -231,34 +231,34 @@ struct EfiLoadOption {
                 switch type {
                 case DevicePath.HARDWARE_DEVICE_PATH.rawValue:
                         if let string: String = HardwareDevicePath(rawValue: subType)?.description {
-                                devicePathDescription.append("/" + string)
+                                devicePathDescription.append("\\" + string)
                         } else {
-                                devicePathDescription.append("/HW_UNKNOWN")
+                                devicePathDescription.append("\\HW_UNKNOWN")
                         }
                 case DevicePath.ACPI_DEVICE_PATH.rawValue:
                         if let string: String = AcpiDevicePath(rawValue: subType)?.description {
-                                devicePathDescription.append("/" + string)
+                                devicePathDescription.append("\\" + string)
                         } else {
-                                devicePathDescription.append("/ACPI_UNKNOWN")
+                                devicePathDescription.append("\\ACPI_UNKNOWN")
                         }
                 case DevicePath.MESSAGING_DEVICE_PATH.rawValue:
                         if let string: String = MessagingDevicePath(rawValue: subType)?.description {
-                                devicePathDescription.append("/" + string)
+                                devicePathDescription.append("\\" + string)
                         } else {
-                                devicePathDescription.append("/MSG_UNKNOWN")
+                                devicePathDescription.append("\\MSG_UNKNOWN")
                         }
                 case DevicePath.MEDIA_DEVICE_PATH.rawValue:
                         if let string: String = MediaDevicePath(rawValue: subType)?.description {
-                                devicePathDescription.append("/" + string)
+                                devicePathDescription.append("\\" + string)
                         } else {
-                                devicePathDescription.append("/MEDIA_UNKNOWN")
+                                devicePathDescription.append("\\MEDIA_UNKNOWN")
                         }
                 case DevicePath.BBS_DEVICE_PATH.rawValue:
-                        devicePathDescription.append("/BIOS_BOOT_SPECIFICATION")
+                        devicePathDescription.append("\\BIOS_BOOT_SPECIFICATION")
                 case DevicePath.END_DEVICE_PATH_TYPE.rawValue:
                         break
                 default:
-                        devicePathDescription.append("/UNKNOWN_DP_TYPE")
+                        devicePathDescription.append("\\UNKNOWN_DP_TYPE")
                         break
                 }
         }
@@ -282,14 +282,14 @@ struct EfiLoadOption {
                                                 Log.logExit(EX_IOERR, "Error parsing hard drive device path")
                                         }
                                         if let string: String = MediaDevicePath(rawValue: subType)?.description {
-                                                devicePathDescription.append("/" + string)
+                                                devicePathDescription.append("\\" + string)
                                         }
                                         break;
                                 case MediaDevicePath.MEDIA_FILEPATH_DP.rawValue: // Found type 4, sub-type 4, file path
                                         filePathDevicePath = FilePathDevicePath()
                                         filePathDevicePath?.devicePathData = buffer.remove(bytesAsData: Int(length) - 4)
                                         if let string: String = MediaDevicePath(rawValue: subType)?.description {
-                                                devicePathDescription.append("/" + string)
+                                                devicePathDescription.append("\\" + string)
                                         }
                                         break;
                                 default: // Found some other sub-type

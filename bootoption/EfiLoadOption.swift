@@ -31,35 +31,32 @@ struct EfiLoadOption {
 
         /* Data */
         
-        var attributes: UInt32
-        var devicePathListLength: UInt16
-        var description: Data?
-        var devicePathList = Data()
-        var optionalData: Data?
+        private var attributes: UInt32
+        private var devicePathListLength: UInt16
+        private var description: Data?
+        private var devicePathList: Data?
+        private var optionalData: Data?
         var data: Data {
-                var data = Data.init()
-                var buffer32: UInt32 = attributes
-                data.append(UnsafeBufferPointer(start: &buffer32, count: 1))
-                var buffer16: UInt16 = devicePathListLength
-                data.append(UnsafeBufferPointer(start: &buffer16, count: 1))
-                if let description: Data = description {
-                        data.append(description)
+                var attributes: UInt32 = self.attributes
+                var devicePathListLength: UInt16 = self.devicePathListLength
+                guard let description: Data = self.description, let devicePathList = self.devicePathList, let optionalData: Data = self.optionalData else {
+                        Log.logExit(EX_DATAERR)
                 }
-                data.append(devicePathList)
-                if let buffer: Data = optionalData {
-                        data.append(buffer)
-                }
-                return data
+                var buffer = Data.init()
+                buffer.append(UnsafeBufferPointer(start: &attributes, count: 1))
+                buffer.append(UnsafeBufferPointer(start: &devicePathListLength, count: 1))
+                buffer.append(description)
+                buffer.append(devicePathList)
+                buffer.append(optionalData)
+                return buffer
         }
-        var devicePathDescription = String()
         
         /* Properties */
         
+        var devicePathDescription = String()
         var order: Int?
-        var active: Bool? {
-                /*
-                 *  LOAD_OPTION_ACTIVE 0x00000001
-                 */
+        var active: Bool {
+                /*  LOAD_OPTION_ACTIVE 0x00000001 */
                 get {
                         return attributes & 0x1 == 0x1 ? true : false
                 }
@@ -72,10 +69,8 @@ struct EfiLoadOption {
                         }
                 }
         }
-        var hidden: Bool? {
-                /*
-                 *  LOAD_OPTION_HIDDEN 0x00000008
-                 */
+        var hidden: Bool {
+                /*  LOAD_OPTION_HIDDEN 0x00000008 */
                 get {
                         return attributes & 0x8 == 0x8 ? true : false
                 }
@@ -87,7 +82,6 @@ struct EfiLoadOption {
                                 attributes = attributes & 0xFFFFFFF7
                         }
                 }
-
         }
         var descriptionString: String? {
                 get {
@@ -108,57 +102,63 @@ struct EfiLoadOption {
                 }
         }
         var optionalDataHexView: String? {
-                if var data: Data = optionalData {
-                        var dataString = String()
-                        var ascii = String()
-                        var n: Int = 0
-                        while !data.isEmpty {
-                                if n != 0 && n % 8 == 0 {
-                                        dataString.append("\(ascii)\n")
-                                        ascii = String()
-                                }
-                                if data.count == 1 {
-                                        let byte = data.remove8()
-                                        let byteString = NSString(format: "%02x", byte) as String
-                                        dataString.append(byteString)
-                                } else {
-                                        let bytes = data.remove16()
-                                        let byteString = NSString(format: "%04x", bytes) as String
-                                        if bytes > 0x20 {
-                                                if let c = UnicodeScalar(bytes), c.isASCII {
-                                                        let str = String(c)
-                                                        ascii.append(str)
-                                                } else {
-                                                        ascii.append(" ")
-                                                }
-                                        } else {
-                                                ascii.append(" ")
-                                        }
-                                        dataString.append(byteString + " ")
-                                }
-                                n += 1
+                func getAscii(bytes: UInt16) -> String {
+                        var ascii: String = " "
+                        if bytes > 0x20, let scalar = UnicodeScalar(bytes), scalar.isASCII {
+                                ascii = String(scalar)
                         }
-                        for _ in 1...(8 - n % 8) {
-                                dataString.append("     ")
-                        }
-                        dataString.append("\(ascii)")
-                        return dataString
-                } else {
-                        return nil
+                        return ascii
                 }
+                if var buffer: Data = optionalData, !buffer.isEmpty {
+                        var rows = String()
+                        var asciiColumn = String()
+                        var columnNumber: Int = 0
+                        repeat {
+                                switch buffer.count > 1 {
+                                case true:
+                                        let bytes = buffer.remove16()
+                                        let bytesString = NSString(format: "%04x", bytes) as String
+                                        asciiColumn.append(getAscii(bytes: bytes))
+                                        rows.append(bytesString + " ")
+                                default:
+                                        let byte = buffer.remove8()
+                                        rows.append(NSString(format: "%02x", byte) as String)
+                                        rows.append("   ")
+                                }
+                                columnNumber += 1; if columnNumber % 8 == 0 {
+                                        rows.append("\(asciiColumn)\n")
+                                        asciiColumn = String()
+                                }
+                        } while !buffer.isEmpty
+                        for _ in 1...(8 - columnNumber % 8) {
+                                rows.append("     ")
+                        }
+                        rows.append(asciiColumn)
+                        return rows
+                }
+                return nil
+        }
+        mutating func removeOptionalData() {
+                optionalData = nil
         }
         
-        /* Init from variable */
+        /* Init from NVRAM variable */
         
         init(fromBootNumber number: Int, data: Data, details: Bool = false) {
                 bootNumber = number
                 order = nvram.positionInBootOrder(number: number) ?? -1
                 var buffer: Data = data
-                // attributes
+                
+                /* Attributes */
+                
                 attributes = buffer.remove32()
-                // device path list length
+                
+                /* Device path list length */
+                
                 devicePathListLength = buffer.remove16()
-                // description
+                
+                /* Description */
+                
                 description = Data()
                 for _ in buffer {
                         var bytes: UInt16 = buffer.remove16()
@@ -168,18 +168,22 @@ struct EfiLoadOption {
                         }
                 }
                 if details {
-                        // device path list
+                        
+                        /* Device path list */
+                        
                         devicePathList = buffer.remove(bytesAsData: Int(devicePathListLength))
-                        parseDevicePathList(rawDevicePathList: devicePathList)
+                        parseDevicePathList(rawDevicePathList: devicePathList!)
+                        
+                        /* Optional data */
+                        
                         if !buffer.isEmpty {
                                 optionalData = buffer
                         }
                 }
 
-
         }
         
-        /* Init create from path */
+        /* Init create from local filesystem path */
         
         init(createFromLoaderPath loader: String, descriptionString: String, optionalDataString: String?) {
 
@@ -207,14 +211,14 @@ struct EfiLoadOption {
                 let file = FilePathDevicePath(createUsingFilePath: loader, mountPoint: hardDrive.mountPoint)
                 let end = EndDevicePath()
                 devicePathList = Data.init()
-                devicePathList.append(hardDrive.data)
-                devicePathList.append(file.data)
-                devicePathList.append(end.data)
+                devicePathList?.append(hardDrive.data)
+                devicePathList?.append(file.data)
+                devicePathList?.append(end.data)
                 
                 /* Device path list length */
                 
                 Log.info("Generating device path list length")
-                devicePathListLength = UInt16(devicePathList.count)
+                devicePathListLength = UInt16(devicePathList!.count)
                 
                 /* Optional data */
                 

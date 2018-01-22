@@ -97,10 +97,10 @@ class BootMenu {
                         output.append(nvram.bootStringFromBoot(number: option.bootNumber!))
                         output.append(separator)
                         output.append(option.descriptionString!.padding(toLength: 28, withPad: " ", startingAt: 0))
-                        if !option.active! {
+                        if !option.active {
                                 output.append(" *D")
                         }
-                        if option.hidden! {
+                        if option.hidden {
                                 output.append(" *H")
                         }
                         output.append("\n")

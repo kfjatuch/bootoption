@@ -156,25 +156,25 @@ func set() {
                                 option?.optionalDataStringView = dataStringValue
                                 updateOption = true
                         } else {
-                                option?.optionalData = nil
+                                option?.removeOptionalData()
                                 updateOption = true
                         }
                 } else {
                         if dataStringOption.wasSet {
-                                option?.optionalData = nil
+                                option?.removeOptionalData()
                                 updateOption = true
                         }
                 }
                 
                 /* Set attributes */
                 
-                if hiddenOption.wasSet {
-                        option?.hidden = hiddenOption.value
+                if hiddenOption.value != nil {
+                        option?.hidden = hiddenOption.value!
                         updateOption = true
                 }
                 
-                if activeOption.wasSet {
-                        option?.active = activeOption.value
+                if activeOption.value != nil {
+                        option?.active = activeOption.value!
                         updateOption = true
                 }
                 

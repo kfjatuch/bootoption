@@ -23,13 +23,13 @@ import Foundation
 func set() {
         
         Log.info("Setting up command line")
-        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", helpMessage: "variable to manipulate, Boot####")
+        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", helpMessage: "the variable to manipulate, Boot####")
         let descriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
         let dataStringOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
-        let activeOption = BinaryOption(longFlag: "active", helpMessage: "active attribute, 0 or 1")
-        let hiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "hidden attribute, 0 or 1")
+        let activeOption = BinaryOption(longFlag: "active", helpMessage: "set active attribute, 0 or 1")
+        let hiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "set hidden attribute, 0 or 1")
         let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", helpMessage: "set BootNext, #### (hex)")
-        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set the boot menu timeout in SECONDS")
+        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set boot menu Timeout in SECONDS")
         commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] | -t SECONDS | -x ####"
         commandLine.setOptions(bootnumOption, descriptionOption, dataStringOption, activeOption, hiddenOption, bootNextOption, timeoutOption)
         

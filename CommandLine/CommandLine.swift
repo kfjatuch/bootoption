@@ -244,5 +244,37 @@ class CommandLine {
                         }
                 }
         }
-   
+}
+
+extension CommandLine {
+        
+        func addVerbs(_ verbs: Verb...) {
+                for verb in verbs {
+                        addVerb(verb)
+                }
+        }
+        
+        func addVerbs(_ verbs: [Verb]) {
+                for verb in verbs {
+                        addVerb(verb)
+                }
+        }
+        
+        func addOptions(_ options: [Option]) {
+                for option in options {
+                        addOption(option)
+                }
+        }
+        
+        func addOptions(_ options: Option...) {
+                for option in options {
+                        addOption(option)
+                }
+        }
+        
+        func printUsage(withMessageForError error: ParserStatus, showingVerbs: Bool = false) {
+                printDefault(self.format!("\(error.description)", style.errorMessage))
+                printUsage(showingVerbs: showingVerbs)
+        }
+        
 }

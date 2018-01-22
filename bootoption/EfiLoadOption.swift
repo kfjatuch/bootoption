@@ -26,17 +26,9 @@ struct EfiLoadOption {
         
         /* Device paths */
         
-        var hardDrive: MediaHardDriveDevicePath?
-        var loaderPath: MediaFilePathDevicePath?
-        
-        var loaderPathString: String? {
-                if var data = loaderPath?.devicePath {
-                        return data.removeEfiString()
-                } else {
-                        return nil
-                }
-        }
-        
+        var hardDriveDevicePath: HardDriveDevicePath?
+        var filePathDevicePath: FilePathDevicePath?
+
         /* Data */
         
         var attributes: UInt32
@@ -106,7 +98,7 @@ struct EfiLoadOption {
                         description = newValue?.efiStringData() ?? nil
                 }
         }
-        var optionalDataString: String? {
+        var optionalDataStringView: String? {
                 get {
                         var data: Data? = optionalData
                         return data?.removeEfiString() ?? nil
@@ -211,8 +203,8 @@ struct EfiLoadOption {
                 /* Device path list */
                 
                 Log.info("Generating device path list")
-                let hardDrive = MediaHardDriveDevicePath(createUsingFilePath: loader)
-                let file = MediaFilePathDevicePath(createUsingFilePath: loader, mountPoint: hardDrive.mountPoint)
+                let hardDrive = HardDriveDevicePath(createUsingFilePath: loader)
+                let file = FilePathDevicePath(createUsingFilePath: loader, mountPoint: hardDrive.mountPoint)
                 let end = EndDevicePath()
                 devicePathList = Data.init()
                 devicePathList.append(hardDrive.data)
@@ -284,9 +276,9 @@ struct EfiLoadOption {
                         case DevicePath.MEDIA_DEVICE_PATH.rawValue: // Found type 4, media device path
                                 switch subType {
                                 case MediaDevicePath.MEDIA_HARDDRIVE_DP.rawValue: // Found type 4, sub-type 1, hard drive device path
-                                        hardDrive = MediaHardDriveDevicePath()
-                                        var hardDriveDevicePath = buffer.remove(bytesAsData: Int(length) - 4)
-                                        if !parseHardDriveDevicePath(buffer: &hardDriveDevicePath) {
+                                        hardDriveDevicePath = HardDriveDevicePath()
+                                        var devicePathData = buffer.remove(bytesAsData: Int(length) - 4)
+                                        if !parseHardDriveDevicePath(buffer: &devicePathData) {
                                                 Log.logExit(EX_IOERR, "Error parsing hard drive device path")
                                         }
                                         if let string: String = MediaDevicePath(rawValue: subType)?.description {
@@ -294,9 +286,8 @@ struct EfiLoadOption {
                                         }
                                         break;
                                 case MediaDevicePath.MEDIA_FILEPATH_DP.rawValue: // Found type 4, sub-type 4, file path
-                                        loaderPath = MediaFilePathDevicePath()
-                                        let pathData = buffer.remove(bytesAsData: Int(length) - 4)
-                                        loaderPath?.devicePath = pathData
+                                        filePathDevicePath = FilePathDevicePath()
+                                        filePathDevicePath?.devicePathData = buffer.remove(bytesAsData: Int(length) - 4)
                                         if let string: String = MediaDevicePath(rawValue: subType)?.description {
                                                 devicePathDescription.append("/" + string)
                                         }
@@ -326,17 +317,17 @@ struct EfiLoadOption {
         }
         
         mutating func parseHardDriveDevicePath(buffer: inout Data) -> Bool {
-                hardDrive?.partitionNumber = buffer.remove32()
-                hardDrive?.partitionStart = buffer.remove64()
-                hardDrive?.partitionSize = buffer.remove64()
-                hardDrive?.partitionSignature = buffer.remove(bytesAsData: 16)
-                hardDrive?.partitionFormat = buffer.remove8()
-                hardDrive?.signatureType = buffer.remove8()
+                hardDriveDevicePath?.partitionNumber = buffer.remove32()
+                hardDriveDevicePath?.partitionStart = buffer.remove64()
+                hardDriveDevicePath?.partitionSize = buffer.remove64()
+                hardDriveDevicePath?.partitionSignature = buffer.remove(bytesAsData: 16)
+                hardDriveDevicePath?.partitionFormat = buffer.remove8()
+                hardDriveDevicePath?.signatureType = buffer.remove8()
                 if !buffer.isEmpty {
                         print("parseHardDriveDevicePath(): Error", to: &standardError)
                         return false
                 }
-                if hardDrive?.signatureType != 2 || hardDrive?.partitionFormat != 2 {
+                if hardDriveDevicePath?.signatureType != 2 || hardDriveDevicePath?.partitionFormat != 2 {
                         print("parseHardDriveDevicePath(): Only GPT is supported at this time", to: &standardError)
                         return false
                 }

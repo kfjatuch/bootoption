@@ -43,13 +43,13 @@ func info() {
                         properties.append(("Description", string))
                 }
                 properties.append(("Type", option.devicePathDescription))
-                if let string: String = option.loaderPathString {
+                if let string: String = option.filePathDevicePath?.pathString {
                         properties.append(("Loader path", string))
                 }
-                if let string: String = option.hardDrive?.partitionUuid {
+                if let string: String = option.hardDriveDevicePath?.partitionUuid {
                         properties.append(("Partition UUID", string))
                 }
-                if let string: String = option.optionalDataString, !string.isEmpty {
+                if let string: String = option.optionalDataStringView, !string.isEmpty {
                         properties.append(("Arguments", string))
                 } else if let string: String = option.optionalDataHexView {
                         /* Insert spaces to align subsequent lines with first line content */

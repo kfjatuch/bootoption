@@ -153,7 +153,7 @@ func set() {
                 
                 if let dataStringValue: String = dataStringOption.value {
                         if !dataStringValue.isEmpty {
-                                option?.optionalDataString = dataStringValue
+                                option?.optionalDataStringView = dataStringValue
                                 updateOption = true
                         } else {
                                 option?.optionalData = nil

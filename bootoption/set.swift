@@ -23,13 +23,13 @@ import Foundation
 func set() {
         
         Log.info("Setting up command line")
-        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", required: 1,  helpMessage: "variable to manipulate, Boot####")
+        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", helpMessage: "variable to manipulate, Boot####")
         let descriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
         let dataStringOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
         let activeOption = BinaryOption(longFlag: "active", helpMessage: "active attribute, 0 or 1")
         let hiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "hidden attribute, 0 or 1")
-        let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", required: 2, helpMessage: "set BootNext, #### (hex)")
-        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "set the boot menu timeout in SECONDS")
+        let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", helpMessage: "set BootNext, #### (hex)")
+        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set the boot menu timeout in SECONDS")
         commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] | -t SECONDS | -x ####"
         commandLine.setOptions(bootnumOption, descriptionOption, dataStringOption, activeOption, hiddenOption, bootNextOption, timeoutOption)
         
@@ -91,21 +91,21 @@ func set() {
                 
                 /* Attribute options */
                 if (activeOption.wasSet || hiddenOption.wasSet) && option == nil {
-                        print("Setting attribute(s) requires \(bootnumOption.shortDescription)", to: &standardError)
+                        print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
                 }
                 
                 /* Description */
                 if (!description.isEmpty && option == nil) {
-                        print("Option \(descriptionOption.shortDescription) requires \(bootnumOption.shortDescription)", to: &standardError)
+                        print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
                 }
                 
                 /* Optional data string */
                 if (dataStringOption.wasSet && option == nil) {
-                        print("Option \(dataStringOption.shortDescription) requires \(bootnumOption.shortDescription)", to: &standardError)
+                        print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
                 }

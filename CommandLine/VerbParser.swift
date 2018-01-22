@@ -47,7 +47,7 @@ class VerbParser {
                         activeVerb = verb
                         status = .success
                 } else {
-                        status = .invalidInput(verb)
+                        status = .invalidVerb(verb)
                         return
                 }
                 Log.info("Active verb is '%{public}@'", String(activeVerb))

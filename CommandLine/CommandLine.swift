@@ -29,6 +29,7 @@ class CommandLine {
                 case success
                 case noInput
                 case tooManyOptions
+                case invalidVerb(String)
                 case invalidInput(String)
                 case invalidArgument(String)
                 case invalidValueForOption(Option, [String])
@@ -45,6 +46,9 @@ class CommandLine {
                         case .tooManyOptions:
                                 Log.error("Parse error: Too many options")
                                 return "Some options preclude the use of others."
+                        case let .invalidVerb(string):
+                                Log.info("Parse error: Invalid verb %{public}@", string)
+                                return "Invalid verb: \(string)"
                         case let .invalidInput(string):
                                 Log.info("Parse error: Invalid input %{public}@", string)
                                 return "Invalid input: \(string)"

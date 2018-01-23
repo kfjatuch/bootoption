@@ -164,11 +164,11 @@ extension String {
                 return String(self[start..<end])
         }
         
-        func hexToData(swap: Bool = false) -> Data? {
+        func hexToData(byteSwapped: Bool = false) -> Data? {
                 var strings: [String] = Array()
                 let width: Int = 2
                 let max: Int = self.characters.count
-                if swap {
+                if byteSwapped {
                         var start: Int = max - width, end: Int = max
                         while start >= 0 {
                                 strings.append(self.subString(from: start, to: end))

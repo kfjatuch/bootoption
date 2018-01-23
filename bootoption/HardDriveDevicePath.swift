@@ -22,54 +22,78 @@ import Foundation
 
 struct HardDriveDevicePath {
         
-        var data: Data {
-                get {
-                        var data = Data.init()
-                        var partitionStartValue: UInt64 = partitionStart
-                        var partitionSizeValue: UInt64 = partitionSize
-                        var partitionNumberValue: UInt32 = partitionNumber
-                        data.append(type)
-                        data.append(subType)
-                        data.append(length)
-                        data.append(UnsafeBufferPointer(start: &partitionNumberValue, count: 1))
-                        data.append(UnsafeBufferPointer(start: &partitionStartValue, count: 1))
-                        data.append(UnsafeBufferPointer(start: &partitionSizeValue, count: 1))
-                        data.append(partitionSignature)
-                        data.append(partitionFormat)
-                        data.append(signatureType)
-                        return data
-                }
-        }
+        /* Data */
         
-        var mountPoint = String()
         let type = Data.init(bytes: [4])
         let subType = Data.init(bytes: [1])
         let length = Data.init(bytes: [42, 0])
         var partitionNumber: UInt32 = 0
         var partitionStart: UInt64 = 0
         var partitionSize: UInt64 = 0
-        var partitionSignature = Data.init()
+        var partitionSignature: Data?
         var partitionFormat: UInt8 = 2 // GPT
         var signatureType: UInt8 = 2 // GPT UUID
-        
-        var partitionUuid: String? {
-                var buffer = partitionSignature
-                if !partitionSignature.isEmpty {
-                        var string = String()
-                        string += String(format:"%08X", buffer.remove32()) + "-"
-                        string += String(format:"%04X", buffer.remove16()) + "-"
-                        string += String(format:"%04X", buffer.remove16()) + "-"
-                        string += String(format:"%04X", buffer.remove16().byteSwapped) + "-"
-                        string += String(format:"%04X", buffer.remove16().byteSwapped)
-                        string += String(format:"%08X", buffer.remove32().byteSwapped)
-                        return string
+        var data: Data {
+                get {
+                        var partitionStartValue: UInt64 = partitionStart
+                        var partitionSizeValue: UInt64 = partitionSize
+                        var partitionNumberValue: UInt32 = partitionNumber
+                        guard let partitionSignature = self.partitionSignature else {
+                                Log.logExit(EX_DATAERR)
+                        }
+                        var buffer = Data.init()
+                        buffer.append(type)
+                        buffer.append(subType)
+                        buffer.append(length)
+                        buffer.append(UnsafeBufferPointer(start: &partitionNumberValue, count: 1))
+                        buffer.append(UnsafeBufferPointer(start: &partitionStartValue, count: 1))
+                        buffer.append(UnsafeBufferPointer(start: &partitionSizeValue, count: 1))
+                        buffer.append(partitionSignature)
+                        buffer.append(partitionFormat)
+                        buffer.append(signatureType)
+                        return buffer
                 }
-                return nil
         }
+        
+        /* Properties */
+        
+        var mountPoint = String()
+        var partitionUuid: String? {
+                get {
+                        if var buffer = partitionSignature {
+                                var string = String()
+                                string += String(format:"%08X", buffer.remove32()) + "-"
+                                string += String(format:"%04X", buffer.remove16()) + "-"
+                                string += String(format:"%04X", buffer.remove16()) + "-"
+                                string += String(format:"%04X", buffer.remove16().byteSwapped) + "-"
+                                string += String(format:"%04X", buffer.remove16().byteSwapped)
+                                string += String(format:"%08X", buffer.remove32().byteSwapped)
+                                return string
+                        }
+                        return nil
+                }
+                set {
+                        if var components: [String] = newValue?.components(separatedBy: "-") {
+                                var buffer = Data()
+                                buffer.append(components[0].hexToData(byteSwapped: true)!)
+                                buffer.append(components[1].hexToData(byteSwapped: true)!)
+                                buffer.append(components[2].hexToData(byteSwapped: true)!)
+                                buffer.append(components[3].hexToData()!)
+                                buffer.append(components[4].hexToData()!)
+                                partitionSignature = buffer
+                        } else {
+                                Log.logExit(EX_DATAERR, "Error setting partition signature")
+                        }
+                }
+        }
+        
+        /* Init */
         
         init() {
-                // using default values
+                // Default values
         }
+        
+        /* Init from local filesystem path to loader executable */
         
         init(createUsingFilePath path: String) {
                 
@@ -138,6 +162,8 @@ struct HardDriveDevicePath {
                         Log.logExit(EX_UNAVAILABLE, "Only GPT is supported at this time")
                 }
                 
+                /* Get properties */
+                
                 let ioPreferredBlockSize: Int? = partitionProperties.getIntValue(forProperty: "Preferred Block Size")
                 let ioPartitionID: Int? = partitionProperties.getIntValue(forProperty: "Partition ID")
                 let ioBase: Int? = partitionProperties.getIntValue(forProperty: "Base")
@@ -147,19 +173,12 @@ struct HardDriveDevicePath {
                         Log.logExit(EX_UNAVAILABLE, "Failed to get registry values")
                 }
                 
+                /* Set data properties of self */
+                
                 let blockSize: Int = ioPreferredBlockSize!
                 partitionNumber = UInt32(ioPartitionID!)
                 partitionStart = UInt64(ioBase! / blockSize)
                 partitionSize = UInt64(ioSize! / blockSize)
-                
-                /*  EFI Signature from volume GUID string */
-                
-                let uuid: String = ioUUID!
-                var part: [String] = uuid.components(separatedBy: "-")
-                partitionSignature.append(part[0].hexToData(swap: true)!)
-                partitionSignature.append(part[1].hexToData(swap: true)!)
-                partitionSignature.append(part[2].hexToData(swap: true)!)
-                partitionSignature.append(part[3].hexToData()!)
-                partitionSignature.append(part[4].hexToData()!)
+                partitionUuid = ioUUID!
         }
 }

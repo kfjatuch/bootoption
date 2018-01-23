@@ -24,13 +24,16 @@ struct FilePathDevicePath {
         
         /* Data */
         
-        let type = Data.init(bytes: [4])
-        let subType = Data.init(bytes: [4])
-        var length = Data.init()
-        var devicePath = Data.init()
+        private let type = Data(bytes: [4])
+        private let subType = Data(bytes: [4])
+        private var length = Data()
+        private var devicePath = Data()
+        
+        /* Properties */
+        
         var data: Data {
                 get {
-                        var buffer = Data.init()
+                        var buffer = Data()
                         buffer.append(type)
                         buffer.append(subType)
                         buffer.append(length)
@@ -38,9 +41,6 @@ struct FilePathDevicePath {
                         return buffer
                 }
         }
-        
-        /* Properties */
-        
         var path: String? {
                 get {
                         var data = devicePath
@@ -60,6 +60,12 @@ struct FilePathDevicePath {
                                 }
                         }
                 }
+        }
+        
+        /* Methods */
+        
+        mutating func setDevicePath(data: Data) {
+                devicePath = data
         }
         
         /* Init */

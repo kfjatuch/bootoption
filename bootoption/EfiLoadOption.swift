@@ -22,8 +22,6 @@ import Foundation
         
 struct EfiLoadOption {
         
-        var bootNumber: Int?
-        
         /* Device paths */
         
         var hardDriveDevicePath: HardDriveDevicePath?
@@ -36,23 +34,26 @@ struct EfiLoadOption {
         private var description: Data?
         private var devicePathList: Data?
         private var optionalData: Data?
-        var data: Data {
-                var attributes: UInt32 = self.attributes
-                var devicePathListLength: UInt16 = self.devicePathListLength
-                guard let description: Data = self.description, let devicePathList = self.devicePathList, let optionalData: Data = self.optionalData else {
-                        Log.logExit(EX_DATAERR)
-                }
-                var buffer = Data.init()
-                buffer.append(UnsafeBufferPointer(start: &attributes, count: 1))
-                buffer.append(UnsafeBufferPointer(start: &devicePathListLength, count: 1))
-                buffer.append(description)
-                buffer.append(devicePathList)
-                buffer.append(optionalData)
-                return buffer
-        }
         
         /* Properties */
         
+        var bootNumber: Int?
+        var data: Data {
+                get {
+                        var attributes: UInt32 = self.attributes
+                        var devicePathListLength: UInt16 = self.devicePathListLength
+                        guard let description: Data = self.description, let devicePathList = self.devicePathList, let optionalData: Data = self.optionalData else {
+                                Log.logExit(EX_DATAERR)
+                        }
+                        var buffer = Data.init()
+                        buffer.append(UnsafeBufferPointer(start: &attributes, count: 1))
+                        buffer.append(UnsafeBufferPointer(start: &devicePathListLength, count: 1))
+                        buffer.append(description)
+                        buffer.append(devicePathList)
+                        buffer.append(optionalData)
+                        return buffer
+                }
+        }
         var devicePathDescription = String()
         var order: Int?
         var active: Bool {
@@ -138,6 +139,9 @@ struct EfiLoadOption {
                 }
                 return nil
         }
+        
+        /* Methods */
+        
         mutating func removeOptionalData() {
                 optionalData = nil
         }
@@ -267,7 +271,7 @@ struct EfiLoadOption {
                 }
         }
         
-        /* Device path parsing */
+        /* Device path list parsing */
         
         mutating func parseDevicePathList(rawDevicePathList: Data) {
                 var buffer = rawDevicePathList
@@ -281,8 +285,8 @@ struct EfiLoadOption {
                                 switch subType {
                                 case MediaDevicePath.MEDIA_HARDDRIVE_DP.rawValue: // Found type 4, sub-type 1, hard drive device path
                                         hardDriveDevicePath = HardDriveDevicePath()
-                                        var devicePathData = buffer.remove(bytesAsData: Int(length) - 4)
-                                        if !parseHardDriveDevicePath(buffer: &devicePathData) {
+                                        let devicePathData = buffer.remove(bytesAsData: Int(length) - 4)
+                                        if hardDriveDevicePath!.parseHardDriveDevicePath(data: devicePathData) == false {
                                                 Log.logExit(EX_IOERR, "Error parsing hard drive device path")
                                         }
                                         if let string: String = MediaDevicePath(rawValue: subType)?.description {
@@ -291,7 +295,8 @@ struct EfiLoadOption {
                                         break;
                                 case MediaDevicePath.MEDIA_FILEPATH_DP.rawValue: // Found type 4, sub-type 4, file path
                                         filePathDevicePath = FilePathDevicePath()
-                                        filePathDevicePath?.devicePathData = buffer.remove(bytesAsData: Int(length) - 4)
+                                        let devicePathData = buffer.remove(bytesAsData: Int(length) - 4)
+                                        filePathDevicePath?.setDevicePath(data: devicePathData)
                                         if let string: String = MediaDevicePath(rawValue: subType)?.description {
                                                 devicePathDescription.append("\\" + string)
                                         }
@@ -319,23 +324,4 @@ struct EfiLoadOption {
                         }
                 }
         }
-        
-        mutating func parseHardDriveDevicePath(buffer: inout Data) -> Bool {
-                hardDriveDevicePath?.partitionNumber = buffer.remove32()
-                hardDriveDevicePath?.partitionStart = buffer.remove64()
-                hardDriveDevicePath?.partitionSize = buffer.remove64()
-                hardDriveDevicePath?.partitionSignature = buffer.remove(bytesAsData: 16)
-                hardDriveDevicePath?.partitionFormat = buffer.remove8()
-                hardDriveDevicePath?.signatureType = buffer.remove8()
-                if !buffer.isEmpty {
-                        print("parseHardDriveDevicePath(): Error", to: &standardError)
-                        return false
-                }
-                if hardDriveDevicePath?.signatureType != 2 || hardDriveDevicePath?.partitionFormat != 2 {
-                        print("parseHardDriveDevicePath(): Only GPT is supported at this time", to: &standardError)
-                        return false
-                }
-                return true
-        }
-
 }

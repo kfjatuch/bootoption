@@ -20,6 +20,10 @@
 
 import Foundation
 
+/*
+ *  Function for verb: create
+ */
+
 func create() {
         
         Log.info("Setting up command line")

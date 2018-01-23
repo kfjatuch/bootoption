@@ -23,7 +23,7 @@ import IOKit
 
 class RegistryEntry {
         
-        var registryEntry = io_registry_entry_t.init()
+        var registryEntry = io_registry_entry_t()
         
         enum typeId {
                 static let number = CFNumberGetTypeID()

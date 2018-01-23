@@ -87,7 +87,7 @@ extension Nvram {
         
         func setTimeout(seconds: Int) -> Bool {
                 var timeoutValue = UInt16(seconds)
-                var data = Data.init()
+                var data = Data()
                 data.append(UnsafeBufferPointer(start: &timeoutValue, count: 1))
                 let set = options.setDataValue(forProperty: nameWithGuid("Timeout"), value: data)
                 let sync = nvramSyncNow(withNamedVariable: nameWithGuid("Timeout"))
@@ -105,7 +105,7 @@ extension Nvram {
                         return false
                 }
                 var bootNext = UInt16(bootNumber)
-                var data = Data.init()
+                var data = Data()
                 data.append(UnsafeBufferPointer(start: &bootNext, count: 1))
                 let set = options.setDataValue(forProperty: nameWithGuid("BootNext"), value: data)
                 let sync = nvramSyncNow(withNamedVariable: nameWithGuid("BootNext"))
@@ -202,7 +202,7 @@ extension Nvram {
                 if let index: Int = bootOrder?.index(of: UInt16(bootNumber)) {
                         bootOrder?.remove(at: index)
                         /* make the new bootorder */
-                        var newBootOrder = Data.init()
+                        var newBootOrder = Data()
                         if !bootOrder!.isEmpty {
                                 for option in bootOrder! {
                                         var buffer = option
@@ -271,7 +271,7 @@ extension Nvram {
                         Log.log(logErrorMessage)
                         return nil
                 }
-                let scanner = Scanner.init(string: mutableString)
+                let scanner = Scanner(string: mutableString)
                 var scanned: UInt32 = 0
                 if !scanner.scanHexInt32(&scanned) {
                         Log.log(logErrorMessage)
@@ -301,7 +301,7 @@ extension Nvram {
          */
         
         func bootOrderData(fromArray bootOrder: [UInt16]) -> Data {
-                var data = Data.init()
+                var data = Data()
                 for var bootNumber in bootOrder {
                         data.append(UnsafeBufferPointer(start: &bootNumber, count: 1))
                 }

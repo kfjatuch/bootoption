@@ -24,15 +24,18 @@ struct HardDriveDevicePath {
         
         /* Data */
         
-        let type = Data.init(bytes: [4])
-        let subType = Data.init(bytes: [1])
-        let length = Data.init(bytes: [42, 0])
-        var partitionNumber: UInt32 = 0
-        var partitionStart: UInt64 = 0
-        var partitionSize: UInt64 = 0
-        var partitionSignature: Data?
-        var partitionFormat: UInt8 = 2 // GPT
-        var signatureType: UInt8 = 2 // GPT UUID
+        private let type = Data(bytes: [4])
+        private let subType = Data(bytes: [1])
+        private let length = Data(bytes: [42, 0])
+        private var partitionNumber: UInt32 = 0
+        private var partitionStart: UInt64 = 0
+        private var partitionSize: UInt64 = 0
+        private var partitionSignature: Data?
+        private var partitionFormat: UInt8 = 2 // GPT
+        private var signatureType: UInt8 = 2 // GPT UUID
+        
+        /* Properties */
+        
         var data: Data {
                 get {
                         var partitionStartValue: UInt64 = partitionStart
@@ -41,7 +44,7 @@ struct HardDriveDevicePath {
                         guard let partitionSignature = self.partitionSignature else {
                                 Log.logExit(EX_DATAERR)
                         }
-                        var buffer = Data.init()
+                        var buffer = Data()
                         buffer.append(type)
                         buffer.append(subType)
                         buffer.append(length)
@@ -54,9 +57,6 @@ struct HardDriveDevicePath {
                         return buffer
                 }
         }
-        
-        /* Properties */
-        
         var mountPoint = String()
         var partitionUuid: String? {
                 get {
@@ -85,6 +85,27 @@ struct HardDriveDevicePath {
                                 Log.logExit(EX_DATAERR, "Error setting partition signature")
                         }
                 }
+        }
+        
+        /* Methods */
+        
+        mutating func parseHardDriveDevicePath(data: Data) -> Bool {
+                var buffer: Data = data
+                partitionNumber = buffer.remove32()
+                partitionStart = buffer.remove64()
+                partitionSize = buffer.remove64()
+                partitionSignature = buffer.remove(bytesAsData: 16)
+                partitionFormat = buffer.remove8()
+                signatureType = buffer.remove8()
+                if !buffer.isEmpty {
+                        print("parseHardDriveDevicePath(): Error", to: &standardError)
+                        return false
+                }
+                if signatureType != 2 || partitionFormat != 2 {
+                        print("parseHardDriveDevicePath(): Only GPT is supported at this time", to: &standardError)
+                        return false
+                }
+                return true
         }
         
         /* Init */
@@ -157,12 +178,12 @@ struct HardDriveDevicePath {
                 
                 /* Get the registry object for our partition */
                 
-                let partitionProperties: RegistryEntry = RegistryEntry.init(fromPath: daMediaPath)
+                let partitionProperties: RegistryEntry = RegistryEntry(fromPath: daMediaPath)
                 if (partitionProperties.getIntValue(forProperty: "GPT Attributes")) == nil {
                         Log.logExit(EX_UNAVAILABLE, "Only GPT is supported at this time")
                 }
                 
-                /* Get properties */
+                /* Get properties from IO dictionary */
                 
                 let ioPreferredBlockSize: Int? = partitionProperties.getIntValue(forProperty: "Preferred Block Size")
                 let ioPartitionID: Int? = partitionProperties.getIntValue(forProperty: "Partition ID")
@@ -173,7 +194,7 @@ struct HardDriveDevicePath {
                         Log.logExit(EX_UNAVAILABLE, "Failed to get registry values")
                 }
                 
-                /* Set data properties of self */
+                /* Set self properties */
                 
                 let blockSize: Int = ioPreferredBlockSize!
                 partitionNumber = UInt32(ioPartitionID!)

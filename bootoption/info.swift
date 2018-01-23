@@ -25,17 +25,11 @@ func infoUsage() -> Never {
         Log.logExit(EX_USAGE)
 }
 
-func info() {
-
-        guard let string = commandLine.rawArguments.first else {
-                infoUsage()
-        }
-        guard let bootnum = nvram.bootNumberFromBoot(string: string) else {
-                infoUsage()
-        }
-        if let data: Data = nvram.getBootOption(bootnum) {
-                let option = EfiLoadOption(fromBootNumber: bootnum, data: data, details: true)
-                let name = nvram.bootStringFromBoot(number: bootnum)
+func infoMain(bootNumber: Int) {
+        
+        if let data: Data = nvram.getBootOption(bootNumber) {
+                let option = EfiLoadOption(fromBootNumber: bootNumber, data: data, details: true)
+                let name = nvram.bootStringFromBoot(number: bootNumber)
                 
                 var properties: [(String, String)] = Array()
                 properties.append(("Name", name))
@@ -63,6 +57,22 @@ func info() {
                 
                 Log.logExit(EX_OK)
         }
+}
+
+/*
+ *  Function for verb: info
+ */
+
+func info() {
+
+        /* Parse command line */
         
+        guard let string = commandLine.rawArguments.first else {
+                infoUsage()
+        }
+        guard let bootNumber = nvram.bootNumberFromBoot(string: string) else {
+                infoUsage()
+        }
         
+        infoMain(bootNumber: bootNumber)
 }

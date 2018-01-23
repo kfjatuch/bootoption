@@ -20,6 +20,10 @@
 
 import Foundation
 
+/*
+ *  Function for verb: save
+ */
+
 func save() {
 
         Log.info("Setting up command line")
@@ -65,7 +69,7 @@ func save() {
                                 Log.error("Error serializing to XML (%{public}@)", String(errorCode))
                                 Log.logExit(EX_UNAVAILABLE)
                         }
-                        if let xml = String.init(data: propertyList, encoding: .utf8) {
+                        if let xml = String(data: propertyList, encoding: .utf8) {
                                 let outputString = String(xml.characters.filter { !"\n\t\r".characters.contains($0) })
                                 print(outputString)
                         } else {
@@ -91,8 +95,8 @@ func save() {
                 
                 if outputOption.wasSet {
                         let dmpstoreOption = Dmpstore.Option(fromData: loadOptionData)
-                        let dmpstoreOrder = Dmpstore.Order(adding: dmpstoreOption.created)
-                        var buffer = Data.init()
+                        let dmpstoreOrder = Dmpstore.Order(bootNumberToAdd: dmpstoreOption.created!)
+                        var buffer = Data()
                         buffer.append(dmpstoreOption.data)
                         buffer.append(dmpstoreOrder.data)
                         let url = URL(fileURLWithPath: outputOption.value!)
@@ -137,96 +141,39 @@ struct Dmpstore {
         static let crc = CRC32()
         
         struct Option {
+                
                 static let nameSizeConstant: Int = 18
-                var data = Data.init()
+                var data = Data()
                 var created: Int? = nil
-                let nameSize = Data.init(bytes: [UInt8(Dmpstore.Option.nameSizeConstant), 0x0, 0x0, 0x0])
-                var dataSize = Data.init()
-                var name: Data?
-                let guid = Data.init(bytes: [0x61, 0xdf, 0xe4, 0x8b, 0xca, 0x93, 0xd2, 0x11, 0xaa, 0xd, 0x0, 0xe0, 0x98, 0x3, 0x2b, 0x8c])
-                let attributes = Data.init(bytes: [0x7, 0x0, 0x0, 0x0])
-                var variableData = Data.init()
-                var crc32 = Data.init()
+                let nameSize = Data(bytes: [UInt8(Dmpstore.Option.nameSizeConstant), 0x0, 0x0, 0x0])
+                var dataSize = Data()
+                var name: Data
+                let guid = Data(bytes: [0x61, 0xdf, 0xe4, 0x8b, 0xca, 0x93, 0xd2, 0x11, 0xaa, 0xd, 0x0, 0xe0, 0x98, 0x3, 0x2b, 0x8c])
+                let attributes = Data(bytes: [0x7, 0x0, 0x0, 0x0])
+                var variableData = Data()
+                var crc32 = Data()
                 
                 init(fromData variable: Data) {
-                        Log.info("Dmpstore.Option.init: Creating a boot variable for dmpstore")
-                        var dataSizeValue = UInt32(variable.count)
-                        /* store dataSize */
-                        self.dataSize.append(UnsafeBufferPointer(start: &dataSizeValue, count: 1))
-                        guard let emptyBootOption: Int = nvram.discoverEmptyBootNumber(leavingSpace: true) else {
-                                Log.error("Empty boot option is nil")
-                                Log.logExit(EX_UNAVAILABLE)
-                        }
                         
-                        let name = nvram.bootStringFromBoot(number: emptyBootOption)
-                        if let nameData = name.efiStringData() {
-                                self.name = nameData
+                        Log.info("Dmpstore.Option.init: Creating a boot variable for dmpstore")
+                        var dataSize = UInt32(variable.count)
+                        self.dataSize.append(UnsafeBufferPointer(start: &dataSize, count: 1))
+                        guard let bootNumber: Int = nvram.discoverEmptyBootNumber(leavingSpace: true) else {
+                                Log.logExit(EX_UNAVAILABLE, "Empty boot option is nil")
+                        }
+                        if let name: Data = String(nvram.bootStringFromBoot(number: bootNumber)).efiStringData() {
+                                self.name = name
                         } else {
                                 Log.logExit(EX_SOFTWARE, "Failed to set name, did String.efiStringData() return nil?")
                         }
-                        guard let nameData = self.name, nameData.count == Dmpstore.Option.nameSizeConstant else {
-                                Log.error("Name is an incorrect size")
-                                Log.logExit(EX_SOFTWARE)
+                        guard self.name.count == Dmpstore.Option.nameSizeConstant else {
+                                Log.logExit(EX_SOFTWARE, "Name is an incorrect size")
                         }
                         
-                        /* store variable data */
+                        /* Variable data */
+                        
                         self.variableData.append(variable)
-                        
-                        var buffer = Data.init()
-                        buffer.append(self.nameSize)
-                        buffer.append(self.dataSize)
-                        buffer.append(nameData)
-                        buffer.append(self.guid)
-                        buffer.append(self.attributes)
-                        buffer.append(self.variableData)
-                        
-                        crc.run(data: buffer)
-                        var crcValue: UInt32 = crc.crc
-                        /* store crc32 data */
-                        self.crc32.append(UnsafeBufferPointer(start: &crcValue, count: 1))
-                        
-                        /* store dmpstore data */
-                        self.data.append(buffer)
-                        self.data.append(self.crc32)
-                        
-                        /* store created */
-                        self.created = emptyBootOption
-                        Log.info("Created a new variable")
-                }
-        }
-        
-        struct Order {
-                var data = Data.init()
-                let nameSize = Data.init(bytes: [0x14, 0x0, 0x0, 0x0])
-                var dataSize = Data.init()
-                var name = Data.init(bytes: [0x42, 0x00, 0x6F, 0x00, 0x6F, 0x00, 0x74, 0x00, 0x4F, 0x00, 0x72, 0x00, 0x64, 0x00, 0x65, 0x00, 0x72, 0x00, 0x00, 0x00])
-                let guid = Data.init(bytes: [0x61, 0xdf, 0xe4, 0x8b, 0xca, 0x93, 0xd2, 0x11, 0xaa, 0xd, 0x0, 0xe0, 0x98, 0x3, 0x2b, 0x8c])
-                let attributes = Data.init(bytes: [0x7, 0x0, 0x0, 0x0])
-                var variableData = Data.init()
-                var crc32 = Data.init()
-                
-                init(adding: Int?) {
-                        Log.info("Dmpstore.Order.init: Creating a boot order variable for dmpstore")
-                        if adding == nil {
-                                Log.error("Option to add is nil")
-                                Log.logExit(EX_UNAVAILABLE)
-                        }
-                        
-                        guard let bootOrder: Data = nvram.getBootOrder() else {
-                                Log.error("Couldn't get boot order from nvram")
-                                Log.logExit(EX_UNAVAILABLE)
-                        }
-                        
-                        // add to boot order and store variable data
-                        var newOption = UInt16(adding!)
-                        self.variableData.append(UnsafeBufferPointer(start: &newOption, count: 1))
-                        self.variableData.append(bootOrder)
-                        
-                        var dataSizeValue = UInt32(self.variableData.count)
-                        /* store dataSize */
-                        self.dataSize.append(UnsafeBufferPointer(start: &dataSizeValue, count: 1))
-                        
-                        var buffer = Data.init()
+                        var buffer = Data()
                         buffer.append(self.nameSize)
                         buffer.append(self.dataSize)
                         buffer.append(self.name)
@@ -234,12 +181,71 @@ struct Dmpstore {
                         buffer.append(self.attributes)
                         buffer.append(self.variableData)
                         
+                        /* CRC32 */
+                        
                         crc.run(data: buffer)
                         var crcValue: UInt32 = crc.crc
-                        /* store crc32 data */
                         self.crc32.append(UnsafeBufferPointer(start: &crcValue, count: 1))
                         
-                        /* store dmpstore data */
+                        /* Store data + CRC32 */
+                        
+                        self.data.append(buffer)
+                        self.data.append(self.crc32)
+                        
+                        /* Boot number of created variable */
+                        
+                        self.created = bootNumber
+                        Log.info("Created a new variable")
+                }
+        }
+        
+        struct Order {
+                
+                var data = Data()
+                let nameSize = Data(bytes: [0x14, 0x0, 0x0, 0x0])
+                var dataSize = Data()
+                var name = Data(bytes: [0x42, 0x00, 0x6F, 0x00, 0x6F, 0x00, 0x74, 0x00, 0x4F, 0x00, 0x72, 0x00, 0x64, 0x00, 0x65, 0x00, 0x72, 0x00, 0x00, 0x00])
+                let guid = Data(bytes: [0x61, 0xdf, 0xe4, 0x8b, 0xca, 0x93, 0xd2, 0x11, 0xaa, 0xd, 0x0, 0xe0, 0x98, 0x3, 0x2b, 0x8c])
+                let attributes = Data(bytes: [0x7, 0x0, 0x0, 0x0])
+                var variableData = Data()
+                var crc32 = Data()
+                
+                init(bootNumberToAdd bootNumber: Int) {
+                        
+                        Log.info("Dmpstore.Order.init: Creating a boot order variable for dmpstore")
+                        guard let bootOrder: Data = nvram.getBootOrder() else {
+                                Log.logExit(EX_UNAVAILABLE, "Couldn't get boot order from nvram")
+                        }
+                        
+                        /* Add to boot order and store variable data */
+                        
+                        var newOption = UInt16(bootNumber)
+                        variableData.append(UnsafeBufferPointer(start: &newOption, count: 1))
+                        variableData.append(bootOrder)
+                        
+                        /* Data size */
+                        
+                        var dataSize = UInt32(self.variableData.count)
+                        self.dataSize.append(UnsafeBufferPointer(start: &dataSize, count: 1))
+                        
+                        /* Variable data */
+                        
+                        var buffer = Data()
+                        buffer.append(self.nameSize)
+                        buffer.append(self.dataSize)
+                        buffer.append(self.name)
+                        buffer.append(self.guid)
+                        buffer.append(self.attributes)
+                        buffer.append(self.variableData)
+                        
+                        /* CRC32 */
+                        
+                        crc.run(data: buffer)
+                        var crcValue: UInt32 = crc.crc
+                        self.crc32.append(UnsafeBufferPointer(start: &crcValue, count: 1))
+                        
+                        /* Store variable data + CRC32 */
+                        
                         self.data.append(buffer)
                         self.data.append(self.crc32)
                         Log.info("Created an updated 'BootOrder' variable")

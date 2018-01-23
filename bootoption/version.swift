@@ -20,7 +20,15 @@
 
 import Foundation
 
+/*
+ *  Function for verb: version
+ */
+
 func version() {
+        
+        /* Print version message and exit */
+        
         print(commandLine.versionMessage)
         Log.logExit(EX_OK)
+        
 }

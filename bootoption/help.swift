@@ -20,6 +20,10 @@
 
 import Foundation
 
+/*
+ *  Function for verb: help
+ */
+
 func help() {
         commandLine.printUsage(showingVerbs: true)
         Log.logExit(EX_OK)

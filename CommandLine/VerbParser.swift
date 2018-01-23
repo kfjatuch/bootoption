@@ -19,15 +19,15 @@ import Foundation
 
 class VerbParser {
         
-        var status: CommandLine.ParserStatus = .noInput
+        var status: ParserStatus = .noInput
         var helpVerb = "help"
         var versionVerb = "version"
         var activeVerb = ""
         var helpLongOption: String {
-                return "\(CommandLine.longPrefix)\(helpVerb)"
+                return "\(getOpt.longPrefix)\(helpVerb)"
         }
         var versionLongOption: String {
-                return "\(CommandLine.longPrefix)\(versionVerb)"
+                return "\(getOpt.longPrefix)\(versionVerb)"
         }
         
         init(argument: String?, verbs: [Verb]) {

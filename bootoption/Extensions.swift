@@ -21,7 +21,6 @@
 import Foundation
 
 extension Data {
-        
         mutating func removeEfiString() -> String? {
                 if self.count < 2 {
                         return nil
@@ -49,7 +48,7 @@ extension Data {
         }
         
         @discardableResult mutating func remove64() -> UInt64 {
-                var buffer = Data.init()
+                var buffer = Data()
                 for _ in 1...8 {
                         buffer.append(self.remove(at: 0))
                 }
@@ -58,7 +57,7 @@ extension Data {
         }
         
         @discardableResult mutating func remove32() -> UInt32 {
-                var buffer = Data.init()
+                var buffer = Data()
                 for _ in 1...4 {
                         buffer.append(self.remove(at: 0))
                 }
@@ -67,7 +66,7 @@ extension Data {
         }
         
         @discardableResult mutating func remove16() -> UInt16 {
-                var buffer = Data.init()
+                var buffer = Data()
                 for _ in 1...2  {
                         buffer.append(self.remove(at: 0))
                 }
@@ -79,7 +78,7 @@ extension Data {
         }
         
         @discardableResult mutating func remove(bytesAsData bytes: Int) -> Data {
-                var buffer = Data.init()
+                var buffer = Data()
                 for _ in 1...bytes {
                         buffer.append(self.remove(at: 0))
                 }
@@ -89,8 +88,8 @@ extension Data {
 }
 
 extension Array {
-        mutating func order(from: Int, to: Int) {
-                insert(remove(at: from), at: to)
+        mutating func order(itemAtIndex index: Int, to destination: Int) {
+                insert(remove(at: index), at: destination)
         }
 }
 
@@ -102,7 +101,6 @@ extension FileHandle : TextOutputStream {
 }
 
 extension String {
-        
         func efiStringData(withNullTerminator: Bool = true) -> Data? {
                 let characters = self.characters
                 var data = Data()
@@ -158,9 +156,9 @@ extension String {
                 return false
         }
         
-        func subString(from: Int, to: Int) -> String {
-                let start: String.Index = self.index(self.startIndex, offsetBy: from)
-                let end: String.Index = self.index(self.startIndex, offsetBy: to)
+        func subString(start: Int, end: Int) -> String {
+                let start: String.Index = self.index(self.startIndex, offsetBy: start)
+                let end: String.Index = self.index(self.startIndex, offsetBy: end)
                 return String(self[start..<end])
         }
         
@@ -171,13 +169,13 @@ extension String {
                 if byteSwapped {
                         var start: Int = max - width, end: Int = max
                         while start >= 0 {
-                                strings.append(self.subString(from: start, to: end))
+                                strings.append(self.subString(start: start, end: end))
                                 start -= width; end = start + width
                         }
                 } else {
                         var start: Int = 0, end: Int = start + width
                         while end <= max {
-                                strings.append(self.subString(from: start, to: end))
+                                strings.append(self.subString(start: start, end: end))
                                 start += width; end = start + width
                         }
                 }
@@ -194,5 +192,4 @@ extension String {
                         return String(self[i...])
                 }
         }
-        
 }

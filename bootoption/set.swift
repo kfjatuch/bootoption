@@ -20,6 +20,10 @@
 
 import Foundation
 
+/*
+ *  Function for verb: set
+ */
+
 func set() {
         
         Log.info("Setting up command line")
@@ -53,34 +57,37 @@ func set() {
                                 if let _: Data = nvram.getBootOption(validBootNumber) {
                                         bootNextValue = validBootNumber
                                 } else {
-                                        commandLine.printUsage(withMessageForError: CommandLine.ParserStatus.invalidValueForOption(bootNextOption, [bootNextString]))
+                                        commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(bootNextOption, [bootNextString]))
                                         Log.logExit(EX_USAGE)
                                 }
                         } else {
-                                commandLine.printUsage(withMessageForError: CommandLine.ParserStatus.invalidValueForOption(bootNextOption, [bootNextString]))
+                                commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(bootNextOption, [bootNextString]))
                                 Log.logExit(EX_USAGE)
                         }
                 }
                 
                 /* Timeout */
+                
                 if timeoutOption.wasSet && !(1 ... 65534 ~= timeoutValue) {
-                        commandLine.printUsage(withMessageForError: CommandLine.ParserStatus.invalidValueForOption(timeoutOption, [String(timeoutValue)]))
+                        commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(timeoutOption, [String(timeoutValue)]))
                         Log.logExit(EX_USAGE)
                 }
                 
                 /*  Boot number */
+                
                 if bootnumOption.wasSet && (description.isEmpty && !dataStringOption.wasSet && !activeOption.wasSet && !hiddenOption.wasSet) {
                         print("Option \(bootnumOption.shortDescription) specified without \(descriptionOption.shortDescription), \(dataStringOption.shortDescription) or attribute options", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
                 }
+                
                 if bootnumOption.wasSet {
                         guard let bootNumber = nvram.bootNumberFromBoot(string: bootnumOption.value!) else {
-                                commandLine.printUsage(withMessageForError: CommandLine.ParserStatus.invalidValueForOption(bootnumOption, [bootnumOption.value ?? ""]))
+                                commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(bootnumOption, [bootnumOption.value ?? ""]))
                                 Log.logExit(EX_USAGE)
                         }
                         guard let data = nvram.getBootOption(bootNumber) else {
-                                commandLine.printUsage(withMessageForError: CommandLine.ParserStatus.invalidValueForOption(bootnumOption, [bootnumOption.value ?? ""]))
+                                commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(bootnumOption, [bootnumOption.value ?? ""]))
                                 Log.logExit(EX_USAGE)
                         }
                         option = EfiLoadOption(fromBootNumber: bootNumber, data: data, details: true)
@@ -90,6 +97,7 @@ func set() {
                 }
                 
                 /* Attribute options */
+                
                 if (activeOption.wasSet || hiddenOption.wasSet) && option == nil {
                         print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
@@ -97,6 +105,7 @@ func set() {
                 }
                 
                 /* Description */
+                
                 if (!description.isEmpty && option == nil) {
                         print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
@@ -104,6 +113,7 @@ func set() {
                 }
                 
                 /* Optional data string */
+                
                 if (dataStringOption.wasSet && option == nil) {
                         print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()

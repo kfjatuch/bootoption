@@ -19,7 +19,7 @@ import Foundation
 
 class OptionParser {
         
-        var status: CommandLine.ParserStatus = .noInput
+        var status: ParserStatus = .noInput
         var errorMessage: String {
                 return status.description
         }
@@ -36,12 +36,12 @@ class OptionParser {
                 
                 for i in flagIndex + 1 ..< rawArguments.count {
                         if !skipFlagChecks {
-                                if rawArguments[i] == CommandLine.stopParsing {
+                                if rawArguments[i] == getOpt.stopParsing {
                                         skipFlagChecks = true
                                         continue
                                 }
                                 
-                                if rawArguments[i].hasPrefix(CommandLine.shortPrefix) && Int(rawArguments[i]) == nil && rawArguments[i].toDouble() == nil {
+                                if rawArguments[i].hasPrefix(getOpt.shortPrefix) && Int(rawArguments[i]) == nil && rawArguments[i].toDouble() == nil {
                                         break
                                 }
                         }
@@ -64,15 +64,15 @@ class OptionParser {
                 let argumentsEnumerator = rawArguments.enumerated()
                 
                 for (index, string) in argumentsEnumerator {
-                        if string == CommandLine.stopParsing {
+                        if string == getOpt.stopParsing {
                                 break
                         }
                         
-                        if !string.hasPrefix(CommandLine.shortPrefix) {
+                        if !string.hasPrefix(getOpt.shortPrefix) {
                                 continue
                         }
                         
-                        let skipChars = string.hasPrefix(CommandLine.longPrefix) ? CommandLine.longPrefix.characters.count : CommandLine.shortPrefix.characters.count
+                        let skipChars = string.hasPrefix(getOpt.longPrefix) ? getOpt.longPrefix.characters.count : getOpt.shortPrefix.characters.count
                         let flagWithArg = string[string.index(string.startIndex, offsetBy: skipChars)..<string.endIndex]
                         
                         /* The argument contained nothing but ShortOptionPrefix or LongOptionPrefix */
@@ -83,7 +83,7 @@ class OptionParser {
                         
                         /* Remove attached argument from flag */
                         
-                        let splitFlag = flagWithArg.split(separator: CommandLine.attached, maxSplits: 1)
+                        let splitFlag = flagWithArg.split(separator: getOpt.attached, maxSplits: 1)
                         let flag = splitFlag[0]
                         let attachedArgument: String? = splitFlag.count == 2 ? String(splitFlag[1]) : nil
                         var flagMatched = false
@@ -121,7 +121,7 @@ class OptionParser {
                         /* Flags that do not take any arguments can be concatenated */
                         
                         let flagLength = flag.characters.count
-                        if !flagMatched && !string.hasPrefix(CommandLine.longPrefix) {
+                        if !flagMatched && !string.hasPrefix(getOpt.longPrefix) {
                                 let flagCharactersEnumerator = flag.characters.enumerated()
                                 for (i, c) in flagCharactersEnumerator {
                                         for option in options where option.flagMatch(String(c)) {

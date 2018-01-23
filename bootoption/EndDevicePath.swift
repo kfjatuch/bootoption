@@ -21,5 +21,9 @@
 import Foundation
 
 struct EndDevicePath {
-        let data = Data.init(bytes: [127, 255, 4, 0])
+        
+        /* End entire device path header */
+        
+        let data = Data(bytes: [127, 255, 4, 0])
+        
 }

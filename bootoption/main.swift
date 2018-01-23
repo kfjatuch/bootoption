@@ -22,11 +22,8 @@ import Foundation
 
 var standardError = FileHandle.standardError
 
-let versionString = "0.2.3"
-let programName = "bootoption"
-let copyright = "Copyright © 2017-2018 vulgo"
-let license = "GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law."
-Log.info("*** bootoption version %{public}@", String(versionString))
+var programInfo: ProgramInfo = ProgramInfo(name: "bootoption", version: "0.2.3", copyright: "Copyright © 2017-2018 vulgo", license: "This is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\nSee the GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>")
+Log.info("*** bootoption version %{public}@", programInfo.version)
 
 /* Nvram */
 
@@ -34,20 +31,22 @@ let nvram = Nvram()
 
 /* Initialise command line */
 
-var commandLine = CommandLine(invocationHelpMessage: "VERB [options] where VERB is one from the following:", version: versionString, programName: programName, copyright: copyright, license: license)
+var commandLine = CommandLine(invocationHelpMessage: "VERB [options] where VERB is one from the following:", info: programInfo)
+let listVerb = Verb(withName: "list", helpMessage: "show the firmware boot menu")
+let infoVerb = Verb(withName: "info", helpMessage: "show an option's properties")
+let setVerb = Verb(withName: "set", helpMessage: "set/modify variables in NVRAM")
+let createVerb = Verb(withName: "create", helpMessage: "create a new boot option")
+let orderVerb = Verb(withName: "order", helpMessage: "re-arrange the boot order")
+let deleteVerb = Verb(withName: "delete", helpMessage: "delete variables from NVRAM")
+let saveVerb = Verb(withName: "save", helpMessage: "print or save boot variable data in different formats")
+commandLine.addVerbs(listVerb, infoVerb, setVerb, createVerb, orderVerb, deleteVerb, saveVerb)
 
 /* Command line verb parsing */
 
 func parseCommandLineVerb() {
-        let listVerb = Verb(withName: "list", helpMessage: "show the firmware boot menu")
-        let infoVerb = Verb(withName: "info", helpMessage: "show an option's properties")
-        let setVerb = Verb(withName: "set", helpMessage: "set/modify variables in NVRAM")
-        let createVerb = Verb(withName: "create", helpMessage: "create a new boot option")
-        let orderVerb = Verb(withName: "order", helpMessage: "re-arrange the boot order")
-        let deleteVerb = Verb(withName: "delete", helpMessage: "delete variables from NVRAM")
-        let saveVerb = Verb(withName: "save", helpMessage: "print or save boot variable data in different formats")
-        commandLine.addVerbs(listVerb, infoVerb, setVerb, createVerb, orderVerb, deleteVerb, saveVerb)
-        let verbParser = VerbParser(argument: commandLine.verb(), verbs: commandLine.verbs)
+
+        
+        let verbParser = VerbParser(argument: commandLine.verb, verbs: commandLine.verbs)
         switch verbParser.status {
         case .success:
                 switch verbParser.activeVerb {

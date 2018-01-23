@@ -20,6 +20,10 @@
 
 import Foundation
 
+/*
+ *  Function for verb: delete
+ */
+
 func delete() {
         
         Log.info("Setting up command line")

@@ -49,7 +49,7 @@ class BootMenu {
                 /* Get data for options we can find */
                 for bootNumber in 0x0 ..< 0xFF {
                         if let data: Data = nvram.getBootOption(bootNumber) {
-                                options.append(EfiLoadOption.init(fromBootNumber: bootNumber, data: data))
+                                options.append(EfiLoadOption(fromBootNumber: bootNumber, data: data))
                         }
                         
                 }

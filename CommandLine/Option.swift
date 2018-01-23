@@ -38,9 +38,9 @@ class Option {
         
         var shortDescription: String {
                 if shortFlag != nil {
-                        return String("\(CommandLine.shortPrefix)\(shortFlag!)")
+                        return String("\(getOpt.shortPrefix)\(shortFlag!)")
                 } else if longFlag != nil {
-                        return String("\(CommandLine.longPrefix)\(longFlag!)")
+                        return String("\(getOpt.longPrefix)\(longFlag!)")
                 } else {
                         return String("")
                 }
@@ -59,14 +59,14 @@ class Option {
         var optionDescription: String {
                 var string: String = ""
                 if shortFlag != nil && longFlag != nil {
-                        string.append("\(CommandLine.shortPrefix)\(shortFlag!)")
+                        string.append("\(getOpt.shortPrefix)\(shortFlag!)")
                         string.append("  ")
-                        string.append("\(CommandLine.longPrefix)\(longFlag!)")
+                        string.append("\(getOpt.longPrefix)\(longFlag!)")
                 } else if longFlag != nil {
                         string.append("    ")
-                        string.append("\(CommandLine.longPrefix)\(longFlag!)")
+                        string.append("\(getOpt.longPrefix)\(longFlag!)")
                 } else if shortFlag != nil {
-                        string.append("\(CommandLine.shortPrefix)\(shortFlag!)")
+                        string.append("\(getOpt.shortPrefix)\(shortFlag!)")
                 }
                 return string
         }

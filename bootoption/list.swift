@@ -20,10 +20,18 @@
 
 import Foundation
 
-/* verb: list */
+/*
+ *  Function for verb: list
+ */
 
 func list() {
+        
+        /* Initialize boot menu */
+        
         let menu = BootMenu()
+        
+        /* Output and exit */
+        
         print(menu.outputString)
         Log.logExit(EX_OK)
 }

@@ -46,7 +46,7 @@ func info() {
                 if let string: String = option.hardDriveDevicePath?.partitionUuid {
                         properties.append(("Partition UUID", string))
                 }
-                if let string: String = option.filePathDevicePath?.pathString {
+                if let string: String = option.filePathDevicePath?.path {
                         properties.append(("Loader path", string))
                 }
                 if let string: String = option.optionalDataStringView, !string.isEmpty {

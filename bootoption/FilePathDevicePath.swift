@@ -22,24 +22,28 @@ import Foundation
 
 struct FilePathDevicePath {
         
-        var data: Data {
-                get {
-                        var data = Data.init()
-                        data.append(type)
-                        data.append(subType)
-                        data.append(length)
-                        data.append(devicePathData)
-                        return data
-                }
-        }
+        /* Data */
+        
         let type = Data.init(bytes: [4])
         let subType = Data.init(bytes: [4])
         var length = Data.init()
-        var devicePathData = Data.init()
-        
-        var pathString: String? {
+        var devicePath = Data.init()
+        var data: Data {
                 get {
-                        var data = devicePathData
+                        var buffer = Data.init()
+                        buffer.append(type)
+                        buffer.append(subType)
+                        buffer.append(length)
+                        buffer.append(devicePath)
+                        return buffer
+                }
+        }
+        
+        /* Properties */
+        
+        var path: String? {
+                get {
+                        var data = devicePath
                         if !data.isEmpty {
                                 return data.removeEfiString()
                         } else {
@@ -52,15 +56,19 @@ struct FilePathDevicePath {
                                         Log.logExit(EX_DATAERR, "Forbidden character(s) found in path")
                                 }
                                 if let data = string.efiStringData() {
-                                        devicePathData = data
+                                        devicePath = data
                                 }
                         }
                 }
         }
         
+        /* Init */
+        
         init() {
-                // using default values
+                // Default values
         }
+        
+        /* Init from local filesystem path to loader + mount point */
         
         init(createUsingFilePath localPath: String, mountPoint: String) {
                 
@@ -69,11 +77,11 @@ struct FilePathDevicePath {
                 let c: Int = mountPoint.characters.count
                 let i: String.Index = localPath.index(localPath.startIndex, offsetBy: c)
                 let efiPath: String = "/" + localPath[i...]
-                pathString = efiPath.uppercased().replacingOccurrences(of: "/", with: "\\")
+                path = efiPath.uppercased().replacingOccurrences(of: "/", with: "\\")
                 
                 /* Device path length */
                 
-                var lengthValue = UInt16(devicePathData.count + 4)
+                var lengthValue = UInt16(devicePath.count + 4)
                 length.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
         }
 }

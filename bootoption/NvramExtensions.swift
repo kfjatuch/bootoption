@@ -172,6 +172,26 @@ extension Nvram {
                 return false
         }
         
+        @discardableResult func setRebootToFirmwareUI() -> Bool {
+                var osIndications: UInt64
+                let name = "OsIndications"
+                if var data: Data = options.getDataValue(forProperty: nameWithGuid(name)) {
+                        osIndications = data.remove64()
+                        osIndications = osIndications | 0x1
+                } else {
+                        osIndications = 0x1
+                }
+                var data = Data()
+                data.append(UnsafeBufferPointer(start: &osIndications, count: 1))
+                let set = options.setDataValue(forProperty: nameWithGuid(name), value: data)
+                let sync = nvramSyncNow(withNamedVariable: nameWithGuid(name))
+                if set + sync != 0 {
+                        Log.log("Error setting and syncing %{public}@", name)
+                        return false
+                }
+                return true
+        }
+        
         
         
         

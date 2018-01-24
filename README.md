@@ -15,67 +15,47 @@ bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one fr
 - <strong>ORDER</strong>&nbsp;&nbsp;re-arrange the boot order
 - <strong>DELETE</strong>&nbsp;&nbsp;delete variables from NVRAM
 - <strong>SAVE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
+- <strong>REBOOT</strong>&nbsp;&nbsp;reboot to firmware settings
 
-bootoption <strong>VERB</strong> without options will show the usage or options for that verb, where available
+bootoption <strong>VERB</strong> without options will show the usage or options for that verb, where available. Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
 
 
-### Create a new boot option in NVRAM and add it to the boot order
-
-```
-sudo bootoption create -l "/Volumes/EFI/shell.efi" -d "EFI Shell"
-```
-
-Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
-
-### Save
-
-Supported output modes:
-
-- raw hex
-- XML
-- [EDK2 dmpstore](https://github.com/tianocore/edk2/blob/master/ShellPkg/Library/UefiShellDebug1CommandsLib/DmpStore.c) format
-- string formatted for [Apple's nvram system command](https://opensource.apple.com/source/system_cmds/system_cmds-790/nvram.tproj/nvram.c.auto.html)
-
-A stored representation of the variable data can be used to work around situations where it is problematic to modify BootOrder, BootXXXX etc. in hardware NVRAM, while targeting a specific device path from inside the operating system (for instance, generated during loader installation, stored and then added from an EFI context - see also [Punchdrum](https://github.com/vulgo/Punchdrum)).
-
-bootoption save -l <em>PATH</em> -d <em>LABEL</em> [ -a <em>STRING</em> ] [ -o <em>FILE</em> | -% | -x [ -k <em>KEY</em> ] ]
-
-#### Store to XML property list
+#### Create a new option and add it to the boot order
 
 ```
-bootoption save -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -xk "Payload" > "/Volumes/EFI/boot.plist"
-```
-#### /Volumes/EFI/boot.plist
-
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-        <key>Payload</key>
-        <data>
-        AQAAAGYAQwBsAG8AdgBlAHIAAAAEASoAAQAAAAAIAAAAAAAAAEAGAAAAAADVqM8+f4xe
-        SKkOqRfx+n2lAgIEBDgAXABFAEYASQBcAEMATABPAFYARQBSAFwAQwBMAE8AVgBFAFIA
-        WAA2ADQALgBFAEYASQAAAH//BAA=
-        </data>
-</dict>
-</plist>
+sudo bootoption create -l /Volumes/EFI/EFI/GRUB/GRUBX64.EFI -d "GNU GRUB"
 ```
 
-The data element contains the base 64 encoded variable data conforming to the EFI_LOAD_OPTION structure, as defined in section 3.1.3 of the UEFI Specification 2.7.
-
-#### Store to EDK2 dmpstore format
+#### Move an option from 4th to 1st in the boot order
 
 ```
-bootoption save -l "/Volumes/EFI/EFI/CLOVER/CLOVERX64.EFI" -d "Clover" -o "/Volumes/USB-FAT32/vars.dmpstore"
-````
+sudo bootoption order 4 to 1
+```
 
-The resulting file can be read from the EFI shell. To load and set the variables:
+#### Disable an option
 
 ```
-FS0:\> dmpstore -l vars.dmpstore
+sudo bootoption set -n Boot0002 --active=0
+```
+
+#### Change the boot menu timeout to 10 seconds
+
+```
+sudo bootoption set -t 10
+```
+
+#### Set an option's command line argmuments
+
+```
+sudo bootoption set -n Boot0000 -a "initrd=/initramfs.img root=/dev/disk/by-uuid/346d9a61-f7e5-4f58-bad7-026bb5376e0f"
+```
+
+#### Reboot to firmware settings
+
+```
+sudo bootoption reboot
 ```
 
 ## License
 
-GPL version 3
+This project is licensed under the terms of the GPL version 3

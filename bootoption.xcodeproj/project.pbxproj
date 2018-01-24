@@ -27,6 +27,7 @@
 		4D7F8FC320162EAB00C82104 /* FilePathDevicePath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D7F8FC220162EAB00C82104 /* FilePathDevicePath.swift */; };
 		4D7F8FC520162EEF00C82104 /* HardDriveDevicePath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D7F8FC420162EEF00C82104 /* HardDriveDevicePath.swift */; };
 		4D7F8FC720162F1500C82104 /* EndDevicePath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D7F8FC620162F1500C82104 /* EndDevicePath.swift */; };
+		4D8DB9FC2017BA5A00C82104 /* reboot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8DB9FB2017BA5A00C82104 /* reboot.swift */; };
 		4D90D7542006E86600C82104 /* NvramExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D90D7532006E86600C82104 /* NvramExtensions.swift */; };
 		4DA110C62004D8D000C82104 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA110C52004D8D000C82104 /* Log.swift */; };
 		4DA4A071200D2FC700C82104 /* info.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4A070200D2FC700C82104 /* info.swift */; };
@@ -71,6 +72,7 @@
 		4D7F8FC420162EEF00C82104 /* HardDriveDevicePath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardDriveDevicePath.swift; sourceTree = "<group>"; };
 		4D7F8FC620162F1500C82104 /* EndDevicePath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndDevicePath.swift; sourceTree = "<group>"; };
 		4D862BD42013914E00C82104 /* bootoption-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "bootoption-Bridging-Header.h"; sourceTree = "<group>"; };
+		4D8DB9FB2017BA5A00C82104 /* reboot.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = reboot.swift; sourceTree = "<group>"; };
 		4D90D7532006E86600C82104 /* NvramExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NvramExtensions.swift; sourceTree = "<group>"; };
 		4DA110C52004D8D000C82104 /* Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		4DA4A070200D2FC700C82104 /* info.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = info.swift; sourceTree = "<group>"; };
@@ -166,6 +168,7 @@
 				4D4EB8FB2003FB1000C82104 /* save.swift */,
 				4D4EB8F92003FB0700C82104 /* set.swift */,
 				4D4EB8FF200407FE00C82104 /* version.swift */,
+				4D8DB9FB2017BA5A00C82104 /* reboot.swift */,
 			);
 			path = bootoption;
 			sourceTree = "<group>";
@@ -239,6 +242,7 @@
 			files = (
 				4D0ADAE4200A96F900C82104 /* Verb.swift in Sources */,
 				4D90D7542006E86600C82104 /* NvramExtensions.swift in Sources */,
+				4D8DB9FC2017BA5A00C82104 /* reboot.swift in Sources */,
 				4D4EB8FE2003FB2800C82104 /* list.swift in Sources */,
 				4D4EB8FC2003FB1000C82104 /* save.swift in Sources */,
 				4D7F8FC320162EAB00C82104 /* FilePathDevicePath.swift in Sources */,

@@ -22,7 +22,7 @@ import Foundation
 
 var standardError = FileHandle.standardError
 
-var programInfo: ProgramInfo = ProgramInfo(name: "bootoption", version: "0.2.3", copyright: "Copyright © 2017-2018 vulgo", license: "This is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\nSee the GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>")
+var programInfo: ProgramInfo = ProgramInfo(name: "bootoption", version: "0.2.4", copyright: "Copyright © 2017-2018 vulgo", license: "This is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\nSee the GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>")
 Log.info("*** bootoption version %{public}@", programInfo.version)
 
 /* Nvram */

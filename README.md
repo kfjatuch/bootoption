@@ -4,6 +4,15 @@
 
 A command line utility for managing a firmware's boot menu. Report bugs [here](https://github.com/vulgo/bootoption/issues).
 
+## Installing
+
+Install bootoption with [Homebrew](https://brew.sh)
+
+```
+brew tap vulgo/repo
+brew install bootoption
+```
+
 ## Usage
 
 bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one from the following:

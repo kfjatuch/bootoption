@@ -25,7 +25,7 @@ bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one fr
 - <strong>LIST</strong>&nbsp;&nbsp;show the firmware boot menu
 - <strong>INFO</strong>&nbsp;&nbsp;show an option's properties
 - <strong>SET</strong>&nbsp;&nbsp;set/modify variables in NVRAM
-- <strong>CREATE</strong>&nbsp;&nbsp;create a new boot option
+- <strong>CREATE</strong>&nbsp;&nbsp;create a new EFI load option
 - <strong>ORDER</strong>&nbsp;&nbsp;re-arrange the boot order
 - <strong>DELETE</strong>&nbsp;&nbsp;delete variables from NVRAM
 - <strong>SAVE</strong>&nbsp;&nbsp;print or save boot variable data in different formats

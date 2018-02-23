@@ -7,7 +7,7 @@
 </picture>
 </p>
 
-A command line utility for managing a firmware's boot menu. Report bugs [here](https://github.com/vulgo/bootoption/issues).
+A command line utility for managing a UEFI firmware's boot menu on macOS. Like efibootmgr. Report bugs [here](https://github.com/vulgo/bootoption/issues).
 
 ## Installing
 

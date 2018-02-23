@@ -1,6 +1,11 @@
 #  bootoption
 
-![bootoption screenshot](https://github.com/vulgo/bootoption/raw/master/Images/screenshot.png "bootoption screenshot")
+<p align="center">
+<picture>
+<source srcset="https://github.com/vulgo/bootoption/raw/master/Images/screenshot.png, https://github.com/vulgo/bootoption/raw/master/Images/screenshot@2x.png 2x" />
+<img src="https://github.com/vulgo/bootoption/raw/master/Images/screenshot@2x.png" alt="bootoption screenshot" width="750" />
+</picture>
+</p>
 
 A command line utility for managing a firmware's boot menu. Report bugs [here](https://github.com/vulgo/bootoption/issues).
 

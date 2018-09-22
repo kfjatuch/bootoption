@@ -23,8 +23,7 @@ import Foundation
 class Nvram {
         
         var savedBootOrder: [UInt16]?
-        
-        let ioNvramForceSyncNowPropertyKey = "IONVRAM-FORCESYNCNOW-PROPERTY"
+
         let efiGlobalGuid:String = "8BE4DF61-93CA-11D2-AA0D-00E098032B8C"
         let options = RegistryEntry(fromPath: "IODeviceTree:/options")
         
@@ -42,11 +41,7 @@ class Nvram {
 
         func nvramSyncNow(withNamedVariable key: String, useForceSync: Bool = true) -> kern_return_t {
                 var result: kern_return_t
-                if (useForceSync) {
-                        result = options.setStringValue(forProperty: ioNvramForceSyncNowPropertyKey, value: key)
-                } else {
-                        result = options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: key)
-                }
+                result = options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: key)
                 if result != KERN_SUCCESS {
                         Log.log("Error syncing %{public}@", key)
                 }

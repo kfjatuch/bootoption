@@ -138,7 +138,7 @@ struct HardDriveDevicePath {
                 
                 for volume in volumes {
                         let unprefixedVolumeString: String = volume.absoluteString.replacingOccurrences(of: prefix, with: "")
-                        let stringLength: Int = unprefixedVolumeString.characters.count
+                        let stringLength: Int = unprefixedVolumeString.count
                         let start: String.Index = unprefixedVolumeString.index(unprefixedVolumeString.startIndex, offsetBy: 0)
                         let end: String.Index = unprefixedVolumeString.index(unprefixedVolumeString.startIndex, offsetBy: stringLength)
                         let test: String = String(path[start..<end])

@@ -70,7 +70,7 @@ func save() {
                                 Log.logExit(EX_UNAVAILABLE)
                         }
                         if let xml = String(data: propertyList, encoding: .utf8) {
-                                let outputString = String(xml.characters.filter { !"\n\t\r".characters.contains($0) })
+                                let outputString = String(xml.filter { !"\n\t\r".contains($0) })
                                 print(outputString)
                         } else {
                                 Log.error("Error printing serialized xml property list representation")

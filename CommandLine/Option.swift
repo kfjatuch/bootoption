@@ -73,7 +73,7 @@ class Option {
         
         internal init(_ shortFlag: String?, _ longFlag: String?, _ required: Int, _ helpMessage: String, _ precludes: String) {
                 if shortFlag != nil {
-                        assert(shortFlag!.characters.count == 1, "Short flag must be a single character")
+                        assert(shortFlag!.count == 1, "Short flag must be a single character")
                         assert(Int(shortFlag!) == nil && shortFlag!.toDouble() == nil, "Short flag cannot be a numeric value")
                 }
                 if longFlag != nil {

@@ -80,7 +80,7 @@ struct FilePathDevicePath {
                 
                 /* Path */
                 
-                let c: Int = mountPoint.characters.count
+                let c: Int = mountPoint.count
                 let i: String.Index = localPath.index(localPath.startIndex, offsetBy: c)
                 let efiPath: String = "/" + localPath[i...]
                 path = efiPath.uppercased().replacingOccurrences(of: "/", with: "\\")

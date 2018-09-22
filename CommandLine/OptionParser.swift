@@ -72,7 +72,7 @@ class OptionParser {
                                 continue
                         }
                         
-                        let skipChars = string.hasPrefix(getOpt.longPrefix) ? getOpt.longPrefix.characters.count : getOpt.shortPrefix.characters.count
+                        let skipChars = string.hasPrefix(getOpt.longPrefix) ? getOpt.longPrefix.count : getOpt.shortPrefix.count
                         let flagWithArg = string[string.index(string.startIndex, offsetBy: skipChars)..<string.endIndex]
                         
                         /* The argument contained nothing but ShortOptionPrefix or LongOptionPrefix */
@@ -91,9 +91,9 @@ class OptionParser {
                                 
                                 /* Preclude */
                                 
-                                if let c = option.shortFlag?.characters.first {
+                                if let c = option.shortFlag?.first {
                                         
-                                        if precludedOptions.characters.contains(c) {
+                                        if precludedOptions.contains(c) {
                                                 status = .tooManyOptions
                                                 return
                                         }
@@ -120,15 +120,15 @@ class OptionParser {
                         
                         /* Flags that do not take any arguments can be concatenated */
                         
-                        let flagLength = flag.characters.count
+                        let flagLength = flag.count
                         if !flagMatched && !string.hasPrefix(getOpt.longPrefix) {
-                                let flagCharactersEnumerator = flag.characters.enumerated()
+                                let flagCharactersEnumerator = flag.enumerated()
                                 for (i, c) in flagCharactersEnumerator {
                                         for option in options where option.flagMatch(String(c)) {
                                                 
                                                 /* preclude */
-                                                if let c = option.shortFlag?.characters.first {
-                                                        if precludedOptions.characters.contains(c) {
+                                                if let c = option.shortFlag?.first {
+                                                        if precludedOptions.contains(c) {
                                                                 status = .tooManyOptions
                                                                 return
                                                         }

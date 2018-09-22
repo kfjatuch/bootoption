@@ -102,9 +102,8 @@ extension FileHandle : TextOutputStream {
 
 extension String {
         func efiStringData(withNullTerminator: Bool = true) -> Data? {
-                let characters = self.characters
                 var data = Data()
-                for c in characters {
+                for c in self {
                         if let scalar: Unicode.Scalar = UnicodeScalar(String(c)) {
                                 if scalar.value > 0xFFFF {
                                         Log.log("efiStringData(): unicode scalar value out of range")
@@ -133,8 +132,8 @@ extension String {
         }
         
         func containsOutlawedCharacters() -> Bool {
-                let allowed: Set<Character> = Set("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLKMNOPQRSTUVWXYZ1234567890+-=(),.!_\\".characters)
-                for char in self.characters {
+                let allowed: Set<Character> = Set("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLKMNOPQRSTUVWXYZ1234567890+-=(),.!_\\")
+                for char in self {
                         if allowed.contains(char) {
                                 continue
                         } else {
@@ -145,8 +144,8 @@ extension String {
         }
         
         func containsNonHexCharacters() -> Bool {
-                let allowed: Set<Character> = Set("abcdefABCDEF1234567890".characters)
-                for char in self.characters {
+                let allowed: Set<Character> = Set("abcdefABCDEF1234567890")
+                for char in self {
                         if allowed.contains(char) {
                                 continue
                         } else {
@@ -165,7 +164,7 @@ extension String {
         func hexToData(byteSwapped: Bool = false) -> Data? {
                 var strings: [String] = Array()
                 let width: Int = 2
-                let max: Int = self.characters.count
+                let max: Int = self.count
                 if byteSwapped {
                         var start: Int = max - width, end: Int = max
                         while start >= 0 {
@@ -184,7 +183,7 @@ extension String {
         }
         
         func leftPadding(toLength: Int, withPad character: Character) -> String {
-                let newLength = self.characters.count
+                let newLength = self.count
                 if newLength < toLength {
                         return String(repeatElement(character, count: toLength - newLength)) + self
                 } else {

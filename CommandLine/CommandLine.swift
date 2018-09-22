@@ -122,7 +122,7 @@ class CommandLine {
         private var verbMax: Int = 0
         private var optionWidth: Int {
                 if optionMax == 0 {
-                        let mapped = options.map { $0.optionDescription.characters.count }
+                        let mapped = options.map { $0.optionDescription.count }
                         let padding = listPadding.count
                         optionMax = (mapped.sorted().last ?? 0) + padding
                 }
@@ -130,7 +130,7 @@ class CommandLine {
         }
         private var verbWidth: Int {
                 if verbMax == 0 {
-                        let mapped = verbs.map { $0.name.characters.count }
+                        let mapped = verbs.map { $0.name.count }
                         let padding = listPadding.count
                         verbMax = (mapped.sorted().last ?? 0) + padding
                 }

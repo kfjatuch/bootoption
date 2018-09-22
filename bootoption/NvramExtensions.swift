@@ -287,7 +287,7 @@ extension Nvram {
                 var mutableString = string.uppercased()
                 mutableString = mutableString.replacingOccurrences(of: "0X", with: "")
                 mutableString = mutableString.replacingOccurrences(of: "BOOT", with: "")
-                if mutableString.containsNonHexCharacters() || mutableString.characters.count > 4 {
+                if mutableString.containsNonHexCharacters() || mutableString.count > 4 {
                         Log.log(logErrorMessage)
                         return nil
                 }

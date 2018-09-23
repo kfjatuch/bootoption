@@ -47,7 +47,7 @@ extension Nvram {
         }
         
         func getBootOption(_ number: Int) -> Data? {
-                let name: String = bootStringFromBoot(number: number)
+                let name: String = bootStringFromNumber(number)
                 return options.getDataValue(forProperty: nameWithGuid(name))
         }
         
@@ -101,7 +101,7 @@ extension Nvram {
         func setBootNext(number: Int?) -> Bool {
                 let bootNumber: Int = number ?? -1
                 guard getBootOption(bootNumber) != nil else {
-                        Log.log("Couldn't get %{public}@ data, cancelling add to boot order", bootStringFromBoot(number: bootNumber))
+                        Log.log("Couldn't get %{public}@ data, cancelling add to boot order", bootStringFromNumber(bootNumber))
                         return false
                 }
                 var bootNext = UInt16(bootNumber)
@@ -117,7 +117,7 @@ extension Nvram {
         }
 
         @discardableResult func addToBootOrder(_ number: Int, atIndex index: Int = 0) -> Bool {
-                let name = bootStringFromBoot(number: number)
+                let name = bootStringFromNumber(number)
                 guard getBootOption(number) != nil else {
                         Log.log("Couldn't get %{public}@ data, cancelling add to boot order", name)
                         return false
@@ -144,7 +144,7 @@ extension Nvram {
                 guard let bootNumber: Int = discoverEmptyBootNumber() else {
                         return nil
                 }
-                let name: String = bootStringFromBoot(number: bootNumber)
+                let name: String = bootStringFromNumber(bootNumber)
                 let set = options.setDataValue(forProperty: nameWithGuid(name), value: data)
                 let sync = nvramSyncNow(withNamedVariable: nameWithGuid(name))
                 if set + sync != 0 {
@@ -158,7 +158,7 @@ extension Nvram {
         
         func setOption(option: EfiLoadOption) -> Bool {
                 if let bootNumber: Int = option.bootNumber {
-                        let name: String = bootStringFromBoot(number: bootNumber)
+                        let name: String = bootStringFromNumber(bootNumber)
                         let set = options.setDataValue(forProperty: nameWithGuid(name), value: option.data)
                         let sync = nvramSyncNow(withNamedVariable: nameWithGuid(name))
                         if set + sync != 0 {
@@ -201,7 +201,7 @@ extension Nvram {
          */
         
         func deleteBootOption(_ number: Int) {
-                let name: String = bootStringFromBoot(number: number)
+                let name: String = bootStringFromNumber(number)
                 deleteVariable(key: nameWithGuid(name))
                 Log.info("Asked the kernel to delete %{public}@", name)
                 // to do: needs to be read back to confirm success
@@ -310,7 +310,7 @@ extension Nvram {
          *  Helper: Parse integer to Boot####, doesn't check if variable exists
          */
         
-        func bootStringFromBoot(number: Int) -> String {
+        func bootStringFromNumber(_ number: Int) -> String {
                 let string = "Boot\(String(format:"%04X", number))"
                 Log.debug("boot string from boot number returned: %{public}@", string)
                 return string

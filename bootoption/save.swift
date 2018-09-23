@@ -161,7 +161,7 @@ struct Dmpstore {
                         guard let bootNumber: Int = nvram.discoverEmptyBootNumber(leavingSpace: true) else {
                                 Log.logExit(EX_UNAVAILABLE, "Empty boot option is nil")
                         }
-                        if let name: Data = String(nvram.bootStringFromBoot(number: bootNumber)).efiStringData() {
+                        if let name: Data = String(nvram.bootStringFromNumber(bootNumber)).efiStringData() {
                                 self.name = name
                         } else {
                                 Log.logExit(EX_SOFTWARE, "Failed to set name, did String.efiStringData() return nil?")

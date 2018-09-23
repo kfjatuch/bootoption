@@ -66,10 +66,10 @@ class BootMenu {
                 /* BootCurrent, BootNext, Timeout */
                 
                 var bootCurrentString: String {
-                        return bootCurrent != nil ? nvram.bootStringFromBoot(number: Int(bootCurrent!)) : notSet
+                        return bootCurrent != nil ? nvram.bootStringFromNumber(Int(bootCurrent!)) : notSet
                 }
                 var bootNextString: String {
-                        return bootNext != nil ? nvram.bootStringFromBoot(number: Int(bootNext!)) : notSet
+                        return bootNext != nil ? nvram.bootStringFromNumber(Int(bootNext!)) : notSet
                 }
                 var timeoutString: String {
                         if let timeoutValue: UInt16 = timeout {
@@ -94,7 +94,7 @@ class BootMenu {
                         output.append(paddedOrder)
                         output.append(":")
                         output.append(separator)
-                        output.append(nvram.bootStringFromBoot(number: option.bootNumber!))
+                        output.append(nvram.bootStringFromNumber(option.bootNumber!))
                         output.append(separator)
                         output.append(option.descriptionString!.padding(toLength: 28, withPad: " ", startingAt: 0))
                         if !option.active {

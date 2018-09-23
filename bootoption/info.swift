@@ -29,7 +29,7 @@ func infoMain(bootNumber: Int) {
         
         if let data: Data = nvram.getBootOption(bootNumber) {
                 let option = EfiLoadOption(fromBootNumber: bootNumber, data: data, details: true)
-                let name = nvram.bootStringFromBoot(number: bootNumber)
+                let name = nvram.bootStringFromNumber(bootNumber)
                 
                 var properties: [(String, String)] = Array()
                 properties.append(("Name", name))

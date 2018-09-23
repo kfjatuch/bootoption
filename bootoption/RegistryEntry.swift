@@ -1,8 +1,6 @@
 /*
- * File: RegistryEntry.swift
- *
- * bootoption © vulgo 2017-2018 - A command line utility for managing a
- * firmware's EFI boot menu
+ * RegistryEntry.swift
+ * Copyright © 2017-2018 vulgo
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,30 +14,49 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
  */
 
 import Foundation
 import IOKit
+import os.log
 
 class RegistryEntry {
         
         var registryEntry = io_registry_entry_t()
+        var iterator = io_iterator_t()
+        let osLog = OSLog.init(subsystem: "org.vulgo.RegistryEntry", category: "RegistryEntry")
         
         enum typeId {
                 static let number = CFNumberGetTypeID()
                 static let string = CFStringGetTypeID()
                 static let data = CFDataGetTypeID()
                 static let bool = CFBooleanGetTypeID()
+                static let dictionary = CFDictionaryGetTypeID()
         }
         
-        init(fromPath path: String) {
+        init?(fromPath path: String) {
                 registryEntry = IORegistryEntryFromPath(kIOMasterPortDefault, path)
                 guard registryEntry != 0 else {
-                        Log.error("RegistryEntry: Error getting registry entry from path")
-                        Log.logExit(EX_UNAVAILABLE)
+                        os_log("RegistryEntry: Error getting registry entry from path", log: osLog, type: .default)
+                        return nil
                 }
         }
-  
+        
+        init(parentOf child: io_registry_entry_t) {
+                var parent = io_registry_entry_t()
+                IORegistryEntryGetParentEntry(child, kIOServicePlane, &parent)
+                registryEntry = parent
+        }
+        
+        init(fromMatchingDictionary dictionary: CFDictionary) {
+                registryEntry = IOServiceGetMatchingService(kIOMasterPortDefault, dictionary)
+        }
+        
+        init(iteratorFromMatchingDictionary dictionary: CFDictionary) {
+                registryEntry = io_registry_entry_t(IOServiceGetMatchingServices(kIOMasterPortDefault, dictionary, &iterator))
+        }
+        
         /*
          *  Get properties
          */
@@ -48,14 +65,14 @@ class RegistryEntry {
                 if let value: CFTypeRef = IORegistryEntryCreateCFProperty(registryEntry, key as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() {
                         let valueType = CFGetTypeID(value)
                         guard valueType == type else {
-                                Log.error("CFType mismatch")
+                                os_log("CFType mismatch", log: osLog, type: .default)
                                 return nil
                         }
                         return value
                 }
                 return nil
         }
-
+        
         func getIntValue(forProperty key: String) -> Int? {
                 guard let int = getValue(forProperty: key, type: typeId.number) as? Int else {
                         return nil
@@ -84,6 +101,13 @@ class RegistryEntry {
                 return bool
         }
         
+        func getDictionary(forProperty key: String) -> Dictionary<String, Any>? {
+                guard let dictionary = getValue(forProperty: key, type: typeId.dictionary) as? Dictionary<String, Any> else {
+                        return nil
+                }
+                return dictionary
+        }
+        
         /*
          *  Set properties
          */
@@ -99,13 +123,15 @@ class RegistryEntry {
                         result = IORegistryEntrySetCFProperty(registryEntry, key as CFString, value as! CFData)
                 case typeId.bool:
                         result = IORegistryEntrySetCFProperty(registryEntry, key as CFString, value as! CFBoolean)
+                case typeId.dictionary:
+                        result = IORegistryEntrySetCFProperty(registryEntry, key as CFString, value as! CFDictionary)
                 default:
                         result = -1
-                        Log.error("CFDate, CFArray, CFDictionary are not implemented")
+                        os_log("CFDate, CFArray, are not implemented", log: osLog, type: .default)
                 }
                 if result != KERN_SUCCESS {
-                        Log.log("Error setting value for property %{public}@", key)
-                        Log.log("IORegistryEntrySetCFProperty kern_return_t was %{public}X", result)
+                        os_log("Error setting value for property %{public}@", log: osLog, type: .default, key)
+                        os_log("IORegistryEntrySetCFProperty kern_return_t was %{public}X", log: osLog, type: .default, result)
                 }
                 return result
         }
@@ -123,18 +149,21 @@ class RegistryEntry {
         }
         
         func setDataValue(forProperty key: String, value: Data) -> kern_return_t {
-                Log.debug("RegistryEntry.setDataValue()")
                 let type = typeId.data
                 let result = setValue(forProperty: key, value: value as CFData, type: type)
                 return result
         }
         
         func setBoolValue(forKey key: String, value: Bool) -> kern_return_t {
-                Log.debug("RegistryEntry.setDataValue()")
                 let type = typeId.bool
                 let result = setValue(forProperty: key, value: value as CFBoolean, type: type)
                 return result
-                
+        }
+        
+        func setDictionary(forKey key: String, value: Dictionary<String, Any>) -> kern_return_t {
+                let type = typeId.dictionary
+                let result = setValue(forProperty: key, value: value as CFDictionary, type: type)
+                return result
         }
         
 }

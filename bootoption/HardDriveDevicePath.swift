@@ -178,7 +178,9 @@ struct HardDriveDevicePath {
                 
                 /* Get the registry object for our partition */
                 
-                let partitionProperties: RegistryEntry = RegistryEntry(fromPath: daMediaPath)
+                guard let partitionProperties: RegistryEntry = RegistryEntry(fromPath: daMediaPath) else {
+                        Log.logExit(EX_UNAVAILABLE, "Failed to initialize hard drive partition properties from IOregistry")
+                }
                 if (partitionProperties.getIntValue(forProperty: "GPT Attributes")) == nil {
                         Log.logExit(EX_UNAVAILABLE, "Only GPT is supported at this time")
                 }

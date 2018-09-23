@@ -26,7 +26,16 @@ class Nvram {
         var savedBootOrder: [UInt16]?
 
         let efiGlobalGuid:String = "8BE4DF61-93CA-11D2-AA0D-00E098032B8C"
-        let options = RegistryEntry(fromPath: "IODeviceTree:/options")
+        let options: RegistryEntry
+        
+        init() {
+                if let options = RegistryEntry(fromPath: "IODeviceTree:/options") {
+                        self.options = options
+                } else {
+                        print("Fatal: Failed to initialize NVRAM options")
+                        Log.logExit(EX_UNAVAILABLE, "Fatal: Failed to initialize NVRAM options")
+                }
+        }
         
         func nameWithGuid(_ name: String) -> String {
                 return "\(efiGlobalGuid):\(name)"

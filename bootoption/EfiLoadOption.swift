@@ -40,9 +40,22 @@ struct EfiLoadOption {
         var bootNumber: Int?
         var data: Data {
                 get {
+                        Log.info("EfiLoadOption.data.get() bootNumber=%{public}@", String(bootNumber ?? -1))
                         var attributes: UInt32 = self.attributes
                         var devicePathListLength: UInt16 = self.devicePathListLength
-                        guard let description: Data = self.description, let devicePathList = self.devicePathList, let optionalData: Data = self.optionalData else {
+                        guard let description: Data = self.description else {
+                                print("Error getting description data for option int=\(bootNumber ?? -1).")
+                                Log.error("Error getting description data")
+                                Log.logExit(EX_DATAERR)
+                        }
+                        guard let devicePathList = self.devicePathList else {
+                                print("Error getting device path list data for option int=\(bootNumber ?? -1).")
+                                Log.error("Error getting description data")
+                                Log.logExit(EX_DATAERR)
+                        }
+                        guard let optionalData: Data = self.optionalData else {
+                                print("Error getting optional data for option int=\(bootNumber ?? -1).")
+                                Log.error("Error getting optional data")
                                 Log.logExit(EX_DATAERR)
                         }
                         var buffer = Data.init()
@@ -50,7 +63,9 @@ struct EfiLoadOption {
                         buffer.append(UnsafeBufferPointer(start: &devicePathListLength, count: 1))
                         buffer.append(description)
                         buffer.append(devicePathList)
-                        buffer.append(optionalData)
+                        if optionalData.count > 0 {
+                                buffer.append(optionalData)
+                        }
                         return buffer
                 }
         }
@@ -182,6 +197,8 @@ struct EfiLoadOption {
                         
                         if !buffer.isEmpty {
                                 optionalData = buffer
+                        } else {
+                                optionalData = Data()
                         }
                 }
 

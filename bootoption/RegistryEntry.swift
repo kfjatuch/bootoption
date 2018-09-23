@@ -123,12 +123,14 @@ class RegistryEntry {
         }
         
         func setDataValue(forProperty key: String, value: Data) -> kern_return_t {
+                Log.debug("RegistryEntry.setDataValue()")
                 let type = typeId.data
                 let result = setValue(forProperty: key, value: value as CFData, type: type)
                 return result
         }
         
         func setBoolValue(forKey key: String, value: Bool) -> kern_return_t {
+                Log.debug("RegistryEntry.setDataValue()")
                 let type = typeId.bool
                 let result = setValue(forProperty: key, value: value as CFBoolean, type: type)
                 return result

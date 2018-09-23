@@ -19,6 +19,7 @@
  */
 
 import Foundation
+import IOKit
 
 class Nvram {
         
@@ -39,7 +40,7 @@ class Nvram {
                 let _ = options.setStringValue(forProperty: kIONVRAMDeletePropertyKey, value: key)
         }
 
-        func nvramSyncNow(withNamedVariable key: String, useForceSync: Bool = true) -> kern_return_t {
+        func nvramSyncNow(withNamedVariable key: String) -> kern_return_t {
                 var result: kern_return_t
                 result = options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: key)
                 if result != KERN_SUCCESS {

@@ -27,11 +27,11 @@ import Foundation
 func delete() {
         
         Log.info("Setting up command line")
-        let variableOption = StringOption(shortFlag: "n", longFlag: "name", required: 1, helpMessage: "variable to delete, Boot####")
+        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", required: 1, helpMessage: "variable to delete, Boot####")
         let bootNextOption = BoolOption(shortFlag: "x", longFlag: "bootnext", required: 2, helpMessage: "delete BootNext")
         let timeoutOption = BoolOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "delete Timeout")
         commandLine.invocationHelpMessage = "delete [-n ####] [-x] [-t]"
-        commandLine.setOptions(variableOption, bootNextOption, timeoutOption)
+        commandLine.setOptions(bootnumOption, bootNextOption, timeoutOption)
         
         func deleteMain() {
                 
@@ -46,9 +46,9 @@ func delete() {
                 
                 /* Delete a boot option */
                 
-                if variableOption.wasSet {
+                if bootnumOption.wasSet {
                         noop = false
-                        let result: Int? = nvram.bootNumberFromString(variableOption.value ?? "")
+                        let result: Int? = nvram.bootNumberFromString(bootnumOption.value ?? "")
                         
                         /* BootNumber */
                         guard let bootNumber: Int = result else {

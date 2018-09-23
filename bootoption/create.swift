@@ -27,16 +27,16 @@ import Foundation
 func create() {
         
         Log.info("Setting up command line")
-        let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1,  helpMessage: "the PATH to an EFI loader executable")
-        let descriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
-        let dataStringOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
+        let loaderPathOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1,  helpMessage: "the PATH to an EFI loader executable")
+        let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
+        let loaderCommandLineOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
         commandLine.invocationHelpMessage = "create -l PATH -d LABEL [-a STRING]"
-        commandLine.setOptions(loaderOption, descriptionOption, dataStringOption)
+        commandLine.setOptions(loaderPathOption, loaderDescriptionOption, loaderCommandLineOption)
         
         func createMain() {
                 
-                let loaderPath = loaderOption.value ?? ""
-                let description = descriptionOption.value ?? ""
+                let loaderPath = loaderPathOption.value ?? ""
+                let description = loaderDescriptionOption.value ?? ""
                 
                 /* Check root */
                 
@@ -49,7 +49,7 @@ func create() {
                 /* Set a new load option */
                 
                 if !loaderPath.isEmpty && !description.isEmpty {
-                        let option = EfiLoadOption(createFromLoaderPath: loaderPath, descriptionString: description, optionalDataString: dataStringOption.value)
+                        let option = EfiLoadOption(createFromLoaderPath: loaderPath, descriptionString: description, optionalDataString: loaderCommandLineOption.value)
                         if nvram.createNewAndAddToBootOrder(withData: option.data) == nil {
                                 print("Error setting boot option", to: &standardError)
                                 status = EX_DATAERR

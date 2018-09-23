@@ -27,15 +27,15 @@ import Foundation
 func save() {
 
         Log.info("Setting up command line")
-        let loaderOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1, helpMessage: "the PATH to an EFI loader executable")
-        let descriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
-        let dataStringOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
+        let loaderPathOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1, helpMessage: "the PATH to an EFI loader executable")
+        let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
+        let loaderCommandLineOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
         let outputOption = StringOption(shortFlag: "o", longFlag: "output", helpMessage: "write to FILE for use with EDK2 dmpstore", precludes: "x%")
         let appleOption = BoolOption(shortFlag: "%", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "ox")
         let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "o%")
         let keyOption = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
         commandLine.invocationHelpMessage = "save -l PATH -d LABEL [-a STRING] [-o FILE | -% | -x [-k KEY]]"
-        commandLine.setOptions(loaderOption, descriptionOption, dataStringOption, outputOption, appleOption, xmlOption, keyOption)
+        commandLine.setOptions(loaderPathOption, loaderDescriptionOption, loaderCommandLineOption, outputOption, appleOption, xmlOption, keyOption)
         
         func saveMain() {
                 
@@ -78,13 +78,13 @@ func save() {
                         }
                 }
                 
-                if descriptionOption.value == nil || loaderOption.value == nil {
+                if loaderDescriptionOption.value == nil || loaderPathOption.value == nil {
                         Log.error("Required options should no longer be nil")
                         Log.logExit(EX_DATAERR)
                 }
                 
                 let testCount: Int = 54
-                let option = EfiLoadOption(createFromLoaderPath: loaderOption.value!, descriptionString: descriptionOption.value!, optionalDataString: dataStringOption.value)
+                let option = EfiLoadOption(createFromLoaderPath: loaderPathOption.value!, descriptionString: loaderDescriptionOption.value!, optionalDataString: loaderCommandLineOption.value)
                 let loadOptionData = option.data
                 if loadOptionData.count < testCount {
                         Log.error("Variable data is too small")

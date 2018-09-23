@@ -28,14 +28,14 @@ func set() {
         
         Log.info("Setting up command line")
         let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", helpMessage: "the variable to manipulate, Boot####")
-        let descriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
-        let dataStringOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
-        let activeOption = BinaryOption(longFlag: "active", helpMessage: "set active attribute, 0 or 1")
-        let hiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "set hidden attribute, 0 or 1")
+        let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
+        let loaderCommandLineOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
+        let loaderActiveOption = BinaryOption(longFlag: "active", helpMessage: "set active attribute, 0 or 1")
+        let loaderHiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "set hidden attribute, 0 or 1")
         let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", helpMessage: "set BootNext, #### (hex)")
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set boot menu Timeout in SECONDS")
         commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] | -t SECONDS | -x ####"
-        commandLine.setOptions(bootnumOption, descriptionOption, dataStringOption, activeOption, hiddenOption, bootNextOption, timeoutOption)
+        commandLine.setOptions(bootnumOption, loaderDescriptionOption, loaderCommandLineOption, loaderActiveOption, loaderHiddenOption, bootNextOption, timeoutOption)
         
         func setMain() {
                 
@@ -43,7 +43,7 @@ func set() {
                 let bootNextString: String = bootNextOption.value ?? ""
                 var bootNextValue: Int = -1
                 let timeoutValue: Int = timeoutOption.value ?? -1
-                let description: String = descriptionOption.value ?? ""
+                let description: String = loaderDescriptionOption.value ?? ""
                 var updateOption = false
                 
                 /*
@@ -75,8 +75,8 @@ func set() {
                 
                 /*  Boot number */
                 
-                if bootnumOption.wasSet && (description.isEmpty && !dataStringOption.wasSet && !activeOption.wasSet && !hiddenOption.wasSet) {
-                        print("Option \(bootnumOption.shortDescription) specified without \(descriptionOption.shortDescription), \(dataStringOption.shortDescription) or attribute options", to: &standardError)
+                if bootnumOption.wasSet && (description.isEmpty && !loaderCommandLineOption.wasSet && !loaderActiveOption.wasSet && !loaderHiddenOption.wasSet) {
+                        print("Option \(bootnumOption.shortDescription) specified without \(loaderDescriptionOption.shortDescription), \(loaderCommandLineOption.shortDescription) or attribute options", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
                 }
@@ -98,7 +98,7 @@ func set() {
                 
                 /* Attribute options */
                 
-                if (activeOption.wasSet || hiddenOption.wasSet) && option == nil {
+                if (loaderActiveOption.wasSet || loaderHiddenOption.wasSet) && option == nil {
                         print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
@@ -114,7 +114,7 @@ func set() {
                 
                 /* Optional data string */
                 
-                if (dataStringOption.wasSet && option == nil) {
+                if (loaderCommandLineOption.wasSet && option == nil) {
                         print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
                         Log.logExit(EX_USAGE)
@@ -161,7 +161,7 @@ func set() {
                 
                 /* Set optional data string */
                 
-                if let dataStringValue: String = dataStringOption.value {
+                if let dataStringValue: String = loaderCommandLineOption.value {
                         if !dataStringValue.isEmpty {
                                 option?.optionalDataStringView = dataStringValue
                                 updateOption = true
@@ -170,7 +170,7 @@ func set() {
                                 updateOption = true
                         }
                 } else {
-                        if dataStringOption.wasSet {
+                        if loaderCommandLineOption.wasSet {
                                 option?.removeOptionalData()
                                 updateOption = true
                         }
@@ -178,13 +178,13 @@ func set() {
                 
                 /* Set attributes */
                 
-                if hiddenOption.value != nil {
-                        option?.hidden = hiddenOption.value!
+                if loaderHiddenOption.value != nil {
+                        option?.hidden = loaderHiddenOption.value!
                         updateOption = true
                 }
                 
-                if activeOption.value != nil {
-                        option?.active = activeOption.value!
+                if loaderActiveOption.value != nil {
+                        option?.active = loaderActiveOption.value!
                         updateOption = true
                 }
                 

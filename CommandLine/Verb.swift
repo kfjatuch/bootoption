@@ -18,7 +18,7 @@
 struct Verb {
         var name: String
         var helpMessage: String
-        init(withName name: String, helpMessage: String) {
+        init(_ name: String, helpMessage: String) {
                 self.name = name
                 self.helpMessage = helpMessage
         }

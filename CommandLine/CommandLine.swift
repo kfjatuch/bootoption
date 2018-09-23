@@ -277,7 +277,7 @@ struct ProgramInfo {
         let version: String
         let copyright: String
         let license: String
-        init(name: String, version: String, copyright: String, license: String) {
+        init(_ name: String, version: String, copyright: String, license: String) {
                 self.name = name
                 self.version = version
                 self.copyright = copyright

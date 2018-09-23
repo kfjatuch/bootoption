@@ -48,7 +48,7 @@ func delete() {
                 
                 if variableOption.wasSet {
                         noop = false
-                        let result: Int? = nvram.bootNumberFromBoot(string: variableOption.value ?? "")
+                        let result: Int? = nvram.bootNumberFromString(variableOption.value ?? "")
                         
                         /* BootNumber */
                         guard let bootNumber: Int = result else {

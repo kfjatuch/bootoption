@@ -282,7 +282,7 @@ extension Nvram {
          *  Helper: Read integer value from (user provided) Boot#### string
          */
         
-        func bootNumberFromBoot(string: String) -> Int? {
+        func bootNumberFromString(_ string: String) -> Int? {
                 let logErrorMessage: StaticString = "Parsing user provided Boot#### failed"
                 var mutableString = string.uppercased()
                 mutableString = mutableString.replacingOccurrences(of: "0X", with: "")

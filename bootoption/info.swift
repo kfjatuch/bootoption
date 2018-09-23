@@ -70,7 +70,7 @@ func info() {
         guard let string = commandLine.rawArguments.first else {
                 infoUsage()
         }
-        guard let bootNumber = nvram.bootNumberFromBoot(string: string) else {
+        guard let bootNumber = nvram.bootNumberFromString(string) else {
                 infoUsage()
         }
         

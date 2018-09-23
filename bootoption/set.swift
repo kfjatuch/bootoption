@@ -53,7 +53,7 @@ func set() {
                  */
                 
                 if !bootNextString.isEmpty {
-                        if let validBootNumber: Int = nvram.bootNumberFromBoot(string: bootNextString) {
+                        if let validBootNumber: Int = nvram.bootNumberFromString(bootNextString) {
                                 if let _: Data = nvram.getBootOption(validBootNumber) {
                                         bootNextValue = validBootNumber
                                 } else {
@@ -82,7 +82,7 @@ func set() {
                 }
                 
                 if bootnumOption.wasSet {
-                        guard let bootNumber = nvram.bootNumberFromBoot(string: bootnumOption.value!) else {
+                        guard let bootNumber = nvram.bootNumberFromString(bootnumOption.value!) else {
                                 commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(bootnumOption, [bootnumOption.value ?? ""]))
                                 Log.logExit(EX_USAGE)
                         }

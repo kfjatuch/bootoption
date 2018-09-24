@@ -40,30 +40,27 @@ struct EfiLoadOption {
         var bootNumber: Int?
         var data: Data {
                 get {
-                        Log.info("EfiLoadOption.data.get() bootNumber=%{public}@", String(bootNumber ?? -1))
+                        Log.info("EfiLoadOption.data -> get()")
                         var attributes: UInt32 = self.attributes
                         var devicePathListLength: UInt16 = self.devicePathListLength
-                        guard let description: Data = self.description else {
-                                print("Error getting description data for option int=\(bootNumber ?? -1).")
-                                Log.error("Error getting description data")
-                                Log.logExit(EX_DATAERR)
-                        }
-                        guard let devicePathList = self.devicePathList else {
-                                print("Error getting device path list data for option int=\(bootNumber ?? -1).")
-                                Log.error("Error getting description data")
-                                Log.logExit(EX_DATAERR)
-                        }
-                        guard let optionalData: Data = self.optionalData else {
-                                print("Error getting optional data for option int=\(bootNumber ?? -1).")
-                                Log.error("Error getting optional data")
-                                Log.logExit(EX_DATAERR)
-                        }
                         var buffer = Data.init()
                         buffer.append(UnsafeBufferPointer(start: &attributes, count: 1))
                         buffer.append(UnsafeBufferPointer(start: &devicePathListLength, count: 1))
-                        buffer.append(description)
-                        buffer.append(devicePathList)
-                        if optionalData.count > 0 {
+                        if let description = self.description {
+                                buffer.append(description)
+                        } else {
+                                print("description is nil")
+                                Log.error("EfiLoadOption.data -> get(): description is nil")
+                                Log.logExit(EX_DATAERR)
+                        }
+                        if let devicePathList = self.devicePathList {
+                                buffer.append(devicePathList)
+                        } else {
+                                print("devicePathList is nil")
+                                Log.error("EfiLoadOption.data -> get(): devicePathList is nil")
+                                Log.logExit(EX_DATAERR)
+                        }
+                        if let optionalData = self.optionalData {
                                 buffer.append(optionalData)
                         }
                         return buffer

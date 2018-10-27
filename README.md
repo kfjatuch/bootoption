@@ -20,7 +20,7 @@ brew install bootoption
 
 ## Usage
 
-bootoption <command> [options]
+bootoption \<command> [options]
 
 available commands:
 
@@ -33,7 +33,7 @@ available commands:
 - <strong>print</strong>&nbsp;&nbsp;print boot variable data in different formats
 - <strong>reboot</strong>&nbsp;&nbsp;reboot to firmware settings
 
-bootoption <command> without options will show the usage or options for that command, where available. Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
+bootoption \<command> without options will show the usage or options for that command, where available. Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
 
 
 #### Create a new option and add it to the boot order

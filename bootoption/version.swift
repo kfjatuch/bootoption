@@ -21,7 +21,7 @@
 import Foundation
 
 /*
- *  Function for verb: version
+ *  Function for command: version
  */
 
 func version() {
@@ -29,6 +29,6 @@ func version() {
         /* Print version message and exit */
         
         print(commandLine.versionMessage)
-        Log.logExit(EX_OK)
+        Debug.terminate(EX_OK)
         
 }

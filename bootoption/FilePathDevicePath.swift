@@ -24,24 +24,24 @@ struct FilePathDevicePath {
         
         /* Data */
         
-        private let type = Data(bytes: [4])
-        private let subType = Data(bytes: [4])
+        private let type = Data(bytes: [0x04])
+        private let subType = Data(bytes: [0x04])
         private var length = Data()
         private var devicePath = Data()
         
         /* Properties */
         
         var data: Data {
-                get {
-                        var buffer = Data()
-                        buffer.append(type)
-                        buffer.append(subType)
-                        buffer.append(length)
-                        buffer.append(devicePath)
-                        return buffer
-                }
+                /* Buffer FP device path */
+                var buffer = Data()
+                buffer.append(type)
+                buffer.append(subType)
+                buffer.append(length)
+                buffer.append(devicePath)
+                return buffer
         }
-        var path: String? {
+        
+        var path: String? {                
                 get {
                         var data = devicePath
                         if !data.isEmpty {
@@ -50,10 +50,11 @@ struct FilePathDevicePath {
                                 return nil
                         }
                 }
+                
                 set {
                         if let string: String = newValue {
                                 if string.containsOutlawedCharacters() {
-                                        Log.logExit(EX_DATAERR, "Forbidden character(s) found in path")
+                                        Debug.fault("Forbidden character(s) found in path")
                                 }
                                 if let data = string.efiStringData() {
                                         devicePath = data
@@ -79,15 +80,14 @@ struct FilePathDevicePath {
         init(createUsingFilePath localPath: String, mountPoint: String) {
                 
                 /* Path */
-                
-                let c: Int = mountPoint.count
-                let i: String.Index = localPath.index(localPath.startIndex, offsetBy: c)
-                let efiPath: String = "/" + localPath[i...]
-                path = efiPath.uppercased().replacingOccurrences(of: "/", with: "\\")
+
+                let start: String.Index = localPath.index(localPath.startIndex, offsetBy: mountPoint.count)
+                let loaderPath: String = "/" + localPath[start...]
+                path = loaderPath.uppercased().replacingOccurrences(of: "/", with: "\\")
                 
                 /* Device path length */
                 
-                var lengthValue = UInt16(devicePath.count + 4)
-                length.append(UnsafeBufferPointer(start: &lengthValue, count: 1))
+                let lengthValue = UInt16(devicePath.count + 4)
+                length.append(lengthValue.data)
         }
 }

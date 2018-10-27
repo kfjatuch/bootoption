@@ -23,9 +23,13 @@ import IOKit
 
 class Nvram {
         
-        var savedBootOrder: [UInt16]?
+        var error: kern_return_t = 0
+        
+        static let shared = Nvram()
+        
+        var savedBootOrder: [BootNumber]?
 
-        let efiGlobalGuid:String = "8BE4DF61-93CA-11D2-AA0D-00E098032B8C"
+        let efiGlobalGuid: String = "8BE4DF61-93CA-11D2-AA0D-00E098032B8C"
         let options: RegistryEntry
         
         init() {
@@ -33,29 +37,24 @@ class Nvram {
                         self.options = options
                 } else {
                         print("Fatal: Failed to initialize NVRAM options")
-                        Log.logExit(EX_UNAVAILABLE, "Fatal: Failed to initialize NVRAM options")
+                        Debug.fault("Fatal: Failed to initialize NVRAM options")
                 }
         }
         
-        func nameWithGuid(_ name: String) -> String {
+        func prependingGlobalGUID(_ name: String) -> String {
                 return "\(efiGlobalGuid):\(name)"
         }
         
-        /*
-         *  Delete variable: ask kernel to delete a variable by setting kIONVRAMDeletePropertyKey
-         */
+        /* Delete variable: set kIONVRAMDeletePropertyKey */
         
         func deleteVariable(key: String) {
                 let _ = options.setStringValue(forProperty: kIONVRAMDeletePropertyKey, value: key)
         }
+        
+        /* Sync hardware NVRAM: set kIONVRAMSyncNowPropertyKey */
 
-        func nvramSyncNow(withNamedVariable key: String) -> kern_return_t {
-                var result: kern_return_t
-                result = options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: key)
-                if result != KERN_SUCCESS {
-                        Log.log("Error syncing %{public}@", key)
-                }
-                return result
+        func syncNow(withNamedVariable name: String) -> kern_return_t {
+                return options.setStringValue(forProperty: kIONVRAMSyncNowPropertyKey, value: name)
         }
         
 }

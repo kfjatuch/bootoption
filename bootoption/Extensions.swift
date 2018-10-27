@@ -1,7 +1,7 @@
 /*
  * File: Extensions.swift
  *
- * bootoption © vulgo 2017 - A command line utility for managing a
+ * bootoption © vulgo 2017-2018 - A command line utility for managing a
  * firmware's EFI boot menu
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,56 +20,133 @@
 
 import Foundation
 
-extension Data {
-        mutating func removeEfiString() -> String? {
-                if self.count < 2 {
-                        return nil
-                }
-                var string = String()
-                for _ in 1...(self.count / 2) {
-                        if self.count < 2 {
-                                break
-                        }
-                        let bytes: UInt16 = self.remove16()
-                        if bytes == 0 {
-                                break
-                        }
-                        if let unicode = UnicodeScalar(bytes) {
-                                if 0x20 ... 0xD7FF ~= Int(unicode.value) {
-                                        string.append(Character(unicode))
-                                } else {
-                                        return nil
-                                }
-                        } else {
-                                return nil
-                        }
+typealias BootNumber = UInt16
+extension BootNumber {
+        var variableName: String {
+                let number = String(format: "%04X", self)
+                let name = "Boot\(number)"
+                return name
+        }
+        var variableNameWithGuid: String {
+                let name = "8BE4DF61-93CA-11D2-AA0D-00E098032B8C:\(variableName)"
+                return name
+        }
+}
+
+extension UInt64 {
+        var data: Data {
+                var value: UInt64 = self
+                return Data(buffer: UnsafeBufferPointer<UInt64>(start: &value, count: 1))
+        }
+}
+
+extension UInt32 {
+        var data: Data {
+                var value: UInt32 = self
+                return Data(buffer: UnsafeBufferPointer<UInt32>(start: &value, count: 1))
+        }
+}
+
+extension UInt16 {
+        var data: Data {
+                var value: UInt16 = self
+                return Data(buffer: UnsafeBufferPointer<UInt16>(start: &value, count: 1))
+        }
+}
+
+extension UInt8 {
+        var data: Data {
+                var value: UInt8 = self
+                return Data(buffer: UnsafeBufferPointer<UInt8>(start: &value, count: 1))
+        }
+        
+        var ascii: String {
+                var string = ""
+                if Range(0x21...0x7E).contains(self), let ascii = String(data: self.data, encoding: .ascii) {
+                        string.append(ascii)
+                } else {
+                        string.append(".")
                 }
                 return string
         }
+}
+
+extension Data {
+        var debugString: String {
+                var string = "<"
+                for byte in self {
+                        string.append(String(format: "%02x", byte))
+                }
+                string += ">"
+                return string
+        }
+        
+        mutating func removeEfiString() -> String? {
+                let sizeUInt16 = 2
+                var string = String()
+                for _ in 1...(self.count / sizeUInt16) {
+                        if self.count < sizeUInt16 {
+                                break
+                        }
+                        let removed: UInt16 = self.remove16()
+                        if removed == 0x0000 {
+                                break
+                        }
+                        let unicodeScalar = UnicodeScalar(removed)
+                        if unicodeScalar == nil {
+                                return nil
+                        }
+                        let unicodeValue = Int(unicodeScalar!.value)
+                        if (unicodeValue < 0x0020) || (unicodeValue > 0xD7FF) {
+                                return nil
+                        }
+                        string.append(Character(unicodeScalar!))
+                }
+                return string.count > 0 ? string : nil
+        }
+        
+        var uint8: UInt8 {
+                let value: UInt8 = self.withUnsafeBytes {
+                        (pointer: UnsafePointer<UInt8>) -> UInt8 in
+                        return pointer.pointee
+                }
+                return value
+        }
+        
+        var uint16: UInt16 {
+                let value: UInt16 = self.withUnsafeBytes {
+                        (pointer: UnsafePointer<UInt16>) -> UInt16 in
+                        return pointer.pointee
+                }
+                return value
+        }
+        
+        var uint32: UInt32 {
+                let value: UInt32 = self.withUnsafeBytes {
+                        (pointer: UnsafePointer<UInt32>) -> UInt32 in
+                        return pointer.pointee
+                }
+                return value
+        }
         
         @discardableResult mutating func remove64() -> UInt64 {
-                var buffer = Data()
-                for _ in 1...8 {
-                        buffer.append(self.remove(at: 0))
-                }
+                let range = Range(0...7)
+                let buffer: Data = self.subdata(in: range)
+                self.removeSubrange(range)
                 return buffer.withUnsafeBytes{$0.pointee}
-                
         }
         
         @discardableResult mutating func remove32() -> UInt32 {
-                var buffer = Data()
-                for _ in 1...4 {
-                        buffer.append(self.remove(at: 0))
-                }
+                let range = Range(0...3)
+                let buffer: Data = self.subdata(in: range)
+                self.removeSubrange(range)
                 return buffer.withUnsafeBytes{$0.pointee}
-                
         }
         
         @discardableResult mutating func remove16() -> UInt16 {
-                var buffer = Data()
-                for _ in 1...2  {
-                        buffer.append(self.remove(at: 0))
-                }
+                let range = Range(0...1)
+                let buffer: Data = self.subdata(in: range)
+                self.removeSubrange(range)
                 return buffer.withUnsafeBytes{$0.pointee}
         }
         
@@ -77,14 +154,14 @@ extension Data {
                 return self.remove(at: 0)
         }
         
-        @discardableResult mutating func remove(bytesAsData bytes: Int) -> Data {
-                var buffer = Data()
-                for _ in 1...bytes {
-                        buffer.append(self.remove(at: 0))
-                }
+        @discardableResult mutating func removeData(bytes: Int) -> Data {
+                let start = self.startIndex
+                let end = index(start, offsetBy: bytes)
+                let range = start..<end
+                let buffer: Data = self.subdata(in: range)
+                self.removeSubrange(range)
                 return buffer
         }
-        
 }
 
 extension Array {
@@ -93,29 +170,40 @@ extension Array {
         }
 }
 
-extension FileHandle : TextOutputStream {
+extension FileHandle: TextOutputStream {
         public func write(_ string: String) {
-                guard let data = string.data(using: .utf8) else { return }
+                guard let data = string.data(using: .utf8) else {
+                        return
+                }
                 self.write(data)
         }
 }
 
 extension String {
-        func efiStringData(withNullTerminator: Bool = true) -> Data? {
+        func efiStringData(nullTerminated: Bool = true) -> Data? {
                 var data = Data()
-                for c in self {
-                        if let scalar: Unicode.Scalar = UnicodeScalar(String(c)) {
-                                if scalar.value > 0xFFFF {
-                                        Log.log("efiStringData(): unicode scalar value out of range")
-                                        return nil
-                                }
-                                var bytes = UInt16(scalar.value)
-                                data.append(UnsafeBufferPointer(start: &bytes, count: 1))
+                for character in self {
+                        let scalar: Unicode.Scalar? = UnicodeScalar(String(character))
+                        guard scalar != nil && scalar!.value > 0x19 && scalar!.value < 0xD800 else {
+                                Debug.log("%@ unicode scalar value for '%@' out of range", type: .error, argsList: self, String(character))
+                                return nil
                         }
+                        data.append(UInt16(scalar!.value).data)
                 }
-                if withNullTerminator {
-                        var null = UInt16(0)
-                        data.append(UnsafeBufferPointer(start: &null, count: 1))
+                if nullTerminated {
+                        data.append(Data(bytes: [0x00, 0x00]))
+                }
+                return data
+        }
+        
+        func asciiStringData(nullTerminated: Bool = true) -> Data? {
+                guard self.canBeConverted(to: .ascii) else {
+                        Debug.log("%@ cannot be converted to ascii", type: .error, argsList: self)
+                        return nil
+                }
+                var data = Data(self.utf8)
+                if nullTerminated {
+                        data.append(Data(bytes: [0x00]))
                 }
                 return data
         }
@@ -124,27 +212,8 @@ extension String {
                 return NumberFormatter().number(from: self)?.doubleValue
         }
         
-        func toZeroBasedIndex() -> Int? {
-                if let intVal = Int(self) {
-                        return intVal - 1
-                }
-                return nil
-        }
-        
         func containsOutlawedCharacters() -> Bool {
                 let allowed: Set<Character> = Set("abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLKMNOPQRSTUVWXYZ1234567890+-=(),.!_\\")
-                for char in self {
-                        if allowed.contains(char) {
-                                continue
-                        } else {
-                                return true
-                        }
-                }
-                return false
-        }
-        
-        func containsNonHexCharacters() -> Bool {
-                let allowed: Set<Character> = Set("abcdefABCDEF1234567890")
                 for char in self {
                         if allowed.contains(char) {
                                 continue
@@ -161,33 +230,12 @@ extension String {
                 return String(self[start..<end])
         }
         
-        func hexToData(byteSwapped: Bool = false) -> Data? {
-                var strings: [String] = Array()
-                let width: Int = 2
-                let max: Int = self.count
-                if byteSwapped {
-                        var start: Int = max - width, end: Int = max
-                        while start >= 0 {
-                                strings.append(self.subString(start: start, end: end))
-                                start -= width; end = start + width
-                        }
-                } else {
-                        var start: Int = 0, end: Int = start + width
-                        while end <= max {
-                                strings.append(self.subString(start: start, end: end))
-                                start += width; end = start + width
-                        }
-                }
-                let bytes: [UInt8] = strings.map { UInt8(strtoul(String($0), nil, 16)) }
-                return bytes.withUnsafeBufferPointer { Data(buffer: $0) }
-        }
-        
         func leftPadding(toLength: Int, withPad character: Character) -> String {
                 let newLength = self.count
                 if newLength < toLength {
                         return String(repeatElement(character, count: toLength - newLength)) + self
                 } else {
-                        let i:String.Index = index(self.startIndex, offsetBy: newLength - toLength)
+                        let i: String.Index = index(self.startIndex, offsetBy: newLength - toLength)
                         return String(self[i...])
                 }
         }

@@ -21,7 +21,7 @@
 import Foundation
 
 /*
- *  Function for verb: list
+ *  Function for command: list
  */
 
 func list() {
@@ -33,5 +33,5 @@ func list() {
         /* Output and exit */
         
         print(menu.outputString)
-        Log.logExit(EX_OK)
+        Debug.terminate(EX_OK)
 }

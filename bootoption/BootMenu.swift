@@ -22,62 +22,51 @@ import Foundation
 
 class BootMenu {
         
-        var bootOrder: [UInt16]?
-        var bootCurrent: UInt16?
-        var bootNext: UInt16?
-        var timeout: UInt16?
         var options: [EfiLoadOption] = Array()
-
+        
+        var bootCurrentString: String {
+                if let bootCurrentNumber: BootNumber = Nvram.shared.bootCurrent {
+                        return bootCurrentNumber.variableName
+                } else {
+                        return "Not set"
+                }
+        }
+        
+        var bootNextString: String {
+                if let bootNextNumber: BootNumber = Nvram.shared.bootNext {
+                        return bootNextNumber.variableName
+                } else {
+                        return "Not set"
+                }
+        }
+        
+        var timeoutString: String {
+                if let timeoutSeconds: UInt16 = Nvram.shared.timeout {
+                        let stringValue = String(timeoutSeconds)
+                        return stringValue
+                } else {
+                        return "Not set"
+                }
+        }
+        
         init() {
-                Log.info("Initialising boot menu")
-                /* BootOrder */
-                if let bootOrderArray: [UInt16] = nvram.getBootOrderArray() {
-                        bootOrder = bootOrderArray
-                }
-                /* BootCurrent */
-                if var bootCurrentBuffer: Data = nvram.getBootCurrent() {
-                        bootCurrent = bootCurrentBuffer.remove16()
-                }
-                /* BootNext */
-                if var bootNextBuffer: Data = nvram.getBootNext() {
-                        bootNext = bootNextBuffer.remove16()
-                }
-                /* Timeout */
-                if var timeoutBuffer: Data = nvram.getTimeout() {
-                        timeout = timeoutBuffer.remove16()
-                }
+                Debug.log("Initialising boot menu", type: .info)
                 /* Get data for options we can find */
-                for bootNumber in 0x0 ..< 0xFF {
-                        if let data: Data = nvram.getBootOption(bootNumber) {
+                for bootNumber: BootNumber in 0x0 ..< 0xFF {
+                        if let data: Data = Nvram.shared.bootOptionData(bootNumber) {
+                                Debug.log("%@ %@", type: .info, argsList: bootNumber.variableName, data)
                                 options.append(EfiLoadOption(fromBootNumber: bootNumber, data: data))
                         }
                         
                 }
                 /* Sort options by BootOrder */
-                options.sort(by: { $0.order! < $1.order! } )
+                options.sort(by: { $0.positionInBootOrder! < $1.positionInBootOrder! } )
                 
-                Log.info("Boot menu initialised")
+                Debug.log("Boot menu initialised", type: .info)
         }
         
         var outputString: String {
                 var output = String()
-                let notSet = "Not set"
-                
-                /* BootCurrent, BootNext, Timeout */
-                
-                var bootCurrentString: String {
-                        return bootCurrent != nil ? nvram.bootStringFromNumber(Int(bootCurrent!)) : notSet
-                }
-                var bootNextString: String {
-                        return bootNext != nil ? nvram.bootStringFromNumber(Int(bootNext!)) : notSet
-                }
-                var timeoutString: String {
-                        if let timeoutValue: UInt16 = timeout {
-                                return String(timeoutValue)
-                        } else {
-                                return notSet
-                        }
-                }
                 output.append("BootCurrent: \(bootCurrentString)\n")
                 output.append("BootNext: \(bootNextString)\n")
                 output.append("Timeout: \(timeoutString)\n")
@@ -88,13 +77,13 @@ class BootMenu {
                         /* Menu */
                         let separator = " "
                         var paddedOrder = " --"
-                        if option.order != -1 {
-                                paddedOrder = String(option.order! + 1).leftPadding(toLength: 3, withPad: " ")
+                        if option.positionInBootOrder != -1 {
+                                paddedOrder = String(option.positionInBootOrder! + 1).leftPadding(toLength: 3, withPad: " ")
                         }
                         output.append(paddedOrder)
                         output.append(":")
                         output.append(separator)
-                        output.append(nvram.bootStringFromNumber(option.bootNumber!))
+                        output.append(option.bootNumber!.variableName)
                         output.append(separator)
                         output.append(option.descriptionString!.padding(toLength: 28, withPad: " ", startingAt: 0))
                         if !option.active {
@@ -105,6 +94,7 @@ class BootMenu {
                         }
                         output.append("\n")
                 }
+                
                 output.removeLast()
                 return output
         }

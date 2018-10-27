@@ -22,25 +22,25 @@ import Foundation
 
 func orderUsage() {
         print("Usage: bootoption order <current position> to <new position>" , to: &standardError)
-        Log.logExit(EX_USAGE)
+        Debug.terminate(EX_USAGE)
 }
 
 func orderMain(optionIndex: Int, destination: Int) {
         
         /* Check permissions */
         
-        if commandLine.userName != "root" {
-                Log.logExit(EX_NOPERM, "Only root can modify the boot order.")
+        if NSUserName() != "root" {
+                Debug.log("Only root can set NVRAM variables", type: .error)
+                Debug.fault("Permission denied")
         }
         
-        if var bootOrder = nvram.getBootOrderArray() {
+        if var bootOrder = Nvram.shared.bootOrderArray {
                 
                 /* Check position parameters are valid */
                 
                 let indices = bootOrder.indices
                 guard indices.contains(optionIndex) && indices.contains(destination) else {
-                        Log.error("Index out of range")
-                        Log.logExit(EX_SOFTWARE)
+                        Debug.fault("Index out of range")
                 }
                 
                 /* Change order */
@@ -49,26 +49,34 @@ func orderMain(optionIndex: Int, destination: Int) {
                 
                 /* Data from re-ordered array */
                 
-                let data = nvram.bootOrderData(fromArray: bootOrder)
+                let data = newBootOrderData(fromArray: bootOrder)
                 
                 /* Set new boot order */
                 
-                if !nvram.setBootOrder(data: data) {
-                        Log.error("Error setting new boot order")
-                        Log.logExit(EX_UNAVAILABLE)
+                if !Nvram.shared.setBootOrder(data: data) {
+                        Debug.fault("Error setting new boot order")
                 }
-                Log.logExit(EX_OK)
+                Debug.terminate(EX_OK)
         } else {
                 
                 /* Failed to get boot order array */
                 
-                Log.error("Couldn't read boot order")
-                Log.logExit(EX_UNAVAILABLE)
+                Debug.fault("Couldn't read boot order")
         }
 }
 
+func zeroBasedIndex(_ nthString: String) -> Int? {
+        guard let position = Int(nthString) else {
+                return nil
+        }
+        guard position > 0 else {
+                return nil
+        }
+        return position - 1
+}
+
 /*
- *  Function for verb: order
+ *  Function for command: order
  */
 
 func order() {
@@ -81,13 +89,13 @@ func order() {
         
         switch arguments.count {                
         case 2:
-                optionIndex = arguments[0].toZeroBasedIndex()
-                destination = arguments[1].toZeroBasedIndex()
+                optionIndex = zeroBasedIndex(arguments[0])
+                destination = zeroBasedIndex(arguments[1])
         case 3:
                 let preposition = arguments[1].lowercased()
                 if preposition == "to" || preposition == "-to" || preposition == "--to" {
-                        optionIndex = arguments[0].toZeroBasedIndex()
-                        destination = arguments[2].toZeroBasedIndex()
+                        optionIndex = zeroBasedIndex(arguments[0])
+                        destination = zeroBasedIndex(arguments[2])
                 }
         default:
                 orderUsage()

@@ -22,80 +22,67 @@ import Foundation
         
 struct EfiLoadOption {
         
-        /* Device paths */
-        
-        var hardDriveDevicePath: HardDriveDevicePath?
-        var filePathDevicePath: FilePathDevicePath?
-
-        /* Data */
-        
         private var attributes: UInt32
         private var devicePathListLength: UInt16
         private var description: Data?
         private var devicePathList: Data?
-        private var optionalData: Data?
         
-        /* Properties */
+        var hardDriveDevicePath: HardDriveDevicePath?
+        var filePathDevicePath: FilePathDevicePath?
+        var optionalData = OptionalData()
         
-        var bootNumber: Int?
+        var bootNumber: BootNumber?
+        var devicePathDescription = ""
+        var positionInBootOrder: Int?
+        
         var data: Data {
-                get {
-                        Log.info("EfiLoadOption.data -> get()")
-                        var attributes: UInt32 = self.attributes
-                        var devicePathListLength: UInt16 = self.devicePathListLength
-                        var buffer = Data.init()
-                        buffer.append(UnsafeBufferPointer(start: &attributes, count: 1))
-                        buffer.append(UnsafeBufferPointer(start: &devicePathListLength, count: 1))
-                        if let description = self.description {
-                                buffer.append(description)
-                        } else {
-                                print("description is nil")
-                                Log.error("EfiLoadOption.data -> get(): description is nil")
-                                Log.logExit(EX_DATAERR)
-                        }
-                        if let devicePathList = self.devicePathList {
-                                buffer.append(devicePathList)
-                        } else {
-                                print("devicePathList is nil")
-                                Log.error("EfiLoadOption.data -> get(): devicePathList is nil")
-                                Log.logExit(EX_DATAERR)
-                        }
-                        if let optionalData = self.optionalData {
-                                buffer.append(optionalData)
-                        }
-                        return buffer
+                /* Buffer EfiLoadOption */
+                guard description != nil, devicePathList != nil else {
+                        Debug.fault("EfiLoadOption instance is not fully initialized, can't return data")
                 }
+                var buffer = Data.init()
+                buffer.append(attributes.data)
+                buffer.append(devicePathListLength.data)
+                buffer.append(description!)
+                buffer.append(devicePathList!)
+                if let optionalData = self.optionalData.data {
+                        buffer.append(optionalData)
+                }
+                return buffer
         }
-        var devicePathDescription = String()
-        var order: Int?
+
+        /*  LOAD_OPTION_ACTIVE 0x00000001 */
+        
         var active: Bool {
-                /*  LOAD_OPTION_ACTIVE 0x00000001 */
                 get {
-                        return attributes & 0x1 == 0x1 ? true : false
+                        return attributes & 0x00000001 == 0x00000001 ? true : false
                 }
                 set {
                         if newValue == true {
-                                attributes = attributes | 0x1
+                                attributes = attributes | 0x00000001
                         }
                         if newValue == false {
                                 attributes = attributes & 0xFFFFFFFE
                         }
                 }
         }
+        
+        /*  LOAD_OPTION_HIDDEN 0x00000008 */
+        
         var hidden: Bool {
-                /*  LOAD_OPTION_HIDDEN 0x00000008 */
                 get {
-                        return attributes & 0x8 == 0x8 ? true : false
+                        return attributes & 0x00000008 == 0x00000008 ? true : false
                 }
                 set {
                         if newValue == true {
-                                attributes = attributes | 0x8
+                                attributes = attributes | 0x00000008
                         }
                         if newValue == false {
                                 attributes = attributes & 0xFFFFFFF7
                         }
                 }
         }
+        
         var descriptionString: String? {
                 get {
                         var data: Data? = description
@@ -105,64 +92,26 @@ struct EfiLoadOption {
                         description = newValue?.efiStringData() ?? nil
                 }
         }
-        var optionalDataStringView: String? {
-                get {
-                        var data: Data? = optionalData
-                        return data?.removeEfiString() ?? nil
-                }
-                set {
-                        optionalData = newValue?.efiStringData(withNullTerminator: false) ?? nil
-                }
-        }
-        var optionalDataHexView: String? {
-                func getAscii(bytes: UInt16) -> String {
-                        var ascii: String = " "
-                        if bytes > 0x20, let scalar = UnicodeScalar(bytes), scalar.isASCII {
-                                ascii = String(scalar)
-                        }
-                        return ascii
-                }
-                if var buffer: Data = optionalData, !buffer.isEmpty {
-                        var rows = String()
-                        var asciiColumn = String()
-                        var columnNumber: Int = 0
-                        repeat {
-                                switch buffer.count > 1 {
-                                case true:
-                                        let bytes = buffer.remove16()
-                                        let bytesString = NSString(format: "%04x", bytes) as String
-                                        asciiColumn.append(getAscii(bytes: bytes))
-                                        rows.append(bytesString + " ")
-                                default:
-                                        let byte = buffer.remove8()
-                                        rows.append(NSString(format: "%02x", byte) as String)
-                                        rows.append("   ")
-                                }
-                                columnNumber += 1; if columnNumber % 8 == 0 {
-                                        rows.append("\(asciiColumn)\n")
-                                        asciiColumn = String()
-                                }
-                        } while !buffer.isEmpty
-                        for _ in 1...(8 - columnNumber % 8) {
-                                rows.append("     ")
-                        }
-                        rows.append(asciiColumn)
-                        return rows
-                }
-                return nil
-        }
         
         /* Methods */
         
         mutating func removeOptionalData() {
-                optionalData = nil
+                optionalData.data = nil
         }
         
         /* Init from NVRAM variable */
         
-        init(fromBootNumber number: Int, data: Data, details: Bool = false) {
+        init(fromBootNumber number: BootNumber, data: Data, details: Bool = false) {
                 bootNumber = number
-                order = nvram.positionInBootOrder(number: number) ?? -1
+                
+                let positionInBootOrder = bootoption.positionInBootOrder(bootNumber: number) ?? -1
+                if positionInBootOrder != -1 {
+                        Debug.log("%@ at position %@ in BootOrder", type: .info, argsList: number.variableName, positionInBootOrder)
+                } else {
+                        Debug.log("%@ not found in BootOrder", type: .info, argsList: number.variableName)
+                }
+                self.positionInBootOrder = positionInBootOrder
+                
                 var buffer: Data = data
                 
                 /* Attributes */
@@ -177,25 +126,21 @@ struct EfiLoadOption {
                 
                 description = Data()
                 for _ in buffer {
-                        var bytes: UInt16 = buffer.remove16()
-                        description!.append(UnsafeBufferPointer(start: &bytes, count: 1))
-                        if bytes == 0 {
+                        let char = buffer.removeData(bytes: MemoryLayout<UInt16>.size)
+                        description!.append(char)
+                        if char.uint16 == 0x0000 {
                                 break
                         }
                 }
+                
                 if details {
-                        
                         /* Device path list */
-                        
-                        devicePathList = buffer.remove(bytesAsData: Int(devicePathListLength))
+                        devicePathList = buffer.removeData(bytes: Int(devicePathListLength))
                         parseDevicePathList(rawDevicePathList: devicePathList!)
                         
                         /* Optional data */
-                        
                         if !buffer.isEmpty {
-                                optionalData = buffer
-                        } else {
-                                optionalData = Data()
+                                optionalData.data = buffer
                         }
                 }
 
@@ -203,29 +148,27 @@ struct EfiLoadOption {
         
         /* Init create from local filesystem path */
         
-        init(createFromLoaderPath loader: String, descriptionString: String, optionalDataString: String?) {
+        init(createFromLoaderPath loader: String, descriptionString: String, optionalDataString: String?, ucs2OptionalData: Bool = false) {
+                Debug.log("Initializing EfiLoadOption from loader filesystem path", type: .info)
 
                 /* Attributes */
+                attributes = 0x00000001
+                Debug.log("Default attributes: %@", type: .info, argsList: String(attributes, radix: 2).leftPadding(toLength: 32, withPad: "0"))
                 
-                Log.info("Using default attributes")
-                attributes = 0x1
                 
                 /* Description */
-                
-                Log.info("Generating description")
                 if descriptionString.containsOutlawedCharacters() {
-                        Log.error("Forbidden character(s) found in description")
+                        Debug.log("Forbidden character(s) found in description", type: .error)
                 }
                 
                 description = descriptionString.efiStringData()
                 guard description != nil else {
-                        Log.logExit(EX_SOFTWARE, "Failed to set description, did String.efiStringData() return nil?")
+                        Debug.fault("Failed to set EfiLoadOption.description")
                 }
+                Debug.log("Description string: '%@', data: %@", type: .info, argsList: descriptionString, description!)
                 
                 /* Device path list */
-                
-                Log.info("Generating device path list")
-                let hardDrive = HardDriveDevicePath(createUsingFilePath: loader)
+                let hardDrive = HardDriveDevicePath(fromFilePath: loader)
                 let file = FilePathDevicePath(createUsingFilePath: loader, mountPoint: hardDrive.mountPoint)
                 let end = EndDevicePath()
                 devicePathList = Data.init()
@@ -234,60 +177,82 @@ struct EfiLoadOption {
                 devicePathList?.append(end.data)
                 
                 /* Device path list length */
-                
-                Log.info("Generating device path list length")
                 devicePathListLength = UInt16(devicePathList!.count)
+                Debug.log("Device path list length: %@", type: .info, argsList: devicePathListLength)
+                
+                if DEBUG {
+                        let originalDevicePathList = devicePathList
+                        Debug.log("******************************************", type: .info)
+                        Debug.log("DEBUG: Re-init device path list from data ", type: .info)
+                        parseDevicePathList(rawDevicePathList: devicePathList!)
+                        Debug.log("New device path list length: %@", type: .info, argsList: devicePathListLength)
+                        Debug.log("String describing device path list: %@", type: .info, argsList: devicePathDescription)
+                        Debug.log("DEBUG: Reverting device path list data ", type: .info)
+                        Debug.log("******************************************", type: .info)
+                        devicePathList = originalDevicePathList
+                }
                 
                 /* Optional data */
                 
-                if let stringToData: Data = optionalDataString?.efiStringData(withNullTerminator: false) {
-                        Log.info("Generating optional data")
-                        optionalData = stringToData
+                if let string = optionalDataString {
+                        if ucs2OptionalData {
+                                optionalData.setUcs2CommandLine(string)
+                        } else {
+                                optionalData.setAsciiCommandLine(string)
+                        }
                 } else {
-                        Log.info("Not generating optional data")
+                        Debug.log("Not generating optional data", type: .info)
                 }
                 
+                Debug.log("EfiLoadOption initialized from loader filesystem path", type: .info)
         }
         
         mutating func appendUnsupportedDescription(type: UInt8, subType: UInt8) {
+                var descriptionComponent: String?
                 switch type {
                 case DevicePath.HARDWARE_DEVICE_PATH.rawValue:
                         if let string: String = HardwareDevicePath(rawValue: subType)?.description {
-                                devicePathDescription.append("\\" + string)
+                                descriptionComponent = string
                         } else {
-                                devicePathDescription.append("\\HW_UNKNOWN")
+                                descriptionComponent = "HW_UNKNOWN"
                         }
                 case DevicePath.ACPI_DEVICE_PATH.rawValue:
                         if let string: String = AcpiDevicePath(rawValue: subType)?.description {
-                                devicePathDescription.append("\\" + string)
+                                descriptionComponent = string
                         } else {
-                                devicePathDescription.append("\\ACPI_UNKNOWN")
+                                descriptionComponent = "ACPI_UNKNOWN"
                         }
                 case DevicePath.MESSAGING_DEVICE_PATH.rawValue:
                         if let string: String = MessagingDevicePath(rawValue: subType)?.description {
-                                devicePathDescription.append("\\" + string)
+                                descriptionComponent = string
                         } else {
-                                devicePathDescription.append("\\MSG_UNKNOWN")
+                                descriptionComponent = "MSG_UNKNOWN"
                         }
                 case DevicePath.MEDIA_DEVICE_PATH.rawValue:
                         if let string: String = MediaDevicePath(rawValue: subType)?.description {
-                                devicePathDescription.append("\\" + string)
+                                descriptionComponent = string
                         } else {
-                                devicePathDescription.append("\\MEDIA_UNKNOWN")
+                                descriptionComponent = "MEDIA_UNKNOWN"
                         }
                 case DevicePath.BBS_DEVICE_PATH.rawValue:
-                        devicePathDescription.append("\\BIOS_BOOT_SPECIFICATION")
+                        descriptionComponent = "BIOS_BOOT_SPECIFICATION"
                 case DevicePath.END_DEVICE_PATH_TYPE.rawValue:
                         break
                 default:
-                        devicePathDescription.append("\\UNKNOWN_DP_TYPE")
+                        descriptionComponent = "UNKNOWN_DP_TYPE"
                         break
+                }
+                
+                if let string = descriptionComponent {
+                        Debug.log("DP List: Found type %@, sub-type %@, %@", type: .info, argsList: type, subType, string)
+                        devicePathDescription.append("\\\(string)")
                 }
         }
         
         /* Device path list parsing */
         
         mutating func parseDevicePathList(rawDevicePathList: Data) {
+                Debug.log("Parsing device path list...", type: .info)
                 var buffer = rawDevicePathList
                 while !(buffer.isEmpty) {
                         let type = buffer.remove8()
@@ -298,18 +263,17 @@ struct EfiLoadOption {
                         case DevicePath.MEDIA_DEVICE_PATH.rawValue: // Found type 4, media device path
                                 switch subType {
                                 case MediaDevicePath.MEDIA_HARDDRIVE_DP.rawValue: // Found type 4, sub-type 1, hard drive device path
-                                        hardDriveDevicePath = HardDriveDevicePath()
-                                        let devicePathData = buffer.remove(bytesAsData: Int(length) - 4)
-                                        if hardDriveDevicePath!.parseHardDriveDevicePath(data: devicePathData) == false {
-                                                Log.logExit(EX_IOERR, "Error parsing hard drive device path")
-                                        }
+                                        Debug.log("DP List: Found type 4, sub-type 1, MEDIA_HARDDRIVE_DP", type: .info)
+                                        let devicePathData = buffer.removeData(bytes: Int(length) - 4)
+                                        hardDriveDevicePath = HardDriveDevicePath(devicePathData: devicePathData)
                                         if let string: String = MediaDevicePath(rawValue: subType)?.description {
                                                 devicePathDescription.append("\\" + string)
                                         }
                                         break;
                                 case MediaDevicePath.MEDIA_FILEPATH_DP.rawValue: // Found type 4, sub-type 4, file path
+                                        Debug.log("DP List: Found type 4, sub-type 4, MEDIA_FILEPATH_DP", type: .info)
                                         filePathDevicePath = FilePathDevicePath()
-                                        let devicePathData = buffer.remove(bytesAsData: Int(length) - 4)
+                                        let devicePathData = buffer.removeData(bytes: Int(length) - 4)
                                         filePathDevicePath?.setDevicePath(data: devicePathData)
                                         if let string: String = MediaDevicePath(rawValue: subType)?.description {
                                                 devicePathDescription.append("\\" + string)
@@ -319,7 +283,7 @@ struct EfiLoadOption {
                                         appendUnsupportedDescription(type: type, subType: subType)
                                         let numberOfBytes = (Int(length) - 4 <= buffer.count) ? Int(length) - 4 : 0
                                         if numberOfBytes > 0 {
-                                                buffer.remove(bytesAsData: numberOfBytes)
+                                                buffer.removeData(bytes: numberOfBytes)
                                         } else {
                                                 buffer = Data.init()
                                         }
@@ -330,7 +294,7 @@ struct EfiLoadOption {
                                 appendUnsupportedDescription(type: type, subType: subType)
                                 let numberOfBytes = (Int(length) - 4 <= buffer.count) ? Int(length) - 4 : 0
                                 if numberOfBytes > 0 {
-                                        buffer.remove(bytesAsData: numberOfBytes)
+                                        buffer.removeData(bytes: numberOfBytes)
                                 } else {
                                         buffer = Data.init()
                                 }

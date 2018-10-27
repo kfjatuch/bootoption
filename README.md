@@ -31,7 +31,7 @@ bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one fr
 - <strong>SAVE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
 - <strong>REBOOT</strong>&nbsp;&nbsp;reboot to firmware settings
 
-bootoption <strong>VERB</strong> without options will show the usage or options for that verb, where available. Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
+bootoption <strong>VERB</strong> without options will show the usage or options for that command, where available. Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
 
 
 #### Create a new option and add it to the boot order

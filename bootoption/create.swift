@@ -21,36 +21,35 @@
 import Foundation
 
 /*
- *  Function for verb: create
+ *  Function for command: create
  */
 
 func create() {
         
-        Log.info("Setting up command line")
+        Debug.log("Setting up command line", type: .info)
         let loaderPathOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1,  helpMessage: "the PATH to an EFI loader executable")
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
         let loaderCommandLineOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
+        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)")
         commandLine.invocationHelpMessage = "create -l PATH -d LABEL [-a STRING]"
-        commandLine.setOptions(loaderPathOption, loaderDescriptionOption, loaderCommandLineOption)
+        commandLine.setOptions(loaderPathOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption)
         
         func createMain() {
                 
-                let loaderPath = loaderPathOption.value ?? ""
-                let description = loaderDescriptionOption.value ?? ""
-                
                 /* Check root */
                 
-                if commandLine.userName != "root" {
-                        Log.logExit(EX_NOPERM, "Only root can set NVRAM variables.")
+                if NSUserName() != "root" {
+                        Debug.log("Only root can set NVRAM variables", type: .error)
+                        Debug.fault("Permission denied")
                 }
                 
                 var status = EX_OK
                 
                 /* Set a new load option */
                 
-                if !loaderPath.isEmpty && !description.isEmpty {
-                        let option = EfiLoadOption(createFromLoaderPath: loaderPath, descriptionString: description, optionalDataString: loaderCommandLineOption.value)
-                        if nvram.createNewAndAddToBootOrder(withData: option.data) == nil {
+                if let loaderPath = loaderPathOption.value, let description = loaderDescriptionOption.value {
+                        let option = EfiLoadOption(createFromLoaderPath: loaderPath, descriptionString: description, optionalDataString: loaderCommandLineOption.value, ucs2OptionalData: ucs2EncodingOption.value)
+                        if Nvram.shared.setNewEfiLoadOption(data: option.data, addingToBootOrder: true) == nil {
                                 print("Error setting boot option", to: &standardError)
                                 status = EX_DATAERR
                         }
@@ -58,20 +57,20 @@ func create() {
                         status = EX_NOINPUT
                 }
                 
-                Log.logExit(status)
+                Debug.terminate(status)
         }
         
         /*
          *  Parse command line
          */
         
-        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
-        
-        switch optionParser.status {
+        commandLine.parseOptions(strict: true)
+        switch commandLine.parserStatus {
         case .success:
                 createMain()     
         default:
-                commandLine.printUsage(withMessageForError: optionParser.status)
-                Log.logExit(EX_USAGE)
+                print(commandLine.parserErrorMessage)
+                commandLine.printUsage()
+                Debug.terminate(EX_USAGE)
         }
 }

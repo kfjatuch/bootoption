@@ -19,13 +19,11 @@
 
 import Foundation
 import IOKit
-import os.log
 
 class RegistryEntry {
         
         var registryEntry = io_registry_entry_t()
         var iterator = io_iterator_t()
-        let osLog = OSLog.init(subsystem: "org.vulgo.RegistryEntry", category: "RegistryEntry")
         
         enum typeId {
                 static let number = CFNumberGetTypeID()
@@ -38,7 +36,7 @@ class RegistryEntry {
         init?(fromPath path: String) {
                 registryEntry = IORegistryEntryFromPath(kIOMasterPortDefault, path)
                 guard registryEntry != 0 else {
-                        os_log("RegistryEntry: Error getting registry entry from path", log: osLog, type: .default)
+                        Debug.log("Error getting registry entry from path", type: .error)
                         return nil
                 }
         }
@@ -57,6 +55,21 @@ class RegistryEntry {
                 registryEntry = io_registry_entry_t(IOServiceGetMatchingServices(kIOMasterPortDefault, dictionary, &iterator))
         }
         
+        init(ioMediaFromMountPoint mountPoint: CFString) {
+                guard let session: DASession = DASessionCreate(kCFAllocatorDefault) else {
+                        Debug.fault("Failed to create DASession")
+                }
+                
+                guard let url: CFURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, mountPoint, CFURLPathStyle(rawValue: 0)!, true) else {
+                        Debug.fault("Failed to create CFURL for mount point")
+                }
+                
+                guard let disk: DADisk = DADiskCreateFromVolumePath(kCFAllocatorDefault, session, url) else {
+                        Debug.fault("Failed to create DADisk from volume URL")
+                }
+                registryEntry = DADiskCopyIOMedia(disk)
+        }
+        
         /*
          *  Get properties
          */
@@ -65,7 +78,7 @@ class RegistryEntry {
                 if let value: CFTypeRef = IORegistryEntryCreateCFProperty(registryEntry, key as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() {
                         let valueType = CFGetTypeID(value)
                         guard valueType == type else {
-                                os_log("CFType mismatch", log: osLog, type: .default)
+                                Debug.log("CFType mismatch", type: .error)
                                 return nil
                         }
                         return value
@@ -126,12 +139,8 @@ class RegistryEntry {
                 case typeId.dictionary:
                         result = IORegistryEntrySetCFProperty(registryEntry, key as CFString, value as! CFDictionary)
                 default:
-                        result = -1
-                        os_log("CFDate, CFArray, are not implemented", log: osLog, type: .default)
-                }
-                if result != KERN_SUCCESS {
-                        os_log("Error setting value for property %{public}@", log: osLog, type: .default, key)
-                        os_log("IORegistryEntrySetCFProperty kern_return_t was %{public}X", log: osLog, type: .default, result)
+                        result = KERN_NOT_SUPPORTED
+                        Debug.log("CFDate, CFArray, are not implemented", type: .error)
                 }
                 return result
         }

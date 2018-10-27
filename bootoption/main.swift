@@ -18,68 +18,70 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#if DEBUG
+let DEBUG = true
+#else
+let DEBUG = false
+#endif
+
 import Foundation
 
 var standardError = FileHandle.standardError
-
-var programInfo = ProgramInfo("bootoption", version: "0.2.8", copyright: "Copyright © 2017-2018 vulgo", license: "This is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\nSee the GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>")
-Log.info("*** bootoption version %{public}@", programInfo.version)
-
-/* Nvram */
-
-let nvram = Nvram()
-
-/* Initialise command line */
-
-var commandLine = CommandLine(invocationHelpMessage: "VERB [options] where VERB is one from the following:", info: programInfo)
-let listVerb = Verb("list", helpMessage: "show the firmware boot menu")
-let infoVerb = Verb("info", helpMessage: "show an option's properties")
-let setVerb = Verb("set", helpMessage: "set/modify variables in NVRAM")
-let createVerb = Verb("create", helpMessage: "create a new EFI load option")
-let orderVerb = Verb("order", helpMessage: "re-arrange the boot order")
-let deleteVerb = Verb("delete", helpMessage: "delete variables from NVRAM")
-let saveVerb = Verb("save", helpMessage: "print or save boot variable data in different formats")
-let rebootVerb = Verb("reboot", helpMessage: "reboot to firmware settings")
-commandLine.addVerbs(listVerb, infoVerb, setVerb, createVerb, orderVerb, deleteVerb, saveVerb, rebootVerb)
-
-/* Command line verb parsing */
-
-func parseCommandLineVerb() {        
-        let verbParser = VerbParser(argument: commandLine.verb, verbs: commandLine.verbs)
-        switch verbParser.status {
-        case .success:
-                switch verbParser.activeVerb {
-                        case listVerb.name:
-                                list()
-                        case infoVerb.name:
-                                info()
-                        case setVerb.name:
-                                set()
-                        case createVerb.name:
-                                create()
-                        case orderVerb.name:
-                                order()
-                        case deleteVerb.name:
-                                delete()
-                        case saveVerb.name:
-                                save()
-                        case rebootVerb.name:
-                                reboot()
-                        case verbParser.versionVerb:
-                                version()
-                        case verbParser.helpVerb:
-                                help()
-                        default:
-                                commandLine.printUsage(showingVerbs: true)
-                                Log.logExit(EX_USAGE)
-                }
-        case .noInput:
-                commandLine.printUsage(showingVerbs: true)
-                Log.logExit(EX_USAGE)
-        default:
-                commandLine.printUsage(withMessageForError: verbParser.status, showingVerbs: true)
-                Log.logExit(EX_USAGE)
-        }
+if isatty(standardError.fileDescriptor) == 1 {
+        Debug.infoCode = "\u{001B}[0;32m"
+        Debug.errorCode = "\u{001B}[0;31m"
+        Debug.resetCode = "\u{001B}[0;0m"
 }
 
-parseCommandLineVerb()
+var programInfo = ProgramInfo(name: "bootoption", version: "0.2.8", copyright: "Copyright © 2017-2018 vulgo", license: "This is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\nSee the GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>")
+
+Debug.log("Version %@", type: .info, argsList: programInfo.version)
+
+var commandLine = CommandLine(invocationHelpMessage: "<command> [options]\navailable commands:", info: programInfo)
+let listCommand = Command("list", helpMessage: "show the firmware boot menu")
+let infoCommand = Command("info", helpMessage: "show an option's properties")
+let setCommand = Command("set", helpMessage: "set/modify variables in NVRAM")
+let createCommand = Command("create", helpMessage: "create a new EFI load option")
+let orderCommand = Command("order", helpMessage: "re-arrange the boot order")
+let deleteCommand = Command("delete", helpMessage: "delete variables from NVRAM")
+let printCommand = Command("print", helpMessage: "output boot variable data in different formats")
+let rebootCommand = Command("reboot", helpMessage: "reboot to firmware settings")
+commandLine.setCommands(listCommand, infoCommand, setCommand, createCommand, orderCommand, deleteCommand, printCommand, rebootCommand)
+
+commandLine.parseCommand()
+
+switch commandLine.parserStatus {
+case .success:
+        switch commandLine.activeCommand {
+        case listCommand.name:
+                list()
+        case infoCommand.name:
+                info()
+        case setCommand.name:
+                set()
+        case createCommand.name:
+                create()
+        case orderCommand.name:
+                order()
+        case deleteCommand.name:
+                delete()
+        case printCommand.name:
+                print()
+        case rebootCommand.name:
+                reboot()
+        case "version":
+                version()
+        case "help":
+                help()
+        default:
+                commandLine.printUsage(showingCommands: true)
+                Debug.terminate(EX_USAGE)
+        }
+case .noInput:
+        commandLine.printUsage(showingCommands: true)
+        Debug.terminate(EX_USAGE)
+default:
+        print(commandLine.parserErrorMessage)
+        commandLine.printUsage(showingCommands: true)
+        Debug.terminate(EX_USAGE)
+}

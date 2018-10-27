@@ -21,21 +21,22 @@
 import Foundation
 
 /*
- *  Function for verb: reboot
+ *  Function for command: reboot
  */
 
 func reboot() {
         
         /* Check root */
         
-        if commandLine.userName != "root" {
-                Log.logExit(EX_NOPERM, "Only root can reboot to firmware settings.")
+        if NSUserName() != "root" {
+                Debug.log("Only root can reboot to firmware settings.", type: .error)
+                Debug.fault("Permission denied")
         }
         
         /* Set OsIndications */
         
         var status = EX_OK
-        if !nvram.setRebootToFirmwareUI() {
+        if !Nvram.shared.setRebootToFirmwareUI() {
                 status = EX_UNAVAILABLE
         }
         
@@ -47,9 +48,8 @@ func reboot() {
                 scriptObject.executeAndReturnError(&error)
         }
         if error != nil {
-                print(error as Any)
-                status = EX_UNAVAILABLE
+                Debug.fault(String(describing: error))
         }
-        Log.logExit(status)
+        Debug.terminate(status)
 }
 

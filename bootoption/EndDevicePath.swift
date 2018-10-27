@@ -24,6 +24,6 @@ struct EndDevicePath {
         
         /* End entire device path header */
         
-        let data = Data(bytes: [127, 255, 4, 0])
+        let data = Data(bytes: [0x7F, 0xFF, 0x04, 0x00])
         
 }

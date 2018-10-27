@@ -1,6 +1,7 @@
 /*
  * Option.swift
- * Copyright (c) 2014 Ben Gollmer.
+ * Copyright © 2014 Ben Gollmer
+ * Copyright © 2017-2018 vulgo
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +21,8 @@
  */
 
 class Option {
-        
+        private let shortPrefix: String = "-"
+        private let longPrefix: String = "--"
         let shortFlag: String?
         let longFlag: String?
         let required: Int
@@ -38,9 +40,9 @@ class Option {
         
         var shortDescription: String {
                 if shortFlag != nil {
-                        return String("\(getOpt.shortPrefix)\(shortFlag!)")
+                        return String("\(shortPrefix)\(shortFlag!)")
                 } else if longFlag != nil {
-                        return String("\(getOpt.longPrefix)\(longFlag!)")
+                        return String("\(longPrefix)\(longFlag!)")
                 } else {
                         return String("")
                 }
@@ -59,14 +61,14 @@ class Option {
         var optionDescription: String {
                 var string: String = ""
                 if shortFlag != nil && longFlag != nil {
-                        string.append("\(getOpt.shortPrefix)\(shortFlag!)")
+                        string.append("\(shortPrefix)\(shortFlag!)")
                         string.append("  ")
-                        string.append("\(getOpt.longPrefix)\(longFlag!)")
+                        string.append("\(longPrefix)\(longFlag!)")
                 } else if longFlag != nil {
                         string.append("    ")
-                        string.append("\(getOpt.longPrefix)\(longFlag!)")
+                        string.append("\(longPrefix)\(longFlag!)")
                 } else if shortFlag != nil {
-                        string.append("\(getOpt.shortPrefix)\(shortFlag!)")
+                        string.append("\(shortPrefix)\(shortFlag!)")
                 }
                 return string
         }

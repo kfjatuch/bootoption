@@ -21,96 +21,102 @@
 import Foundation
 
 /*
- *  Function for verb: delete
+ *  Function for command: delete
  */
 
 func delete() {
         
-        Log.info("Setting up command line")
+        Debug.log("Setting up command line", type: .info)
         let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", required: 1, helpMessage: "variable to delete, Boot####")
         let bootNextOption = BoolOption(shortFlag: "x", longFlag: "bootnext", required: 2, helpMessage: "delete BootNext")
         let timeoutOption = BoolOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "delete Timeout")
-        commandLine.invocationHelpMessage = "delete [-n ####] [-x] [-t]"
+        commandLine.invocationHelpMessage = "delete -n #### | -x | -t"
         commandLine.setOptions(bootnumOption, bootNextOption, timeoutOption)
         
         func deleteMain() {
                 
                 /* Check root */
                 
-                if commandLine.userName != "root" {
-                        Log.logExit(EX_NOPERM, "Only root can delete NVRAM variables.")
+                if NSUserName() != "root" {
+                        Debug.log("Only root can delete NVRAM variables", type: .error)
+                        Debug.fault("Permission denied")
                 }
                 
                 var status = EX_OK
-                var noop = true
+                var didSomething = false
                 
                 /* Delete a boot option */
                 
                 if bootnumOption.wasSet {
-                        noop = false
-                        let result: Int? = nvram.bootNumberFromString(bootnumOption.value ?? "")
+                        didSomething = true
                         
-                        /* BootNumber */
-                        guard let bootNumber: Int = result else {
-                                print("Supplied Boot#### name is invalid", to: &standardError)
+                        /* Parse boot number */
+                        guard let bootNumber: BootNumber = bootNumberFromString(bootnumOption.value ?? "") else {
                                 commandLine.printUsage()
-                                Log.logExit(EX_DATAERR)
+                                Debug.terminate(EX_USAGE)
                         }
                         
-                        let bootOrder: [UInt16]? = nvram.getBootOrderArray()
-                        if let _: Int = bootOrder?.index(of: UInt16(bootNumber)) {
-                                /* remove from boot order */
-                                let newBootOrder = nvram.removeFromBootOrder(number: bootNumber)
-                                if newBootOrder == nil {
-                                        status = EX_DATAERR
-                                        Log.error("Error removing Boot#### from BootOrder")
-                                } else {
-                                        /* delete the entry variable */
-                                        nvram.deleteBootOption(Int(bootNumber))
-                                }
-                        } else {
-                                /* variable is not in the boot order, just 'delete' it */
-                                Log.info("Variable not found in boot order")
-                                nvram.deleteBootOption(Int(bootNumber))
+                        /* Delete from boot order if needed */
+                        
+                        guard let inBootOrder = Nvram.shared.bootOrderArray?.contains(bootNumber) else {
+                                Debug.fault("Error reading boot order")
                         }
+                        
+                        if inBootOrder {
+                                Debug.log("Variable requested for deletion found in boot order", type: .info)
+                                var result = false
+                                /* remove from boot order */
+                                if let newBootOrder = newBootOrderArray(removing: bootNumber) {
+                                        result = Nvram.shared.setBootOrder(data: newBootOrderData(fromArray: newBootOrder))
+                                }
+                                if !result {
+                                        status = EX_DATAERR
+                                        Debug.log("Error removing from boot order", type: .error)
+                                }
+                        }
+                        
+                        /* Delete variable */
+                        
+                        Debug.log("Deleting variable", type: .info)
+                        Nvram.shared.deleteBootOption(bootNumber)
                 }
                 
                 /* Delete boot next */
                 
                 if bootNextOption.wasSet {
-                        noop = false
-                        nvram.deleteBootNext()
+                        didSomething = true
+                        Nvram.shared.deleteBootNext()
                 }
                 
                 /* Delete timeout */
                 
                 if timeoutOption.wasSet {
-                        noop = false
-                        nvram.deleteTimeout()
+                        didSomething = true
+                        Nvram.shared.deleteTimeout()
                 }
                 
                 /* After all functions, exit some way */
                 
-                if noop {
+                if !didSomething {
                         commandLine.printUsage()
-                        Log.logExit(EX_USAGE)
+                        Debug.terminate(EX_USAGE)
                 }
                 
-                Log.logExit(status)
+                Debug.terminate(status)
         }
         
         /*
          *  Parse command line
          */
         
-        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
-        
-        switch optionParser.status {
+        commandLine.parseOptions(strict: true)
+        switch commandLine.parserStatus {
         case .success:
                 deleteMain()
         default:
-                commandLine.printUsage(withMessageForError: optionParser.status)
-                Log.logExit(EX_USAGE)
+                print(commandLine.parserErrorMessage)
+                commandLine.printUsage()
+                Debug.terminate(EX_USAGE)
                 
         }
 }

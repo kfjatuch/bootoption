@@ -22,30 +22,48 @@ import Foundation
 
 func infoUsage() -> Never {
         print("Usage: bootoption info <Boot####>" , to: &standardError)
-        Log.logExit(EX_USAGE)
+        Debug.terminate(EX_USAGE)
 }
 
-func infoMain(bootNumber: Int) {
+func infoMain(bootNumber: BootNumber) {
         
-        if let data: Data = nvram.getBootOption(bootNumber) {
+        if let data: Data = Nvram.shared.bootOptionData(bootNumber) {
                 let option = EfiLoadOption(fromBootNumber: bootNumber, data: data, details: true)
-                let name = nvram.bootStringFromNumber(bootNumber)
+                let name = bootNumber.variableName
                 
                 var properties: [(String, String)] = Array()
+                
                 properties.append(("Name", name))
                 if let string: String = option.descriptionString {
                         properties.append(("Description", string))
                 }
+                
+                var attributesString = ""
+                if !option.active {
+                        attributesString += "Disabled"
+                }
+                if option.hidden {
+                        if !attributesString.isEmpty {
+                                attributesString += ", "
+                        }
+                        attributesString += "Hidden"
+                }
+                if !attributesString.isEmpty {
+                        properties.append(("Attributes", attributesString))
+                }
+                
                 properties.append(("Device path", option.devicePathDescription))
-                if let string: String = option.hardDriveDevicePath?.partitionUuid {
+                if let string: String = option.hardDriveDevicePath?.partitionUuid?.uuidString {
                         properties.append(("Partition UUID", string))
                 }
+                
                 if let string: String = option.filePathDevicePath?.path {
                         properties.append(("Loader path", string))
                 }
-                if let string: String = option.optionalDataStringView, !string.isEmpty {
+                
+                if let string: String = option.optionalData.stringValue, !string.isEmpty {
                         properties.append(("Arguments", string))
-                } else if let string: String = option.optionalDataHexView {
+                } else if let string: String = option.optionalData.description {
                         /* Insert spaces to align subsequent lines with first line content */
                         let paddedString = string.replacingOccurrences(of: "\n", with: "\n      ")
                         properties.append(("Data", paddedString))
@@ -55,12 +73,12 @@ func infoMain(bootNumber: Int) {
                         print("\(property.0): \(property.1)")
                 }
                 
-                Log.logExit(EX_OK)
+                Debug.terminate(EX_OK)
         }
 }
 
 /*
- *  Function for verb: info
+ *  Function for command: info
  */
 
 func info() {
@@ -70,7 +88,7 @@ func info() {
         guard let string = commandLine.rawArguments.first else {
                 infoUsage()
         }
-        guard let bootNumber = nvram.bootNumberFromString(string) else {
+        guard let bootNumber = bootNumberFromString(string) else {
                 infoUsage()
         }
         

@@ -21,30 +21,32 @@
 import Foundation
 
 /*
- *  Function for verb: set
+ *  Function for command: set
  */
 
 func set() {
         
-        Log.info("Setting up command line")
-        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", helpMessage: "the variable to manipulate, Boot####")
+        Debug.log("Setting up command line", type: .info)
+        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", required: 1, helpMessage: "the variable to manipulate, Boot####")
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
         let loaderCommandLineOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
+        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)")
         let loaderActiveOption = BinaryOption(longFlag: "active", helpMessage: "set active attribute, 0 or 1")
         let loaderHiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "set hidden attribute, 0 or 1")
-        let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", helpMessage: "set BootNext, #### (hex)")
-        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set boot menu Timeout in SECONDS")
+        let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", required: 2, helpMessage: "set BootNext, #### (hex)")
+        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "set boot menu Timeout in SECONDS")
         commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] | -t SECONDS | -x ####"
-        commandLine.setOptions(bootnumOption, loaderDescriptionOption, loaderCommandLineOption, loaderActiveOption, loaderHiddenOption, bootNextOption, timeoutOption)
+        commandLine.setOptions(bootnumOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption, loaderActiveOption, loaderHiddenOption, bootNextOption, timeoutOption)
         
         func setMain() {
                 
                 var option: EfiLoadOption?
                 let bootNextString: String = bootNextOption.value ?? ""
-                var bootNextValue: Int = -1
-                let timeoutValue: Int = timeoutOption.value ?? -1
+                var bootNextValue: BootNumber?
+                let timeoutValue: Int? = timeoutOption.value ?? nil
                 let description: String = loaderDescriptionOption.value ?? ""
                 var updateOption = false
+                var didSomething = false
                 
                 /*
                  *  Check arguments are valid
@@ -53,71 +55,76 @@ func set() {
                  */
                 
                 if !bootNextString.isEmpty {
-                        if let validBootNumber: Int = nvram.bootNumberFromString(bootNextString) {
-                                if let _: Data = nvram.getBootOption(validBootNumber) {
+                        if let validBootNumber: BootNumber = bootNumberFromString(bootNextString) {
+                                if let _: Data = Nvram.shared.bootOptionData(validBootNumber) {
                                         bootNextValue = validBootNumber
                                 } else {
-                                        commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(bootNextOption, [bootNextString]))
-                                        Log.logExit(EX_USAGE)
+                                        print("set: invalid argument for option")
+                                        commandLine.printUsage()
+                                        Debug.terminate(EX_USAGE)
                                 }
                         } else {
-                                commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(bootNextOption, [bootNextString]))
-                                Log.logExit(EX_USAGE)
+                                print("set: invalid argument for option")
+                                commandLine.printUsage()
+                                Debug.terminate(EX_USAGE)
                         }
                 }
                 
                 /* Timeout */
                 
-                if timeoutOption.wasSet && !(1 ... 65534 ~= timeoutValue) {
-                        commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(timeoutOption, [String(timeoutValue)]))
-                        Log.logExit(EX_USAGE)
+                if let timeoutValue = timeoutValue, !(1 ... 65534 ~= timeoutValue) {
+                        print("set: invalid argument for option")
+                        commandLine.printUsage()
+                        Debug.terminate(EX_USAGE)
                 }
                 
                 /*  Boot number */
                 
                 if bootnumOption.wasSet && (description.isEmpty && !loaderCommandLineOption.wasSet && !loaderActiveOption.wasSet && !loaderHiddenOption.wasSet) {
-                        print("Option \(bootnumOption.shortDescription) specified without \(loaderDescriptionOption.shortDescription), \(loaderCommandLineOption.shortDescription) or attribute options", to: &standardError)
+                        print("set: option \(bootnumOption.shortDescription) specified without \(loaderDescriptionOption.shortDescription), \(loaderCommandLineOption.shortDescription) or attribute options", to: &standardError)
                         commandLine.printUsage()
-                        Log.logExit(EX_USAGE)
+                        Debug.terminate(EX_USAGE)
                 }
                 
                 if bootnumOption.wasSet {
-                        guard let bootNumber = nvram.bootNumberFromString(bootnumOption.value!) else {
-                                commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(bootnumOption, [bootnumOption.value ?? ""]))
-                                Log.logExit(EX_USAGE)
+                        guard let bootNumber = bootNumberFromString(bootnumOption.value!) else {
+                                print("set: invalid argument for option")
+                                commandLine.printUsage()
+                                Debug.terminate(EX_USAGE)
                         }
-                        guard let data = nvram.getBootOption(bootNumber) else {
-                                commandLine.printUsage(withMessageForError: ParserStatus.invalidValueForOption(bootnumOption, [bootnumOption.value ?? ""]))
-                                Log.logExit(EX_USAGE)
+                        guard let data = Nvram.shared.bootOptionData(bootNumber) else {
+                                print("set: invalid argument for option")
+                                commandLine.printUsage()
+                                Debug.terminate(EX_USAGE)
                         }
                         option = EfiLoadOption(fromBootNumber: bootNumber, data: data, details: true)
                         guard option != nil else {
-                                Log.logExit(EX_SOFTWARE)
+                                Debug.fault("Option should no longer be nil")
                         }
                 }
                 
                 /* Attribute options */
                 
                 if (loaderActiveOption.wasSet || loaderHiddenOption.wasSet) && option == nil {
-                        print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
+                        print("set: missing required option: \(bootnumOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
-                        Log.logExit(EX_USAGE)
+                        Debug.terminate(EX_USAGE)
                 }
                 
                 /* Description */
                 
                 if (!description.isEmpty && option == nil) {
-                        print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
+                        print("set: missing required option: \(loaderDescriptionOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
-                        Log.logExit(EX_USAGE)
+                        Debug.terminate(EX_USAGE)
                 }
                 
                 /* Optional data string */
                 
                 if (loaderCommandLineOption.wasSet && option == nil) {
-                        print("Missing required option: \(bootnumOption.shortDescription)", to: &standardError)
+                        print("set: missing required option: \(loaderCommandLineOption.shortDescription)", to: &standardError)
                         commandLine.printUsage()
-                        Log.logExit(EX_USAGE)
+                        Debug.terminate(EX_USAGE)
                 }
                 
                 
@@ -126,8 +133,9 @@ func set() {
                  *  Check root
                  */
                 
-                if commandLine.userName != "root" {
-                        Log.logExit(EX_NOPERM, "Only root can set NVRAM variables.")
+                if NSUserName() != "root" {
+                        Debug.log("Only root can set NVRAM variables", type: .error)
+                        Debug.fault("Permission denied")
                 }
                 
                 
@@ -138,32 +146,38 @@ func set() {
                  *  Set boot next
                  */
 
-                if bootNextValue != -1 {
-                        if !nvram.setBootNext(number: bootNextValue) {
-                                print("Error setting BootNext, check logs", to: &standardError)
+                if let bootNextValue = bootNextValue {
+                        if !Nvram.shared.setBootNext(bootNumber: bootNextValue) {
+                                print("Unknown NVRAM error setting BootNext", to: &standardError)
                         }
+                        didSomething = true
                 }
                 
                 /* Set timeout */
                 
-                if timeoutValue != -1 {
-                        if !nvram.setTimeout(seconds: timeoutValue) {
-                                print("Error setting Timeout, check logs", to: &standardError)
+                if let timeoutValue = timeoutValue {
+                        if !Nvram.shared.setTimeout(seconds: timeoutValue) {
+                                print("Unknown NVRAM error setting Timeout", to: &standardError)
                         }
+                        didSomething = true
                 }
                 
                 /* Set description */
                 
                 if !description.isEmpty {
                         option?.descriptionString = description
-                        updateOption = true  
+                        updateOption = true
                 }
                 
                 /* Set optional data string */
                 
-                if let dataStringValue: String = loaderCommandLineOption.value {
-                        if !dataStringValue.isEmpty {
-                                option?.optionalDataStringView = dataStringValue
+                if let commandLineString: String = loaderCommandLineOption.value {
+                        if !commandLineString.isEmpty {
+                                if ucs2EncodingOption.value {
+                                        option?.optionalData.setUcs2CommandLine(commandLineString)
+                                } else {
+                                        option?.optionalData.setAsciiCommandLine(commandLineString)
+                                }
                                 updateOption = true
                         } else {
                                 option?.removeOptionalData()
@@ -191,12 +205,18 @@ func set() {
                 /* Update option */
                 
                 if updateOption && option != nil {
-                        if !nvram.setOption(option: option!) {
-                                print("Error updating option, check logs", to: &standardError)
+                        if !Nvram.shared.setEfiLoadOption(option: option!) {
+                                print("Unknown NVRAM error updating option", to: &standardError)
                         }
+                        didSomething = true
                 }
                 
-                Log.logExit(EX_OK)
+                if didSomething {
+                        Debug.terminate(EX_OK)
+                } else {
+                        commandLine.printUsage()
+                        Debug.terminate(EX_USAGE)
+                }
                 
         }
         
@@ -204,14 +224,14 @@ func set() {
          *  Parse command line
          */
         
-        let optionParser = OptionParser(options: commandLine.options, rawArguments: commandLine.rawArguments, strict: true)
-        
-        switch optionParser.status {
+        commandLine.parseOptions(strict: true)
+        switch commandLine.parserStatus {
         case .success:
                 setMain()    
         default:
-                commandLine.printUsage(withMessageForError: optionParser.status)
-                Log.logExit(EX_USAGE)
+                print(commandLine.parserErrorMessage)
+                commandLine.printUsage()
+                Debug.terminate(EX_USAGE)
         }
 }
 

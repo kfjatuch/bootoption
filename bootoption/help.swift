@@ -21,10 +21,10 @@
 import Foundation
 
 /*
- *  Function for verb: help
+ *  Function for command: help
  */
 
 func help() {
-        commandLine.printUsage(showingVerbs: true)
-        Log.logExit(EX_OK)
+        commandLine.printUsage(showingCommands: true)
+        Debug.terminate(EX_OK)
 }

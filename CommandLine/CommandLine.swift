@@ -1,6 +1,7 @@
 /*
  * CommandLine.swift
- * Copyright © 2014 Ben Gollmer.
+ * Copyright © 2014 Ben Gollmer
+ * Copyright © 2017-2018 vulgo
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +19,23 @@
 import Foundation
 
 class CommandLine {
-
-        private let info: ProgramInfo
-        private var format: ((String, CommandLine.style) -> String)?
-        private var baseName: String {
-                 return NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent as String
+        private var standardError = FileHandle.standardError
+        private let shortPrefix: String = "-"
+        private let longPrefix: String = "--"
+        private let stopParsing: String = "--"
+        private let attached: Character = "="
+        private let programInfo: ProgramInfo
+        private var formatFunction: ((String, CommandLine.format.style) -> String)?
+        private var precludedOptions: String = ""
+        
+        private var activeCommandOrProgramName: String {
+                return activeCommand ?? programInfo.name
         }
+        
+        private var baseName: String {
+                return NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent
+        }
+        
         private var usedFlags: Set<String> {
                 var flags = Set<String>(minimumCapacity: options.count * 2)
                 for option in options {
@@ -35,54 +47,65 @@ class CommandLine {
         }
 
         var rawArguments: [String]
-        var options: [Option] = Array()
-        var verbs: [Verb] = Array()
+        var options: [Option] = []
+        var commands: [Command] = []
         var invocationHelpMessage: String
-        var verb: String? {
-                return rawArguments.count != 0 ? rawArguments.removeFirst() : nil
-        }
-        var userName: String {
-                return NSUserName()
-        }
+        var parserStatus: ParserStatus = .noInput
+        var activeCommand: String?
+        var unparsedArguments: [String] = []
+        
         var versionMessage: String {
-                get {
-                        var string = info.name + " " + info.version
-                        string = string + " " + info.copyright + "\n" + info.license
-                        return string
+                var string = programInfo.name + " " + programInfo.version
+                string = string + " " + programInfo.copyright + "\n" + programInfo.license
+                return string
+        }
+        
+        struct format {
+                static var listPadding: String = "  "
+                static var optionMaxWidth: Int = 0
+                static var commandMaxWidth: Int = 0
+                static func defaultFormatFunction(forString string: String, style: style) -> String {
+                        switch style {
+                        case .invocationMessage:
+                                return "\(string)\n"
+                        case .errorMessage:
+                                return string != "" ? "\(string)\n" : ""
+                        case .optionListItem:
+                                let option = string.padding(toLength: optionMaxWidth, withPad: " ", startingAt: 0)
+                                return "\(format.listPadding)\(option)"
+                        case .commandListItem:
+                                let command = string.padding(toLength: commandMaxWidth + 3, withPad: " ", startingAt: 0)
+                                return "\(format.listPadding)\(command)"
+                        case .helpMessage:
+                                return "\(string)\n"
+                        }
+                }
+                enum style {
+                        case invocationMessage
+                        case errorMessage
+                        case commandListItem
+                        case optionListItem
+                        case helpMessage
                 }
         }
 
-
-        
-        
-        
-        /*
-         *  init
-         */
-        
-        init(invocationHelpMessage: String = "[options]", info: ProgramInfo, format formatUser: ((String, CommandLine.style) -> String)? = nil) {
+        init(invocationHelpMessage: String = "[options]", info: ProgramInfo, userFormatFunction: ((String, CommandLine.format.style) -> String)? = nil) {
                 var arguments: [String] = Swift.CommandLine.arguments
                 arguments.removeFirst()
                 rawArguments = arguments
                 self.invocationHelpMessage = invocationHelpMessage
-                self.info = info
-                if formatUser == nil {
-                        format = formatDefault
+                self.programInfo = info
+                if userFormatFunction == nil {
+                        formatFunction = format.defaultFormatFunction
                 } else {
-                        format = formatUser
+                        formatFunction = userFormatFunction
                 }
-                Log.info("Command line initialized")
+                Debug.log("Command line initialized", type: .info)
         }
         
-        
-        /*
-         *  Adding options to the command line
-         */
-        
-        private func addVerb(_ verb: Verb) {
-                assert(!verbs.contains(where: { $0.name == verb.name } ), "Verb '\(verb.name)' already in use")
-                verbs.append(verb)
-                Log.info("Added verb '%{public}@' to command line", String(verb.name))
+        private func addCommand(_ command: Command) {
+                assert(!commands.contains(where: { $0.name == command.name } ), "Command '\(command.name)' already in use")
+                commands.append(command)
         }
         
         private func addOption(_ option: Option) {
@@ -90,207 +113,396 @@ class CommandLine {
                         assert(!usedFlags.contains(flag), "Flag '\(flag)' already in use")
                 }
                 options.append(option)
-                Log.info("Added option '%{public}@' to command line", String(option.logDescription))
-                optionMax = 0
-        }
-        
-        /*
-         *  Setting and overwriting existing command line options
-         */
-
-        func setOptions(_ options: [Option]) {
-                self.options = [Option]()
-                addOptions(options)
         }
         
         func setOptions(_ options: Option...) {
                 self.options = [Option]()
-                addOptions(options)
-        }
-
-        
-       
-        
-        /*
-         *  Formatting, usage, messages
-         */
-
-        private var standardError = FileHandle.standardError
-        private var listPadding: String = "  "
-        private var formatUser: ((String, style) -> String)? // If not nil this function will be called when printing usage messages
-        private var optionMax: Int = 0
-        private var verbMax: Int = 0
-        private var optionWidth: Int {
-                if optionMax == 0 {
-                        let mapped = options.map { $0.optionDescription.count }
-                        let padding = listPadding.count
-                        optionMax = (mapped.sorted().last ?? 0) + padding
+                for option in options {
+                        addOption(option)
                 }
-                return optionMax
+                let mapped = options.map { $0.optionDescription.count }
+                format.optionMaxWidth = (mapped.sorted().last ?? 0) + format.listPadding.count
         }
-        private var verbWidth: Int {
-                if verbMax == 0 {
-                        let mapped = verbs.map { $0.name.count }
-                        let padding = listPadding.count
-                        verbMax = (mapped.sorted().last ?? 0) + padding
+    
+        func setCommands(_ commands: Command...) {
+                self.commands = [Command]()
+                for command in commands {
+                        addCommand(command)
                 }
-                return verbMax
+                let mapped = commands.map { $0.name.count }
+                format.commandMaxWidth = (mapped.sorted().last ?? 0) + format.listPadding.count
         }
         
-        enum style {
-                case invocationMessage
-                case errorMessage
-                case verbListItem
-                case optionListItem
-                case helpMessage
-        }
-       
-        func formatDefault(forString string: String, style: style) -> String {
-                switch style {
-                case .invocationMessage:
-                        return "\(string)\n"
-                case .errorMessage:
-                        return string != "" ? "\(string)\n" : ""
-                case .optionListItem:
-                        let option = string.padding(toLength: optionWidth, withPad: " ", startingAt: 0)
-                        return "\(listPadding)\(option)"
-                case .verbListItem:
-                        let verb = string.padding(toLength: verbWidth, withPad: " ", startingAt: 0).uppercased()
-                        return "\(listPadding)\(verb)"
-                case .helpMessage:
-                        return "\(string)\n"
-                }
-        }
-        
-        /*  Prints a usage message */
-        
-        func printUsage(showingVerbs: Bool = false) {
-                print(format!("Usage: \(baseName) \(invocationHelpMessage)", style.invocationMessage), terminator: "", to: &standardError)
-                if showingVerbs {
-                        for verb in verbs {
-                                print(format!(verb.name, style.verbListItem), terminator: "", to: &standardError)
-                                print(format!(verb.helpMessage, style.helpMessage), terminator: "", to: &standardError)
+        func printUsage(showingCommands: Bool = false) {
+                print(formatFunction!("usage: \(baseName) \(invocationHelpMessage)", format.style.invocationMessage), terminator: "", to: &standardError)
+                if showingCommands {
+                        for command in commands {
+                                print(formatFunction!(command.name, format.style.commandListItem), terminator: "", to: &standardError)
+                                print(formatFunction!(command.helpMessage, format.style.helpMessage), terminator: "", to: &standardError)
                         }
                 } else {
                         for option in options {
-                                print(format!(option.optionDescription, style.optionListItem), terminator: "", to: &standardError)
-                                print(format!(option.helpMessage, style.helpMessage), terminator: "", to: &standardError)
+                                print(formatFunction!(option.optionDescription, format.style.optionListItem), terminator: "", to: &standardError)
+                                print(formatFunction!(option.helpMessage, format.style.helpMessage), terminator: "", to: &standardError)
                         }
                 }
         }
-}
-
-
-
-
-extension CommandLine {
         
-        func addVerbs(_ verbs: Verb...) {
-                for verb in verbs {
-                        addVerb(verb)
-                }
+        private func removeFirstArgument() -> String? {
+                let commandString = rawArguments.count != 0 ? rawArguments.removeFirst() : nil
+                return commandString
         }
         
-        func addVerbs(_ verbs: [Verb]) {
-                for verb in verbs {
-                        addVerb(verb)
+        func parseCommand() {
+                Debug.log("Parsing command...", type: .info)
+                let firstArgument: String? = removeFirstArgument()
+                
+                guard let command: String = firstArgument else {
+                        Debug.log("No input", type: .error)
+                        parserStatus = .noInput
+                        return
                 }
+                if command == "--help" {
+                        activeCommand = "help"
+                        parserStatus = .success
+                } else if command == "--version" {
+                        activeCommand = "version"
+                        parserStatus = .success
+                } else if commands.contains(where: { $0.name.lowercased() == command }) {
+                        activeCommand = command
+                        parserStatus = .success
+                } else {
+                        Debug.log("Invalid command", type: .error)
+                        errorCausing.command = command
+                        parserStatus = .unrecognizedCommand
+                        return
+                }
+                Debug.log("Active command is '%@'", type: .info, argsList: activeCommand ?? "nil")
         }
         
-        func addOptions(_ options: [Option]) {
+        func getFlagValues(rawArguments: [String], flagIndex: Int, attachedArg: String? = nil) -> [String] {
+                var args: [String] = [String]()
+                var skipFlagChecks = false
+                
+                if let a = attachedArg {
+                        args.append(a)
+                }
+                
+                for i in flagIndex + 1 ..< rawArguments.count {
+                        
+                        if !skipFlagChecks {
+                                
+                                if rawArguments[i] == stopParsing {
+                                        skipFlagChecks = true
+                                        continue
+                                }
+                                
+                                if rawArguments[i].hasPrefix(shortPrefix) && Int(rawArguments[i]) == nil && rawArguments[i].toDouble() == nil {
+                                        break
+                                }
+                        }
+                        
+                        args.append(rawArguments[i])
+                }
+                
+                return args
+        }
+        
+        func parseOptions(strict: Bool = false) {
+                Debug.log("Parsing command options...", type: .info)
+                var rawArguments = self.rawArguments
+               
+                if rawArguments.count > 0 {
+                
+                        let argumentsEnumerator = rawArguments.enumerated()
+                        
+                        for (index, argumentString) in argumentsEnumerator {
+                                
+                                Debug.log("%@: %@", type: .info, argsList: index, argumentString)
+                                
+                                if argumentString == stopParsing {
+                                        break
+                                }
+                                
+                                if !argumentString.hasPrefix(shortPrefix) {
+                                        continue
+                                }
+                                
+                                let skipChars = argumentString.hasPrefix(longPrefix) ? longPrefix.count : shortPrefix.count
+                                let flagWithArg = argumentString[argumentString.index(argumentString.startIndex, offsetBy: skipChars)..<argumentString.endIndex]
+                                
+                                /* The argument contained nothing but ShortOptionPrefix or LongOptionPrefix */
+                                
+                                if flagWithArg.isEmpty {
+                                        continue
+                                }
+                                
+                                /* Remove attached argument from flag */
+                                
+                                let splitFlag = flagWithArg.split(separator: attached, maxSplits: 1)
+                                let flag = splitFlag[0]
+                                let attachedArgument: String? = splitFlag.count == 2 ? String(splitFlag[1]) : nil
+                                var flagMatched = false
+                                
+                                for option in options where option.flagMatch(String(flag)) {
+                                        
+                                        /* Preclude */
+                                        
+                                        if let c = option.shortFlag?.first {
+                                                
+                                                if precludedOptions.contains(c) {
+                                                        Debug.log("Too many options", type: .error)
+                                                        errorCausing.addOption(argumentString)
+                                                        parserStatus = .tooManyOptions
+                                                        return
+                                                }
+                                                
+                                                precludedOptions.append(option.precludes)
+                                        }
+                                        
+                                        let values = getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument)
+                                        
+                                        guard option.setValue(values) else {
+                                                Debug.log("Invalid argument for option", type: .error)
+                                                errorCausing.addArguments(values)
+                                                errorCausing.addOption(option)
+                                                parserStatus = .invalidArgumentForOption
+                                                return
+                                        }
+                                        
+                                        var claimedIndex = index + option.claimedValues
+                                        
+                                        if attachedArgument != nil {
+                                                claimedIndex -= 1
+                                        }
+                                        
+                                        for i in index...claimedIndex {
+                                                rawArguments[i] = ""
+                                        }
+                                        
+                                        flagMatched = true
+                                        
+                                        break
+                                }
+                                
+                                /* Flags that do not take any arguments can be concatenated */
+                                
+                                let flagLength = flag.count
+                                
+                                if !flagMatched && !argumentString.hasPrefix(longPrefix) {
+                                        let flagCharactersEnumerator = flag.enumerated()
+                                        
+                                        for (i, c) in flagCharactersEnumerator {
+                                                
+                                                for option in options where option.flagMatch(String(c)) {
+                                                        
+                                                        /* preclude concatenated */
+                                                        if let c = option.shortFlag?.first {
+                                                                
+                                                                if precludedOptions.contains(c) {
+                                                                        Debug.log("Too many options", type: .error)
+                                                                        errorCausing.addOption(option.shortDescription)
+                                                                        parserStatus = .tooManyOptions
+                                                                        return
+                                                                }
+                                                                
+                                                                precludedOptions.append(option.precludes)
+                                                        }
+                                                        
+                                                        /*
+                                                         *  Values are allowed at the end of the concatenated flags, e.g.
+                                                         *  -xvf <file1> <file2>
+                                                         */
+                                                        
+                                                        let values = (i == flagLength - 1) ? getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument) : [String]()
+                                                        
+                                                        guard option.setValue(values) else {
+                                                                Debug.log("Invalid argument for option", type: .error)
+                                                                errorCausing.addArguments(values)
+                                                                errorCausing.addOption(option)
+                                                                parserStatus = .invalidArgumentForOption
+                                                                return
+                                                        }
+                                                        
+                                                        var claimedIndex = index + option.claimedValues
+                                                        
+                                                        if attachedArgument != nil {
+                                                                claimedIndex -= 1
+                                                        }
+                                                        
+                                                        for i in index...claimedIndex {
+                                                                rawArguments[i] = ""
+                                                        }
+                                                        
+                                                        flagMatched = true
+                                                        break
+                                                }
+                                        }
+                                }
+                                
+                                /* Invalid flag */
+                                
+                                guard !strict || flagMatched else {
+                                        Debug.log("Unrecognised option", type: .error)
+                                        errorCausing.addOption(argumentString)
+                                        parserStatus = .unrecognisedOption
+                                        return
+                                }
+                        }
+                }
+                
+                /* Check to see if any required options were not matched */
+                
+                var groupings: [Int] = Array()
+                
                 for option in options {
-                        addOption(option)
+                        /* Get the unique values of options' required property */
+                        let required = option.required
+                        
+                        if required != 0 && !groupings.contains(required) {
+                                groupings.append(required)
+                        }
                 }
-        }
-        
-        func addOptions(_ options: Option...) {
-                for option in options {
-                        addOption(option)
+                
+                if groupings.count > 0 {
+                        Debug.log("Found required option groupings: %@", type: .info, argsList: groupings)
                 }
+                
+                if groupings.count > 1 {
+                        
+                        /* if we have different groups of required options */
+                        
+                        for group in groupings {
+                                
+                                for option in options {
+                                        
+                                        /*  remove a unique value from the groups array if not
+                                         *  all options specifying it have been set */
+                                        
+                                        if option.required == group && !option.wasSet {
+                                                groupings.remove(at: groupings.index(where: { $0 == group } )!)
+                                                break
+                                        }
+                                }
+                        }
+                        
+                        /* return if there are no groups with all required options set */
+                        
+                        if groupings.count == 0 {
+                                /* this error ambiguous */
+                                Debug.log("Missing required option(s)", type: .error)
+                                parserStatus = .missingRequiredOptionGroup
+                                return
+                        }
+                        
+                } else {
+                        
+                        Debug.log("Only one set of required options...", type: .info)
+                        
+                        /* only one set of required options with same required value */
+                        
+                        let missingOptions = options.filter {
+                                $0.required != 0 && !$0.wasSet
+                        }
+                        
+                        guard missingOptions.count == 0 else {
+                                /* this error is specific about missing arguments */
+                                Debug.log("Missing required options", type: .error)
+                                errorCausing.addOptions(missingOptions)
+                                parserStatus = .missingRequiredOptions
+                                return
+                        }
+                }
+                
+                /* Capture any unparsed arguments */
+                
+                unparsedArguments = rawArguments.filter { $0 != "" }
+                parserStatus = .success
         }
         
-        func printUsage(withMessageForError error: ParserStatus, showingVerbs: Bool = false) {
-                print(self.format!("\(error.description)", style.errorMessage), terminator: "", to: &standardError)
-                printUsage(showingVerbs: showingVerbs)
-        }
-        
-}
-
-
-
-
-enum ParserStatus {
-        case success
-        case noInput
-        case tooManyOptions
-        case invalidVerb(String)
-        case invalidInput(String)
-        case invalidArgument(String)
-        case invalidValueForOption(Option, [String])
-        case missingRequiredOptions([Option])
-        case missingRequiredOptionGroup
-        var description: String {
-                switch self {
+        var parserErrorMessage: String {
+                let command = "'" + (errorCausing.command ?? "nil") + "'"
+                let options = "'" + errorCausing.options.joined(separator: "', '") + "'"
+                let arguments = "'" + errorCausing.arguments.joined(separator: "', '") + "'"
+                switch parserStatus {
                 case .success:
-                        Log.info("Parse success")
-                        return "OK"
-                case .noInput:
-                        Log.info("Parse error: Nothing to parse")
                         return ""
+                case .noInput:
+                        return "no input"
                 case .tooManyOptions:
-                        Log.error("Parse error: Too many options")
-                        return "Some options preclude the use of others."
-                case let .invalidVerb(string):
-                        Log.info("Parse error: Invalid verb %{public}@", string)
-                        return "Invalid verb: \(string)"
-                case let .invalidInput(string):
-                        Log.info("Parse error: Invalid input %{public}@", string)
-                        return "Invalid input: \(string)"
-                case let .invalidArgument(string):
-                        Log.error("Parse error: Invalid argument %{public}@", string)
-                        return "Invalid argument: \(string)"
-                case let .invalidValueForOption(option, values):
-                        let string: String = values.joined(separator: " ")
-                        Log.error("Parse error: Invalid value %{public}@", string)
-                        return "Invalid value(s) for option \(option.shortDescription): \(string)"
-                case let .missingRequiredOptions(options):
-                        var s: String = "s"
-                        if options.count == 1 {
-                                s = ""
+                        return "\(activeCommandOrProgramName): too many options, stopped at \(options)"
+                case .unrecognizedCommand:
+                        return "\(activeCommandOrProgramName): unrecognised command \(command)"
+                case .invalidInput:
+                        return "\(activeCommandOrProgramName): invalid input \(arguments)"
+                case .unrecognisedOption:
+                        return "\(activeCommandOrProgramName): unrecognised option \(options)"
+                case .invalidArgumentForOption:
+                        if errorCausing.arguments.count == 0 {
+                                return "\(activeCommandOrProgramName): option \(options) requires an argument"
+                        } else if errorCausing.arguments.count > 1 {
+                                return "\(activeCommandOrProgramName): invalid arguments \(arguments) for option \(options)"
+                        } else {
+                                return "\(activeCommandOrProgramName): invalid argument \(arguments) for option \(options)"
                         }
-                        let mapped: Array = options.map { return $0.shortDescription }
-                        let string: String = mapped.joined(separator: ", ")
-                        Log.error("Parse error: Missing required options %{public}@", string)
-                        return "Missing required option\(s): \(string)"
+                case .missingRequiredOptions:
+                        if errorCausing.options.count > 1 {
+                                return "\(activeCommandOrProgramName): missing required options \(options)"
+                        } else {
+                                return "\(activeCommandOrProgramName): missing required option \(options)"
+                        }
                 case .missingRequiredOptionGroup:
-                        Log.error("Parse error: Missing required option group(s)")
-                        return "Missing required option(s)"
+                        return "\(activeCommandOrProgramName): missing required option(s)"
                 }
         }
-}
-
-
-
-
-struct ProgramInfo {
-        let name: String
-        let version: String
-        let copyright: String
-        let license: String
-        init(_ name: String, version: String, copyright: String, license: String) {
-                self.name = name
-                self.version = version
-                self.copyright = copyright
-                self.license = license
+        
+        enum ParserStatus {
+                case success
+                case noInput
+                case tooManyOptions
+                case unrecognizedCommand
+                case invalidInput
+                case unrecognisedOption
+                case invalidArgumentForOption
+                case missingRequiredOptions
+                case missingRequiredOptionGroup
         }
-}
-
-
-
-
-struct getOpt {
-        static let shortPrefix: String = "-"
-        static let longPrefix: String = "--"
-        static let stopParsing: String = "--"
-        static let attached: Character = "="
+        
+        struct errorCausing {
+                static var command: String?
+                static var options: [String] = []
+                static var arguments: [String] = []
+                
+                static func addOption(_ option: Option) {
+                        errorCausing.options.append(option.optionDescription)
+                }
+                
+                static func addOption(_ option: String) {
+                        errorCausing.options.append(option)
+                }
+                
+                static func addOptions(_ options: [String]) {
+                        for option in options {
+                                errorCausing.options.append(option)
+                        }
+                }
+                
+                static func addOptions(_ options: [Option]) {
+                        for option in options {
+                                errorCausing.options.append(option.shortDescription)
+                        }
+                }
+                
+                static func addArgument(_ argument: String) {
+                        errorCausing.arguments.append(argument)
+                }
+                
+                static func addArguments(_ arguments: [String]) {
+                        for argument in arguments {
+                                errorCausing.arguments.append(argument)
+                        }
+                }
+        }
+        
+        
 }

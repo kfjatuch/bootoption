@@ -1,6 +1,6 @@
 /*
- * Verb.swift
- * Copyright (c) 2014 Ben Gollmer.
+ * ProgramInfo.swift
+ * Copyright © 2017-2018 vulgo
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-struct Verb {
-        var name: String
-        var helpMessage: String
-        init(_ name: String, helpMessage: String) {
-                self.name = name
-                self.helpMessage = helpMessage
-        }
+struct ProgramInfo {
+        let name: String
+        let version: String
+        let copyright: String
+        let license: String
 }

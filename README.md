@@ -7,7 +7,7 @@
 </picture>
 </p>
 
-A command line utility for managing a UEFI firmware's boot menu on macOS. Like efibootmgr. Report bugs [here](https://github.com/vulgo/bootoption/issues).
+A command line utility for managing a UEFI firmware's boot menu on macOS. Like efibootmgr. Report bugs [here on GitHub](https://github.com/vulgo/bootoption/issues).
 
 ## Installing
 
@@ -20,18 +20,20 @@ brew install bootoption
 
 ## Usage
 
-bootoption <strong>VERB</strong> [options] where <strong>VERB</strong> is one from the following:
+bootoption <command> [options]
 
-- <strong>LIST</strong>&nbsp;&nbsp;show the firmware boot menu
-- <strong>INFO</strong>&nbsp;&nbsp;show an option's properties
-- <strong>SET</strong>&nbsp;&nbsp;set/modify variables in NVRAM
-- <strong>CREATE</strong>&nbsp;&nbsp;create a new EFI load option
-- <strong>ORDER</strong>&nbsp;&nbsp;re-arrange the boot order
-- <strong>DELETE</strong>&nbsp;&nbsp;delete variables from NVRAM
-- <strong>SAVE</strong>&nbsp;&nbsp;print or save boot variable data in different formats
-- <strong>REBOOT</strong>&nbsp;&nbsp;reboot to firmware settings
+available commands:
 
-bootoption <strong>VERB</strong> without options will show the usage or options for that command, where available. Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
+- <strong>list</strong>&nbsp;&nbsp;show the firmware boot menu
+- <strong>info</strong>&nbsp;&nbsp;show an option's properties
+- <strong>set</strong>&nbsp;&nbsp;set/modify variables in NVRAM
+- <strong>create</strong>&nbsp;&nbsp;create a new EFI load option
+- <strong>order</strong>&nbsp;&nbsp;re-arrange the boot order
+- <strong>delete</strong>&nbsp;&nbsp;delete variables from NVRAM
+- <strong>print</strong>&nbsp;&nbsp;print boot variable data in different formats
+- <strong>reboot</strong>&nbsp;&nbsp;reboot to firmware settings
+
+bootoption <command> without options will show the usage or options for that command, where available. Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
 
 
 #### Create a new option and add it to the boot order
@@ -72,4 +74,4 @@ sudo bootoption reboot
 
 ## License
 
-This project is licensed under the terms of the GPL version 3
+bootoption is free software: you are free to change and redistribute it. See the GNU GPL version 3 or later [http://gnu.org/licenses/gpl.html](http://gnu.org/licenses/gpl.html)

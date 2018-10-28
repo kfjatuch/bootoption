@@ -30,7 +30,7 @@ func delete() {
         let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", required: 1, helpMessage: "variable to delete, Boot####")
         let bootNextOption = BoolOption(shortFlag: "x", longFlag: "bootnext", required: 2, helpMessage: "delete BootNext")
         let timeoutOption = BoolOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "delete Timeout")
-        commandLine.invocationHelpMessage = "delete -n #### | -x | -t"
+        commandLine.invocationHelpMessage = "delete [-n ####] [-x] [-t]"
         commandLine.setOptions(bootnumOption, bootNextOption, timeoutOption)
         
         func deleteMain() {
@@ -114,8 +114,7 @@ func delete() {
         case .success:
                 deleteMain()
         default:
-                print(commandLine.parserErrorMessage)
-                commandLine.printUsage()
+                commandLine.printErrorAndUsage()
                 Debug.terminate(EX_USAGE)
                 
         }

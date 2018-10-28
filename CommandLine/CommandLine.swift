@@ -122,6 +122,7 @@ class CommandLine {
                 }
                 let mapped = options.map { $0.optionDescription.count }
                 format.optionMaxWidth = (mapped.sorted().last ?? 0) + format.listPadding.count
+                parserStatus = .noInput
         }
     
         func setCommands(_ commands: Command...) {
@@ -131,6 +132,7 @@ class CommandLine {
                 }
                 let mapped = commands.map { $0.name.count }
                 format.commandMaxWidth = (mapped.sorted().last ?? 0) + format.listPadding.count
+                parserStatus = .noInput
         }
         
         func printUsage(showingCommands: Bool = false) {
@@ -158,7 +160,7 @@ class CommandLine {
                 let firstArgument: String? = removeFirstArgument()
                 
                 guard let command: String = firstArgument else {
-                        Debug.log("No input", type: .error)
+                        Debug.log("No input", type: .info)
                         parserStatus = .noInput
                         return
                 }
@@ -212,142 +214,145 @@ class CommandLine {
                 Debug.log("Parsing command options...", type: .info)
                 var rawArguments = self.rawArguments
                
-                if rawArguments.count > 0 {
+                if rawArguments.count == 0 {
+                        Debug.log("No input", type: .info)
+                        parserStatus = .noInput
+                        return
+                }
                 
-                        let argumentsEnumerator = rawArguments.enumerated()
+                let argumentsEnumerator = rawArguments.enumerated()
+                
+                for (index, argumentString) in argumentsEnumerator {
                         
-                        for (index, argumentString) in argumentsEnumerator {
+                        Debug.log("%@: %@", type: .info, argsList: index, argumentString)
+                        
+                        if argumentString == stopParsing {
+                                break
+                        }
+                        
+                        if !argumentString.hasPrefix(shortPrefix) {
+                                continue
+                        }
+                        
+                        let skipChars = argumentString.hasPrefix(longPrefix) ? longPrefix.count : shortPrefix.count
+                        let flagWithArg = argumentString[argumentString.index(argumentString.startIndex, offsetBy: skipChars)..<argumentString.endIndex]
+                        
+                        /* The argument contained nothing but ShortOptionPrefix or LongOptionPrefix */
+                        
+                        if flagWithArg.isEmpty {
+                                continue
+                        }
+                        
+                        /* Remove attached argument from flag */
+                        
+                        let splitFlag = flagWithArg.split(separator: attached, maxSplits: 1)
+                        let flag = splitFlag[0]
+                        let attachedArgument: String? = splitFlag.count == 2 ? String(splitFlag[1]) : nil
+                        var flagMatched = false
+                        
+                        for option in options where option.flagMatch(String(flag)) {
                                 
-                                Debug.log("%@: %@", type: .info, argsList: index, argumentString)
+                                /* Preclude */
                                 
-                                if argumentString == stopParsing {
-                                        break
-                                }
-                                
-                                if !argumentString.hasPrefix(shortPrefix) {
-                                        continue
-                                }
-                                
-                                let skipChars = argumentString.hasPrefix(longPrefix) ? longPrefix.count : shortPrefix.count
-                                let flagWithArg = argumentString[argumentString.index(argumentString.startIndex, offsetBy: skipChars)..<argumentString.endIndex]
-                                
-                                /* The argument contained nothing but ShortOptionPrefix or LongOptionPrefix */
-                                
-                                if flagWithArg.isEmpty {
-                                        continue
-                                }
-                                
-                                /* Remove attached argument from flag */
-                                
-                                let splitFlag = flagWithArg.split(separator: attached, maxSplits: 1)
-                                let flag = splitFlag[0]
-                                let attachedArgument: String? = splitFlag.count == 2 ? String(splitFlag[1]) : nil
-                                var flagMatched = false
-                                
-                                for option in options where option.flagMatch(String(flag)) {
+                                if let c = option.shortFlag?.first {
                                         
-                                        /* Preclude */
-                                        
-                                        if let c = option.shortFlag?.first {
-                                                
-                                                if precludedOptions.contains(c) {
-                                                        Debug.log("Too many options", type: .error)
-                                                        errorCausing.addOption(argumentString)
-                                                        parserStatus = .tooManyOptions
-                                                        return
-                                                }
-                                                
-                                                precludedOptions.append(option.precludes)
-                                        }
-                                        
-                                        let values = getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument)
-                                        
-                                        guard option.setValue(values) else {
-                                                Debug.log("Invalid argument for option", type: .error)
-                                                errorCausing.addArguments(values)
-                                                errorCausing.addOption(option)
-                                                parserStatus = .invalidArgumentForOption
+                                        if precludedOptions.contains(c) {
+                                                Debug.log("Too many options", type: .error)
+                                                errorCausing.addOption(argumentString)
+                                                parserStatus = .tooManyOptions
                                                 return
                                         }
                                         
-                                        var claimedIndex = index + option.claimedValues
-                                        
-                                        if attachedArgument != nil {
-                                                claimedIndex -= 1
-                                        }
-                                        
-                                        for i in index...claimedIndex {
-                                                rawArguments[i] = ""
-                                        }
-                                        
-                                        flagMatched = true
-                                        
-                                        break
+                                        precludedOptions.append(option.precludes)
                                 }
                                 
-                                /* Flags that do not take any arguments can be concatenated */
+                                let values = getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument)
                                 
-                                let flagLength = flag.count
+                                guard option.setValue(values) else {
+                                        Debug.log("Invalid argument for option", type: .error)
+                                        errorCausing.addArguments(values)
+                                        errorCausing.addOption(option)
+                                        parserStatus = .invalidArgumentForOption
+                                        return
+                                }
                                 
-                                if !flagMatched && !argumentString.hasPrefix(longPrefix) {
-                                        let flagCharactersEnumerator = flag.enumerated()
+                                var claimedIndex = index + option.claimedValues
+                                
+                                if attachedArgument != nil {
+                                        claimedIndex -= 1
+                                }
+                                
+                                for i in index...claimedIndex {
+                                        rawArguments[i] = ""
+                                }
+                                
+                                flagMatched = true
+                                
+                                break
+                        }
+                        
+                        /* Flags that do not take any arguments can be concatenated */
+                        
+                        let flagLength = flag.count
+                        
+                        if !flagMatched && !argumentString.hasPrefix(longPrefix) {
+                                let flagCharactersEnumerator = flag.enumerated()
+                                
+                                for (i, c) in flagCharactersEnumerator {
                                         
-                                        for (i, c) in flagCharactersEnumerator {
+                                        for option in options where option.flagMatch(String(c)) {
                                                 
-                                                for option in options where option.flagMatch(String(c)) {
+                                                /* preclude concatenated */
+                                                if let c = option.shortFlag?.first {
                                                         
-                                                        /* preclude concatenated */
-                                                        if let c = option.shortFlag?.first {
-                                                                
-                                                                if precludedOptions.contains(c) {
-                                                                        Debug.log("Too many options", type: .error)
-                                                                        errorCausing.addOption(option.shortDescription)
-                                                                        parserStatus = .tooManyOptions
-                                                                        return
-                                                                }
-                                                                
-                                                                precludedOptions.append(option.precludes)
-                                                        }
-                                                        
-                                                        /*
-                                                         *  Values are allowed at the end of the concatenated flags, e.g.
-                                                         *  -xvf <file1> <file2>
-                                                         */
-                                                        
-                                                        let values = (i == flagLength - 1) ? getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument) : [String]()
-                                                        
-                                                        guard option.setValue(values) else {
-                                                                Debug.log("Invalid argument for option", type: .error)
-                                                                errorCausing.addArguments(values)
-                                                                errorCausing.addOption(option)
-                                                                parserStatus = .invalidArgumentForOption
+                                                        if precludedOptions.contains(c) {
+                                                                Debug.log("Too many options", type: .error)
+                                                                errorCausing.addOption(option.shortDescription)
+                                                                parserStatus = .tooManyOptions
                                                                 return
                                                         }
                                                         
-                                                        var claimedIndex = index + option.claimedValues
-                                                        
-                                                        if attachedArgument != nil {
-                                                                claimedIndex -= 1
-                                                        }
-                                                        
-                                                        for i in index...claimedIndex {
-                                                                rawArguments[i] = ""
-                                                        }
-                                                        
-                                                        flagMatched = true
-                                                        break
+                                                        precludedOptions.append(option.precludes)
                                                 }
+                                                
+                                                /*
+                                                 *  Values are allowed at the end of the concatenated flags, e.g.
+                                                 *  -xvf <file1> <file2>
+                                                 */
+                                                
+                                                let values = (i == flagLength - 1) ? getFlagValues(rawArguments: rawArguments, flagIndex: index, attachedArg: attachedArgument) : [String]()
+                                                
+                                                guard option.setValue(values) else {
+                                                        Debug.log("Invalid argument for option", type: .error)
+                                                        errorCausing.addArguments(values)
+                                                        errorCausing.addOption(option)
+                                                        parserStatus = .invalidArgumentForOption
+                                                        return
+                                                }
+                                                
+                                                var claimedIndex = index + option.claimedValues
+                                                
+                                                if attachedArgument != nil {
+                                                        claimedIndex -= 1
+                                                }
+                                                
+                                                for i in index...claimedIndex {
+                                                        rawArguments[i] = ""
+                                                }
+                                                
+                                                flagMatched = true
+                                                break
                                         }
                                 }
-                                
-                                /* Invalid flag */
-                                
-                                guard !strict || flagMatched else {
-                                        Debug.log("Unrecognised option", type: .error)
-                                        errorCausing.addOption(argumentString)
-                                        parserStatus = .unrecognisedOption
-                                        return
-                                }
+                        }
+                        
+                        /* Invalid flag */
+                        
+                        guard !strict || flagMatched else {
+                                Debug.log("Unrecognised option", type: .error)
+                                errorCausing.addOption(argumentString)
+                                parserStatus = .unrecognisedOption
+                                return
                         }
                 }
                 
@@ -397,8 +402,6 @@ class CommandLine {
                         
                 } else {
                         
-                        Debug.log("Only one set of required options...", type: .info)
-                        
                         /* only one set of required options with same required value */
                         
                         let missingOptions = options.filter {
@@ -420,40 +423,57 @@ class CommandLine {
                 parserStatus = .success
         }
         
-        var parserErrorMessage: String {
+        func printErrorAndUsage(showingCommands: Bool = false) {
                 let command = "'" + (errorCausing.command ?? "nil") + "'"
                 let options = "'" + errorCausing.options.joined(separator: "', '") + "'"
                 let arguments = "'" + errorCausing.arguments.joined(separator: "', '") + "'"
+                
+                var error: String?
+                
                 switch parserStatus {
-                case .success:
-                        return ""
-                case .noInput:
-                        return "no input"
                 case .tooManyOptions:
-                        return "\(activeCommandOrProgramName): too many options, stopped at \(options)"
+                        error = "\(activeCommandOrProgramName): too many options, stopped at \(options)"
                 case .unrecognizedCommand:
-                        return "\(activeCommandOrProgramName): unrecognised command \(command)"
+                        error = "\(activeCommandOrProgramName): unrecognised command \(command)"
                 case .invalidInput:
-                        return "\(activeCommandOrProgramName): invalid input \(arguments)"
+                        error = "\(activeCommandOrProgramName): invalid input \(arguments)"
                 case .unrecognisedOption:
-                        return "\(activeCommandOrProgramName): unrecognised option \(options)"
+                        error = "\(activeCommandOrProgramName): unrecognised option \(options)"
                 case .invalidArgumentForOption:
                         if errorCausing.arguments.count == 0 {
-                                return "\(activeCommandOrProgramName): option \(options) requires an argument"
+                                error = "\(activeCommandOrProgramName): option \(options) requires an argument"
                         } else if errorCausing.arguments.count > 1 {
-                                return "\(activeCommandOrProgramName): invalid arguments \(arguments) for option \(options)"
+                                error = "\(activeCommandOrProgramName): invalid arguments \(arguments) for option \(options)"
                         } else {
-                                return "\(activeCommandOrProgramName): invalid argument \(arguments) for option \(options)"
+                                error = "\(activeCommandOrProgramName): invalid argument \(arguments) for option \(options)"
                         }
                 case .missingRequiredOptions:
                         if errorCausing.options.count > 1 {
-                                return "\(activeCommandOrProgramName): missing required options \(options)"
+                                error = "\(activeCommandOrProgramName): missing required options \(options)"
                         } else {
-                                return "\(activeCommandOrProgramName): missing required option \(options)"
+                                error = "\(activeCommandOrProgramName): missing required option \(options)"
                         }
                 case .missingRequiredOptionGroup:
-                        return "\(activeCommandOrProgramName): missing required option(s)"
+                        error = "\(activeCommandOrProgramName): missing required option(s)"
+                default:
+                        break
                 }
+                
+                if let error: String = error {
+                        print(error, to: &standardError)
+                }
+                printUsage(showingCommands: showingCommands)
+        }
+        
+        func printErrorAndUsage(settingStatus status: ParserStatus, option: Option? = nil, argument: String? = nil, showingCommands: Bool = false) {
+                commandLine.parserStatus = status
+                if let argument = argument {
+                        CommandLine.errorCausing.addArgument(argument)
+                }
+                if let option = option {
+                        CommandLine.errorCausing.addOption(option.shortDescription)
+                }
+                commandLine.printErrorAndUsage()
         }
         
         enum ParserStatus {
@@ -503,6 +523,4 @@ class CommandLine {
                         }
                 }
         }
-        
-        
 }

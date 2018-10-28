@@ -77,11 +77,7 @@ case .success:
                 commandLine.printUsage(showingCommands: true)
                 Debug.terminate(EX_USAGE)
         }
-case .noInput:
-        commandLine.printUsage(showingCommands: true)
-        Debug.terminate(EX_USAGE)
 default:
-        print(commandLine.parserErrorMessage)
-        commandLine.printUsage(showingCommands: true)
+        commandLine.printErrorAndUsage(showingCommands: true)
         Debug.terminate(EX_USAGE)
 }

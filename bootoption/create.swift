@@ -31,7 +31,7 @@ func create() {
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
         let loaderCommandLineOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
         let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)")
-        commandLine.invocationHelpMessage = "create -l PATH -d LABEL [-a STRING]"
+        commandLine.invocationHelpMessage = "create -l PATH -d LABEL [-a STRING] [-u]"
         commandLine.setOptions(loaderPathOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption)
         
         func createMain() {
@@ -69,8 +69,7 @@ func create() {
         case .success:
                 createMain()     
         default:
-                print(commandLine.parserErrorMessage)
-                commandLine.printUsage()
+                commandLine.printErrorAndUsage()
                 Debug.terminate(EX_USAGE)
         }
 }

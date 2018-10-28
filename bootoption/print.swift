@@ -105,8 +105,7 @@ func print() {
         case .success:
                 printMain()
         default:
-                print(commandLine.parserErrorMessage)
-                commandLine.printUsage()
+                commandLine.printErrorAndUsage()
                 Debug.terminate(EX_USAGE)
         }
         

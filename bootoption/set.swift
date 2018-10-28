@@ -27,15 +27,15 @@ import Foundation
 func set() {
         
         Debug.log("Setting up command line", type: .info)
-        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", required: 1, helpMessage: "the variable to manipulate, Boot####")
+        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", helpMessage: "variable to manipulate, Boot####")
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
         let loaderCommandLineOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
         let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)")
         let loaderActiveOption = BinaryOption(longFlag: "active", helpMessage: "set active attribute, 0 or 1")
         let loaderHiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "set hidden attribute, 0 or 1")
-        let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", required: 2, helpMessage: "set BootNext, #### (hex)")
-        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "set boot menu Timeout in SECONDS")
-        commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] | -t SECONDS | -x ####"
+        let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", helpMessage: "set BootNext to Boot#### (hex)")
+        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set boot menu Timeout in SECONDS")
+        commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] [-u] | -x #### | -t SECS"
         commandLine.setOptions(bootnumOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption, loaderActiveOption, loaderHiddenOption, bootNextOption, timeoutOption)
         
         func setMain() {
@@ -55,78 +55,55 @@ func set() {
                  */
                 
                 if !bootNextString.isEmpty {
-                        if let validBootNumber: BootNumber = bootNumberFromString(bootNextString) {
-                                if let _: Data = Nvram.shared.bootOptionData(validBootNumber) {
-                                        bootNextValue = validBootNumber
-                                } else {
-                                        print("set: invalid argument for option")
-                                        commandLine.printUsage()
-                                        Debug.terminate(EX_USAGE)
-                                }
-                        } else {
-                                print("set: invalid argument for option")
-                                commandLine.printUsage()
+                        
+                        guard let validBootNumber: BootNumber = bootNumberFromString(bootNextString), let _: Data = Nvram.shared.bootOptionData(validBootNumber) else {
+                                Debug.log("Invalid argument for option", type: .error)
+                                commandLine.printErrorAndUsage(settingStatus: .invalidArgumentForOption, option: bootNextOption, argument: bootNextOption.value!)
                                 Debug.terminate(EX_USAGE)
                         }
+                        
+                        bootNextValue = validBootNumber
                 }
                 
                 /* Timeout */
                 
                 if let timeoutValue = timeoutValue, !(1 ... 65534 ~= timeoutValue) {
-                        print("set: invalid argument for option")
-                        commandLine.printUsage()
+                        Debug.log("Invalid argument for option", type: .error)
+                        commandLine.printErrorAndUsage(settingStatus: .invalidArgumentForOption, option: timeoutOption, argument: String(timeoutValue))
                         Debug.terminate(EX_USAGE)
                 }
                 
                 /*  Boot number */
                 
                 if bootnumOption.wasSet && (description.isEmpty && !loaderCommandLineOption.wasSet && !loaderActiveOption.wasSet && !loaderHiddenOption.wasSet) {
+                        Debug.log("Missing required option(s)", type: .error)
                         print("set: option \(bootnumOption.shortDescription) specified without \(loaderDescriptionOption.shortDescription), \(loaderCommandLineOption.shortDescription) or attribute options", to: &standardError)
                         commandLine.printUsage()
                         Debug.terminate(EX_USAGE)
                 }
                 
                 if bootnumOption.wasSet {
-                        guard let bootNumber = bootNumberFromString(bootnumOption.value!) else {
-                                print("set: invalid argument for option")
-                                commandLine.printUsage()
+                        Debug.log("Invalid argument for option", type: .error)
+                        guard let bootNumber = bootNumberFromString(bootnumOption.value!), let data = Nvram.shared.bootOptionData(bootNumber) else {
+                                commandLine.printErrorAndUsage(settingStatus: .invalidArgumentForOption, option: bootnumOption, argument: bootnumOption.value!)
                                 Debug.terminate(EX_USAGE)
                         }
-                        guard let data = Nvram.shared.bootOptionData(bootNumber) else {
-                                print("set: invalid argument for option")
-                                commandLine.printUsage()
-                                Debug.terminate(EX_USAGE)
-                        }
+                        
                         option = EfiLoadOption(fromBootNumber: bootNumber, data: data, details: true)
+                        
                         guard option != nil else {
-                                Debug.fault("Option should no longer be nil")
+                                Debug.fault("EFI load option should no longer be nil")
                         }
                 }
                 
-                /* Attribute options */
+                /* Attribute / description / optional data options */
                 
-                if (loaderActiveOption.wasSet || loaderHiddenOption.wasSet) && option == nil {
-                        print("set: missing required option: \(bootnumOption.shortDescription)", to: &standardError)
-                        commandLine.printUsage()
+                if (loaderActiveOption.wasSet || loaderHiddenOption.wasSet || !description.isEmpty || loaderCommandLineOption.wasSet) && option == nil {
+                        Debug.log("Missing required option(s)", type: .error)
+                        commandLine.printErrorAndUsage(settingStatus: .missingRequiredOptions, option: bootnumOption)
                         Debug.terminate(EX_USAGE)
                 }
-                
-                /* Description */
-                
-                if (!description.isEmpty && option == nil) {
-                        print("set: missing required option: \(loaderDescriptionOption.shortDescription)", to: &standardError)
-                        commandLine.printUsage()
-                        Debug.terminate(EX_USAGE)
-                }
-                
-                /* Optional data string */
-                
-                if (loaderCommandLineOption.wasSet && option == nil) {
-                        print("set: missing required option: \(loaderCommandLineOption.shortDescription)", to: &standardError)
-                        commandLine.printUsage()
-                        Debug.terminate(EX_USAGE)
-                }
-                
+              
                 
                 
                 /*
@@ -229,8 +206,7 @@ func set() {
         case .success:
                 setMain()    
         default:
-                print(commandLine.parserErrorMessage)
-                commandLine.printUsage()
+                commandLine.printErrorAndUsage()
                 Debug.terminate(EX_USAGE)
         }
 }

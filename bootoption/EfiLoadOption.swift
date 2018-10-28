@@ -33,7 +33,14 @@ struct EfiLoadOption {
         
         var bootNumber: BootNumber?
         var devicePathDescription = ""
-        var positionInBootOrder: Int?
+        
+        var positionInBootOrder: Int? {
+                if let bootNumber = bootNumber {
+                        return Nvram.shared.bootOrderArray.index(of: bootNumber)
+                } else {
+                        return nil
+                }
+        }
         
         var data: Data {
                 /* Buffer EfiLoadOption */
@@ -102,16 +109,8 @@ struct EfiLoadOption {
         /* Init from NVRAM variable */
         
         init(fromBootNumber number: BootNumber, data: Data, details: Bool = false) {
+                
                 bootNumber = number
-                
-                let positionInBootOrder = bootoption.positionInBootOrder(bootNumber: number) ?? -1
-                if positionInBootOrder != -1 {
-                        Debug.log("%@ at position %@ in BootOrder", type: .info, argsList: number.variableName, positionInBootOrder)
-                } else {
-                        Debug.log("%@ not found in BootOrder", type: .info, argsList: number.variableName)
-                }
-                self.positionInBootOrder = positionInBootOrder
-                
                 var buffer: Data = data
                 
                 /* Attributes */
@@ -142,6 +141,12 @@ struct EfiLoadOption {
                         if !buffer.isEmpty {
                                 optionalData.data = buffer
                         }
+                }
+                
+                if let positionInBootOrder = positionInBootOrder {
+                        Debug.log("%@ at position %@ in BootOrder", type: .info, argsList: number.variableName, positionInBootOrder)
+                } else {
+                        Debug.log("%@ not found in BootOrder", type: .info, argsList: number.variableName)
                 }
 
         }

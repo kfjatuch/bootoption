@@ -26,18 +26,21 @@ import Foundation
 
 func order() {
         
+        var bootOrder = Nvram.shared.bootOrderArray
+        
         /* Parse command line */
         
         var arguments = commandLine.rawArguments
         
         if arguments.count == 0 {
                 
+                Debug.log("No input", type: .info)
                 orderUsage()
                 Debug.terminate(EX_OK)
                 
-        } else if arguments[0] == "--print" {
+        } else if DEBUG && arguments[0] == "--print" {
                 
-                let bootOrder = Nvram.shared.bootOrderArray
+                Debug.log("--print", type: .info)
                 var string = ""
                 if bootOrder.count > 0 {
                         for bootNum in bootOrder {
@@ -47,8 +50,7 @@ func order() {
                         print(string)
                         Debug.terminate(EX_OK)
                 } else {
-                        print("BootOrder data not found")
-                        Debug.terminate(EX_OK)
+                        Debug.fault("BootOrder data not found")
                 }
         }
         
@@ -56,25 +58,38 @@ func order() {
                 
         case "--set":
                 
+                Debug.log("--set", type: .info)
                 checkPermissions()
                 let setUsageString = "usage: bootoption order --set Boot#### Boot#### Boot#### ..."
-                Debug.log("--set", type: .info)
                 arguments.removeFirst()
+                
+                if arguments.count == 0 {
+                        Debug.log("Missing required argument", type: .error)
+                        print("order: option '--set' requires argument(s)", to: &standardError)
+                        print(setUsageString, to: &standardError)
+                        if !bootOrder.isEmpty {
+                                print("to unset the boot order use: bootoption order --delete", to: &standardError)
+                        }
+                        Debug.terminate(EX_USAGE)
+                }
+                
                 var newBootOrder: [BootNumber] = []
                 
                 for arg in arguments {
                         
                         guard let bootNum = bootNumberFromString(arg), let _ = Nvram.shared.bootOptionData(bootNum) else {
+                                Debug.log("Invalid argument", type: .error)
                                 print("order: invalid argument '\(arg)' for option '--set'", to: &standardError)
-                                print(setUsageString)
+                                print(setUsageString, to: &standardError)
                                 Debug.terminate(EX_USAGE)
                         }
                         
                         if !newBootOrder.contains(bootNum) {
                                 newBootOrder.append(bootNum)
                         } else {
-                                print("order: '\(bootNum.variableName)' was specified more than once")
-                                print(setUsageString)
+                                Debug.log("Invalid argument", type: .error)
+                                print("order: '\(bootNum.variableName)' was specified more than once", to: &standardError)
+                                print(setUsageString, to: &standardError)
                                 Debug.terminate(EX_USAGE)
                         }
                 }
@@ -84,12 +99,21 @@ func order() {
                 
         case "--delete":
                 
+                Debug.log("--delete", type: .info)
+                arguments.removeFirst()
+                if arguments.count > 0 {
+                        Debug.log("Invalid argument", type: .error)
+                        print("order: option '--delete' accepts no argument", to: &standardError)
+                        print("usage: bootoption order --delete", to: &standardError)
+                        Debug.terminate(EX_USAGE)
+                }
                 checkPermissions()
                 Nvram.shared.deleteBootOrder()
                 Debug.terminate(EX_OK)
                 
         default:
                 
+                Debug.log("Will attempt to parse to:from: indices", type: .info)
                 var optionIndex: Int?
                 var destination: Int?
         
@@ -104,6 +128,7 @@ func order() {
                                 destination = zeroBasedIndex(arguments[2])
                         }
                 default:
+                        Debug.log("Invalid input (1)", type: .error)
                         orderUsage()
                         Debug.terminate(EX_USAGE)
                 }
@@ -111,7 +136,6 @@ func order() {
                 if let optionIndex = optionIndex, let destination = destination {
                         
                         checkPermissions()
-                        var bootOrder = Nvram.shared.bootOrderArray
                         
                         guard bootOrder.count > 0 else {
                                 Debug.fault("BootOrder data not found")
@@ -139,25 +163,29 @@ func order() {
                         }
                         
                         Debug.terminate(EX_OK)
-                }
                         
-                orderUsage()
-                Debug.terminate(EX_USAGE)
-
+                } else {
+                        
+                        Debug.log("Invalid input (2)", type: .error)
+                        orderUsage()
+                        Debug.terminate(EX_USAGE)
+                        
+                }
         }
 }
 
 func orderUsage() {
-        print("usage: bootoption order --print" , to: &standardError)
+        print("usage: bootoption order <current position> to <new position>", to: &standardError)
+        if DEBUG {
+                print("", to: &standardError)
+                print("       bootoption order --print" , to: &standardError)
+        }
         print("", to: &standardError)
-        print("       bootoption order <current position> to <new position>", to: &standardError)
+        print("explicitly set the boot order:", to: &standardError)
+        print("       bootoption order --set Boot#### [Boot####] [Boot####] [...]", to: &standardError)
         print("", to: &standardError)
-        print("explicitly set the BootOption variable:", to: &standardError)
-        print("       bootoption order --set Boot#### Boot#### Boot#### ...", to: &standardError)
-        print("", to: &standardError)
-        print("delete the BootOption variable:", to: &standardError)
+        print("unset the boot order, use with caution:", to: &standardError)
         print("       bootoption order --delete", to: &standardError)
-        Debug.terminate(EX_USAGE)
 }
 
 func zeroBasedIndex(_ nthString: String) -> Int? {

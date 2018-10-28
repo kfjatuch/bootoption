@@ -59,8 +59,22 @@ class BootMenu {
                         }
                         
                 }
-                /* Sort options by BootOrder */
-                options.sort(by: { $0.positionInBootOrder! < $1.positionInBootOrder! } )
+                /* Sort options */
+                options.sort(by: {
+                        if let lhsOrder = $0.positionInBootOrder, let rhsOrder = $1.positionInBootOrder {
+                                return lhsOrder < rhsOrder
+                        }
+                        if let _ = $0.positionInBootOrder {
+                                return true
+                        }
+                        if let _ = $1.positionInBootOrder {
+                                return false
+                        }
+                        if let lhsNumber = $0.bootNumber, let rhsNumber = $1.bootNumber {
+                                return lhsNumber < rhsNumber
+                        }
+                        return false
+                } )
                 
                 Debug.log("Boot menu initialised", type: .info)
         }
@@ -77,8 +91,8 @@ class BootMenu {
                         /* Menu */
                         let separator = " "
                         var paddedOrder = " --"
-                        if option.positionInBootOrder != -1 {
-                                paddedOrder = String(option.positionInBootOrder! + 1).leftPadding(toLength: 3, withPad: " ")
+                        if let positionInBootOrder = option.positionInBootOrder {
+                                paddedOrder = String(positionInBootOrder + 1).leftPadding(toLength: 3, withPad: " ")
                         }
                         output.append(paddedOrder)
                         output.append(":")

@@ -20,14 +20,6 @@
 
 import Foundation
 
-/* Get the position of a variable in the boot order from its boot number */
-
-func positionInBootOrder(bootNumber: BootNumber) -> Int? {
-        let bootOrder = Nvram.shared.bootOrderArray
-        let order: Int? = bootOrder.index(of: bootNumber)
-        return order
-}
-
 /* Create boot order data from array */
 
 func newBootOrderData(fromArray bootOrder: [BootNumber]) -> Data {
@@ -89,25 +81,25 @@ func bootNumberFromString(_ string: String) -> BootNumber? {
         let hex = Set("ABCDEF1234567890")
         guard hex.isSuperset(of: mutableString) else {
                 Debug.log("Found non-hex characters '%@' while attempting to parse boot number", type: .error, argsList: mutableString)
-                print("Invalid boot number: \(string)", to: &standardError)
+                print("invalid boot number: '\(string)'", to: &standardError)
                 return nil
         }
         guard mutableString.count <= 4 else {
                 Debug.log("Boot number string '%@' is too long", type: .error, argsList: mutableString)
-                print("Invalid boot number: \(string)", to: &standardError)
+                print("invalid boot number: '\(string)'", to: &standardError)
                 return nil
         }
         let scanner = Scanner(string: mutableString)
         var scanned: UInt32 = 0
         if !scanner.scanHexInt32(&scanned) {
                 Debug.log("Scanning string '%@' to integer failed", type: .error, argsList: mutableString)
-                print("Invalid boot number: \(string)", to: &standardError)
+                print("invalid boot number: '\(string)'", to: &standardError)
                 return nil
         }
         let number = BootNumber(scanned)
         if Nvram.shared.bootOptionData(number) == nil  {
                 Debug.log("Boot number from string succeeded but %@ does not exist", type: .error, argsList: number.variableName)
-                print("\(number.variableName) does not exist", to: &standardError)
+                print("'\(number.variableName)' does not exist", to: &standardError)
                 return nil
         }
         Debug.log("0x%@", type: .info, argsList: String(format: "%04X", number))

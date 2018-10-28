@@ -34,7 +34,7 @@ if isatty(standardError.fileDescriptor) == 1 {
         Debug.resetCode = "\u{001B}[0;0m"
 }
 
-var programInfo = ProgramInfo(name: "bootoption", version: "0.2.8", copyright: "Copyright © 2017-2018 vulgo", license: "This is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\nSee the GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>")
+var programInfo = ProgramInfo(name: "bootoption", version: "0.2.9", copyright: "Copyright © 2017-2018 vulgo", license: "This is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\nSee the GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>")
 
 Debug.log("Version %@", type: .info, argsList: programInfo.version)
 

@@ -60,7 +60,7 @@ func order() {
                 
                 Debug.log("--set", type: .info)
                 checkPermissions()
-                let setUsageString = "usage: bootoption order --set Boot#### Boot#### Boot#### ..."
+                let setUsageString = "usage: bootoption order --set Boot#### [Boot####] [Boot####] [...]"
                 arguments.removeFirst()
                 
                 if arguments.count == 0 {

@@ -58,9 +58,7 @@ func delete() {
                         
                         /* Delete from boot order if needed */
                         
-                        guard let inBootOrder = Nvram.shared.bootOrderArray?.contains(bootNumber) else {
-                                Debug.fault("Error reading boot order")
-                        }
+                        let inBootOrder = Nvram.shared.bootOrderArray.contains(bootNumber)
                         
                         if inBootOrder {
                                 Debug.log("Variable requested for deletion found in boot order", type: .info)

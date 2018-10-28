@@ -20,6 +20,7 @@ import os.log
 
 struct Debug {
         static var infoCode = ""
+        static var warningCode = ""
         static var errorCode = ""
         static var resetCode = ""
         
@@ -65,7 +66,7 @@ struct Debug {
                 case .fault:
                         msg += "\(errorCode)[FAULT]"
                 default:
-                        msg += "\(infoCode)[Default]"
+                        msg += "\(warningCode)[Default]"
                 }
                 
                 msg += " \(NSString(string: file).lastPathComponent) • \(function) • \(String(format: message, arguments: cVarArgArray))\(resetCode)"

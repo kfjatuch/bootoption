@@ -20,49 +20,144 @@
 
 import Foundation
 
-func orderUsage() {
-        print("Usage: bootoption order <current position> to <new position>" , to: &standardError)
-        Debug.terminate(EX_USAGE)
+/*
+ *  Function for command: order
+ */
+
+func order() {
+        
+        /* Parse command line */
+        
+        var arguments = commandLine.rawArguments
+        
+        if arguments.count == 0 {
+                
+                orderUsage()
+                Debug.terminate(EX_OK)
+                
+        } else if arguments[0] == "--print" {
+                
+                let bootOrder = Nvram.shared.bootOrderArray
+                var string = ""
+                if bootOrder.count > 0 {
+                        for bootNum in bootOrder {
+                                string += bootNum.variableName
+                                string += " "
+                        }
+                        print(string)
+                        Debug.terminate(EX_OK)
+                } else {
+                        print("BootOrder data not found")
+                        Debug.terminate(EX_OK)
+                }
+        }
+        
+        switch arguments[0] {
+                
+        case "--set":
+                
+                checkPermissions()
+                let setUsageString = "usage: bootoption order --set Boot#### Boot#### Boot#### ..."
+                Debug.log("--set", type: .info)
+                arguments.removeFirst()
+                var newBootOrder: [BootNumber] = []
+                
+                for arg in arguments {
+                        
+                        guard let bootNum = bootNumberFromString(arg), let _ = Nvram.shared.bootOptionData(bootNum) else {
+                                print("order: invalid argument '\(arg)' for option '--set'", to: &standardError)
+                                print(setUsageString)
+                                Debug.terminate(EX_USAGE)
+                        }
+                        
+                        if !newBootOrder.contains(bootNum) {
+                                newBootOrder.append(bootNum)
+                        } else {
+                                print("order: '\(bootNum.variableName)' was specified more than once")
+                                print(setUsageString)
+                                Debug.terminate(EX_USAGE)
+                        }
+                }
+                
+                Nvram.shared.setBootOrder(array: newBootOrder)
+                Debug.terminate(EX_OK)
+                
+        case "--delete":
+                
+                checkPermissions()
+                Nvram.shared.deleteBootOrder()
+                Debug.terminate(EX_OK)
+                
+        default:
+                
+                var optionIndex: Int?
+                var destination: Int?
+        
+                switch arguments.count {
+                case 2:
+                        optionIndex = zeroBasedIndex(arguments[0])
+                        destination = zeroBasedIndex(arguments[1])
+                case 3:
+                        let preposition = arguments[1].lowercased()
+                        if preposition == "to" || preposition == "-to" || preposition == "--to" {
+                                optionIndex = zeroBasedIndex(arguments[0])
+                                destination = zeroBasedIndex(arguments[2])
+                        }
+                default:
+                        orderUsage()
+                        Debug.terminate(EX_USAGE)
+                }
+                
+                if let optionIndex = optionIndex, let destination = destination {
+                        
+                        checkPermissions()
+                        var bootOrder = Nvram.shared.bootOrderArray
+                        
+                        guard bootOrder.count > 0 else {
+                                Debug.fault("BootOrder data not found")
+                        }
+                        
+                        /* Check position parameters are valid */
+                        
+                        let indices = bootOrder.indices
+                        guard indices.contains(optionIndex) && indices.contains(destination) else {
+                                Debug.fault("Index out of range")
+                        }
+                        
+                        /* Change order */
+                        
+                        bootOrder.order(itemAtIndex: optionIndex, to: destination)
+                        
+                        /* Data from re-ordered array */
+                        
+                        let data = newBootOrderData(fromArray: bootOrder)
+                        
+                        /* Set new boot order */
+                        
+                        if !Nvram.shared.setBootOrder(data: data) {
+                                Debug.fault("Error setting new boot order")
+                        }
+                        
+                        Debug.terminate(EX_OK)
+                }
+                        
+                orderUsage()
+                Debug.terminate(EX_USAGE)
+
+        }
 }
 
-func orderMain(optionIndex: Int, destination: Int) {
-        
-        /* Check permissions */
-        
-        if NSUserName() != "root" {
-                Debug.log("Only root can set NVRAM variables", type: .error)
-                Debug.fault("Permission denied")
-        }
-        
-        if var bootOrder = Nvram.shared.bootOrderArray {
-                
-                /* Check position parameters are valid */
-                
-                let indices = bootOrder.indices
-                guard indices.contains(optionIndex) && indices.contains(destination) else {
-                        Debug.fault("Index out of range")
-                }
-                
-                /* Change order */
-                
-                bootOrder.order(itemAtIndex: optionIndex, to: destination)
-                
-                /* Data from re-ordered array */
-                
-                let data = newBootOrderData(fromArray: bootOrder)
-                
-                /* Set new boot order */
-                
-                if !Nvram.shared.setBootOrder(data: data) {
-                        Debug.fault("Error setting new boot order")
-                }
-                Debug.terminate(EX_OK)
-        } else {
-                
-                /* Failed to get boot order array */
-                
-                Debug.fault("Couldn't read boot order")
-        }
+func orderUsage() {
+        print("usage: bootoption order --print" , to: &standardError)
+        print("", to: &standardError)
+        print("       bootoption order <current position> to <new position>", to: &standardError)
+        print("", to: &standardError)
+        print("explicitly set the BootOption variable:", to: &standardError)
+        print("       bootoption order --set Boot#### Boot#### Boot#### ...", to: &standardError)
+        print("", to: &standardError)
+        print("delete the BootOption variable:", to: &standardError)
+        print("       bootoption order --delete", to: &standardError)
+        Debug.terminate(EX_USAGE)
 }
 
 func zeroBasedIndex(_ nthString: String) -> Int? {
@@ -75,35 +170,9 @@ func zeroBasedIndex(_ nthString: String) -> Int? {
         return position - 1
 }
 
-/*
- *  Function for command: order
- */
-
-func order() {
-        
-        /* Parse command line */
-        
-        var arguments = commandLine.rawArguments
-        var optionIndex: Int?
-        var destination: Int?
-        
-        switch arguments.count {                
-        case 2:
-                optionIndex = zeroBasedIndex(arguments[0])
-                destination = zeroBasedIndex(arguments[1])
-        case 3:
-                let preposition = arguments[1].lowercased()
-                if preposition == "to" || preposition == "-to" || preposition == "--to" {
-                        optionIndex = zeroBasedIndex(arguments[0])
-                        destination = zeroBasedIndex(arguments[2])
-                }
-        default:
-                orderUsage()
-        }
-        
-        if optionIndex == nil || destination == nil {
-                orderUsage()
-        } else {
-                orderMain(optionIndex: optionIndex!, destination: destination!)
+func checkPermissions() {
+        if NSUserName() != "root" {
+                Debug.log("Only root can set NVRAM variables", type: .error)
+                Debug.fault("Permission denied")
         }
 }

@@ -22,27 +22,28 @@ import Foundation
 
 extension Nvram {        
      
-        var bootOrderArray: [BootNumber]? {
-                if savedBootOrder != nil {
+        var bootOrderArray: [BootNumber] {
+                if let savedBootOrder = self.savedBootOrder {
+                        if savedBootOrder.isEmpty {
+                                Debug.log("savedBootOrderArray was []", type: .default)
+                        }
                         return savedBootOrder
                 }
                 var bootOrder: [BootNumber] = Array()
                 if var bootOrderData = bootOrderData {
-                        guard !bootOrderData.isEmpty else {
-                                return nil
-                        }
-                        let size: Int = bootOrderData.count
-                        for _ in 1 ... (size / MemoryLayout<BootNumber>.size) {
-                                let bootNumber: BootNumber = bootOrderData.remove16()
-                                bootOrder.append(bootNumber)
+                        if !bootOrderData.isEmpty {
+                                let size: Int = bootOrderData.count
+                                for _ in 1 ... (size / MemoryLayout<BootNumber>.size) {
+                                        let bootNumber: BootNumber = bootOrderData.remove16()
+                                        bootOrder.append(bootNumber)
+                                }
                         }
                 }
-                if !bootOrder.isEmpty {
-                        savedBootOrder = bootOrder
-                        return savedBootOrder
-                } else {
-                        return nil
+                savedBootOrder = bootOrder
+                if bootOrder.isEmpty {
+                        Debug.log("bootOrderArray was computed to be []", type: .default)
                 }
+                return bootOrder
         }
         
         var bootCurrent: BootNumber?  {
@@ -130,7 +131,7 @@ extension Nvram {
                 return false
         }
 
-        @discardableResult func setNewBootOrder(adding bootNumber: BootNumber, atIndex index: Int = 0) -> Bool {
+        @discardableResult func setBootOrder(adding bootNumber: BootNumber, atIndex index: Int = 0) -> Bool {
                 guard bootOptionData(bootNumber) != nil else {
                         Debug.log("Couldn't get %@ data, cancelling add to boot order", type: .error, argsList: bootNumber.variableName)
                         return false
@@ -141,6 +142,13 @@ extension Nvram {
                         }
                 }
                 return false
+        }
+        
+        @discardableResult func setBootOrder(array: [BootNumber]) -> Bool {
+                if setBootOrder(data: newBootOrderData(fromArray: array)) {
+                        return true
+                }
+                return false                
         }
         
         func setNewEfiLoadOption(data: Data, addingToBootOrder: Bool) -> BootNumber? {
@@ -157,7 +165,7 @@ extension Nvram {
                         Debug.log("Error syncing %@ (%@)", type: .error, argsList: newBootNumber.variableName, error)
                         return nil
                 }
-                setNewBootOrder(adding: newBootNumber, atIndex: 0)
+                setBootOrder(adding: newBootNumber, atIndex: 0)
                 Debug.log("Asked the kernel to set %@", type: .info, argsList: newBootNumber.variableName)
                 return newBootNumber
         }
@@ -217,6 +225,11 @@ extension Nvram {
         func deleteBootNext() {
                 deleteVariable(key: prependingGlobalGUID("BootNext"))
                 Debug.log("Asked the kernel to delete BootNext", type: .info)
+        }
+        
+        func deleteBootOrder() {
+                deleteVariable(key: prependingGlobalGUID("BootOrder"))
+                Debug.log("Asked the kernel to delete BootOrder", type: .info)
         }
         
         /* Return load option data given a boot number */

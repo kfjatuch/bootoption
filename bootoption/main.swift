@@ -29,6 +29,7 @@ import Foundation
 var standardError = FileHandle.standardError
 if isatty(standardError.fileDescriptor) == 1 {
         Debug.infoCode = "\u{001B}[0;32m"
+        Debug.warningCode = "\u{001B}[0;33m"
         Debug.errorCode = "\u{001B}[0;31m"
         Debug.resetCode = "\u{001B}[0;0m"
 }

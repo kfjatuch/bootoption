@@ -24,7 +24,7 @@ import Foundation
 
 func positionInBootOrder(bootNumber: BootNumber) -> Int? {
         let bootOrder = Nvram.shared.bootOrderArray
-        let order: Int? = bootOrder?.index(of: bootNumber)
+        let order: Int? = bootOrder.index(of: bootNumber)
         return order
 }
 
@@ -41,10 +41,7 @@ func newBootOrderData(fromArray bootOrder: [BootNumber]) -> Data {
 /* Boot order array functions adding/removing */
 
 func newBootOrderArray(removing bootNumber: BootNumber) -> [BootNumber]? {
-        guard var newBootOrderArray: [BootNumber] = Nvram.shared.bootOrderArray else {
-                Debug.log("nvram.bootOrderArray was nil", type: .error)
-                return nil
-        }
+        var newBootOrderArray: [BootNumber] = Nvram.shared.bootOrderArray
         if let index: Int = newBootOrderArray.index(of: bootNumber) {
                 newBootOrderArray.remove(at: index)
                 Debug.log("Returned an updated boot order array", type: .info)
@@ -57,10 +54,7 @@ func newBootOrderArray(removing bootNumber: BootNumber) -> [BootNumber]? {
 }
 
 func newBootOrderArray(adding bootNumber: BootNumber, atIndex index: Int = 0) -> [BootNumber]? {
-        guard var newBootOrderArray: [BootNumber] = Nvram.shared.bootOrderArray else {
-                Debug.log("nvram.bootOrderArray was nil", type: .error)
-                return nil
-        }
+        var newBootOrderArray: [BootNumber] = Nvram.shared.bootOrderArray
         if newBootOrderArray.indices.contains(index) {
                 Debug.log("Inserted to boot order at index %@", type: .info, argsList: index)
                 newBootOrderArray.insert(bootNumber, at: index)
@@ -78,7 +72,7 @@ func discoverEmptyBootNumber() -> BootNumber? {
                 if let _: Data = Nvram.shared.bootOptionData(test) {
                         continue
                 } else {
-                        Debug.log("Empty boot option discovered: %@", type: .info, argsList: String(format: "%X", test))
+                        Debug.log("Empty boot option discovered: %@", type: .info, argsList: test.variableName)
                         return test
                 }
         }

@@ -33,7 +33,7 @@ func print() {
         let appleOption = BoolOption(shortFlag: "%", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "x")
         let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "%")
         let keyOption = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
-        commandLine.invocationHelpMessage = "save -l PATH -d LABEL [-a STRING] [-% | -x [-k KEY]]"
+        commandLine.invocationHelpMessage = "print -l PATH -d LABEL [-a STRING] [-% | -x [-k KEY]]"
         commandLine.setOptions(loaderPathOption, loaderDescriptionOption, loaderCommandLineOption, appleOption, xmlOption, keyOption)
         
         func printMain() {

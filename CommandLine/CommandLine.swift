@@ -50,6 +50,7 @@ class CommandLine {
         var options: [Option] = []
         var commands: [Command] = []
         var invocationHelpMessage: String
+        var commandHelpMessage: String?
         var parserStatus: ParserStatus = .noInput
         var activeCommand: String?
         var unparsedArguments: [String] = []
@@ -89,11 +90,12 @@ class CommandLine {
                 }
         }
 
-        init(invocationHelpMessage: String = "[options]", info: ProgramInfo, userFormatFunction: ((String, CommandLine.format.style) -> String)? = nil) {
+        init(invocationHelpMessage: String = "[options]", commandHelpMessage: String? = nil, info: ProgramInfo, userFormatFunction: ((String, CommandLine.format.style) -> String)? = nil) {
                 var arguments: [String] = Swift.CommandLine.arguments
                 arguments.removeFirst()
                 rawArguments = arguments
                 self.invocationHelpMessage = invocationHelpMessage
+                self.commandHelpMessage = commandHelpMessage
                 self.programInfo = info
                 if userFormatFunction == nil {
                         formatFunction = format.defaultFormatFunction
@@ -147,6 +149,9 @@ class CommandLine {
                                 print(formatFunction!(option.optionDescription, format.style.optionListItem), terminator: "", to: &standardError)
                                 print(formatFunction!(option.helpMessage, format.style.helpMessage), terminator: "", to: &standardError)
                         }
+                }
+                if showingCommands, let commandHelpMessage = commandHelpMessage {
+                        print(String(format: commandHelpMessage, baseName))
                 }
         }
         

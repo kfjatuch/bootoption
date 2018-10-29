@@ -81,6 +81,14 @@ extension Data {
                 return string
         }
         
+        var isConvertibleToUTF8CString: Bool {
+                if let i = self.firstIndex(of: 0x00) {
+                        let subData = self.subdata(in: i..<self.endIndex)
+                        return !subData.contains(where: { $0 != 0x00 })
+                }
+                return true
+        }
+        
         mutating func removeEfiString() -> String? {
                 let sizeUInt16 = 2
                 var string = String()

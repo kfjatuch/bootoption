@@ -29,8 +29,7 @@ struct OptionalData {
                         guard let data = self.data else {
                                 return nil
                         }
-                        let i = data.firstIndex(of: 0x00)
-                        if i == nil || i == data.endIndex {
+                        if data.isConvertibleToUTF8CString {
                                 if let ascii = String(data: data, encoding: .ascii) {
                                         Debug.log("'%@' decoded as ascii from data: %@", type: .info, argsList: ascii, data)
                                         return ascii
@@ -81,9 +80,15 @@ struct OptionalData {
                 return nil
         }
         
-        mutating func setAsciiCommandLine(_ string: String) {
-                if let asciiData: Data = string.asciiStringData(nullTerminated: false) {
-                        data = asciiData
+        mutating func setAsciiCommandLine(_ string: String, clover: Bool = false) {
+                if var asciiData: Data = string.asciiStringData(nullTerminated: false) {
+                        if clover {
+                                Debug.log("Optional data string for Clover: appending 2 null bytes", type: .default)
+                                asciiData.append(Data(bytes: [0x00, 0x00]))
+                                data = asciiData
+                        } else {
+                                data = asciiData
+                        }
                         Debug.log("Ascii encoded optional data string: %@", type: .info, argsList: asciiData)
                 } else {
                         Debug.fault("Ascii encoding of optional data string failed")

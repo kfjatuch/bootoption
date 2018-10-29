@@ -34,6 +34,15 @@ struct EfiLoadOption {
         var bootNumber: BootNumber?
         var devicePathDescription = ""
         
+        var isClover: Bool {
+                if let loaderPath = filePathDevicePath?.path {
+                        if loaderPath.lowercased().contains("cloverx64.efi") {
+                                return true
+                        }
+                }
+                return false
+        }
+        
         var positionInBootOrder: Int? {
                 if let bootNumber = bootNumber {
                         return Nvram.shared.bootOrderArray.index(of: bootNumber)
@@ -203,7 +212,7 @@ struct EfiLoadOption {
                         if ucs2OptionalData {
                                 optionalData.setUcs2CommandLine(string)
                         } else {
-                                optionalData.setAsciiCommandLine(string)
+                                optionalData.setAsciiCommandLine(string, clover: isClover)
                         }
                 } else {
                         Debug.log("Not generating optional data", type: .info)

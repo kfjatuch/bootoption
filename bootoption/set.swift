@@ -153,7 +153,8 @@ func set() {
                                 if ucs2EncodingOption.value {
                                         option?.optionalData.setUcs2CommandLine(commandLineString)
                                 } else {
-                                        option?.optionalData.setAsciiCommandLine(commandLineString)
+                                        let isClover: Bool = option?.isClover ?? false
+                                        option?.optionalData.setAsciiCommandLine(commandLineString, clover: isClover)
                                 }
                                 updateOption = true
                         } else {

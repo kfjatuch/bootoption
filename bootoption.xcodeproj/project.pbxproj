@@ -84,6 +84,7 @@
 		4DD5EF751FF91DDE00C82104 /* DevicePathTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevicePathTypes.swift; sourceTree = "<group>"; };
 		4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegistryEntry.swift; sourceTree = "<group>"; };
 		4DD5EF7A1FF9238000C82104 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		4DE9D72D2188CC8700C82104 /* bootoption.8 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bootoption.8; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +139,7 @@
 		4DD5EF611FF91D8600C82104 = {
 			isa = PBXGroup;
 			children = (
+				4DE9D72C2188CC8700C82104 /* manual */,
 				4DD5EF7A1FF9238000C82104 /* README.md */,
 				4DD5EF6C1FF91D8600C82104 /* bootoption */,
 				4DD5EF6B1FF91D8600C82104 /* Products */,
@@ -174,6 +176,14 @@
 				4D8DB9FB2017BA5A00C82104 /* reboot.swift */,
 			);
 			path = bootoption;
+			sourceTree = "<group>";
+		};
+		4DE9D72C2188CC8700C82104 /* manual */ = {
+			isa = PBXGroup;
+			children = (
+				4DE9D72D2188CC8700C82104 /* bootoption.8 */,
+			);
+			path = manual;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

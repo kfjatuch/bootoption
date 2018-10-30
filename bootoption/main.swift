@@ -47,7 +47,11 @@ let orderCommand = Command("order", helpMessage: "re-arrange the boot order")
 let deleteCommand = Command("delete", helpMessage: "delete variables from NVRAM")
 let printCommand = Command("print", helpMessage: "output boot variable data in different formats")
 let rebootCommand = Command("reboot", helpMessage: "reboot to firmware settings")
-commandLine.setCommands(listCommand, infoCommand, setCommand, createCommand, orderCommand, deleteCommand, printCommand, rebootCommand)
+if DEBUG {
+        commandLine.setCommands(listCommand, infoCommand, setCommand, createCommand, orderCommand, deleteCommand, printCommand, rebootCommand)
+} else {
+        commandLine.setCommands(listCommand, infoCommand, setCommand, createCommand, orderCommand, deleteCommand, rebootCommand)
+}
 
 commandLine.parseCommand()
 

@@ -30,7 +30,6 @@ available commands:
 - <strong>create</strong>&nbsp;&nbsp;create a new EFI load option
 - <strong>order</strong>&nbsp;&nbsp;re-arrange the boot order
 - <strong>delete</strong>&nbsp;&nbsp;delete variables from NVRAM
-- <strong>print</strong>&nbsp;&nbsp;print boot variable data in different formats
 - <strong>reboot</strong>&nbsp;&nbsp;reboot to firmware settings
 
 bootoption \<command> without options will show the usage or options for that command, where available. Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.

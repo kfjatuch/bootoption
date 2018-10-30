@@ -30,11 +30,12 @@ func print() {
         let loaderPathOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1, helpMessage: "the PATH to an EFI loader executable")
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
         let loaderCommandLineOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
+        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)")
         let appleOption = BoolOption(shortFlag: "%", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "x")
         let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "%")
         let keyOption = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
         commandLine.invocationHelpMessage = "print -l PATH -d LABEL [-a STRING] [-% | -x [-k KEY]]"
-        commandLine.setOptions(loaderPathOption, loaderDescriptionOption, loaderCommandLineOption, appleOption, xmlOption, keyOption)
+        commandLine.setOptions(loaderPathOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption, appleOption, xmlOption, keyOption)
         
         func printMain() {
                 
@@ -81,7 +82,7 @@ func print() {
                 }
                 
                 let testCount: Int = 54
-                let option = EfiLoadOption(createFromLoaderPath: loaderPathOption.value!, descriptionString: loaderDescriptionOption.value!, optionalDataString: loaderCommandLineOption.value)
+                let option = EfiLoadOption(createFromLoaderPath: loaderPathOption.value!, descriptionString: loaderDescriptionOption.value!, optionalDataString: loaderCommandLineOption.value, ucs2OptionalData: ucs2EncodingOption.value)
                 let loadOptionData = option.data
                 if loadOptionData.count < testCount {
                         Debug.fault("Variable data is too small")

@@ -6,7 +6,7 @@ bootoption \- EFI boot menu manipulation
 .I "command"
 [options]
 .SH "DESCRIPTION"
-Program for the creation and manipulation of boot\-related firmware variables.
+bootoption is a program for the manipulation of boot\-related firmware variables.
 .SH "COMMANDS"
 Each
 .I "command"
@@ -21,7 +21,7 @@ show the firmware boot menu
 show an option's properties
 .RS
 .PP
-usage: bootoption info <Boot####>
+usage: bootoption info Boot####
 .RE
 .TP 
 .I "set"
@@ -29,7 +29,7 @@ usage: bootoption info <Boot####>
 set/modify variables in NVRAM
 .RS
 .TP
-.BR \-n " or " \-\-name " <Boot####>
+.BR \-n " or " \-\-name " Boot####
 .br
 variable to manipulate
 .TP
@@ -53,13 +53,17 @@ set active attribute, 0 or 1
 .br
 set active attribute, 0 or 1
 .TP
-.BR \-x " or " \-\-bootnext " <Boot####>
+.BR \-x " or " \-\-bootnext " Boot####
 .br
-set BootNext to <Boot####>
+set BootNext to Boot####
 .TP
 .BR \-t " or " \-\-timeout " SECONDS
 .br
 set boot menu Timeout in SECONDS
+.TP
+.BR \-o " or " \-\-bootorder " Boot#### [Boot####] [Boot####] [...]
+.br
+explicitly set the boot order
 .RE
 .TP 
 .I "create"
@@ -90,14 +94,6 @@ re-arrange the boot order
 .RS
 .PP
 usage: bootoption order <current position> to <new position>
-.TP
-explicitly set the boot order:
-.br
-bootoption order --set Boot#### [Boot####] [Boot####] [...]
-.TP
-unset the boot order, use with caution:
-.br
-bootoption order --delete
 .RE
 .TP
 .I "delete"
@@ -105,7 +101,7 @@ bootoption order --delete
 delete variables from NVRAM
 .RS
 .TP
-.BR \-n " or " \-\-name " <Boot####>
+.BR \-n " or " \-\-name " Boot####
 .br
 delete named variable
 .TP
@@ -116,6 +112,10 @@ delete BootNext
 .BR \-t " or " \-\-timeout
 .br
 delete Timeout
+.TP
+.BR \-o " or " \-\-bootorder
+.br
+delete the boot order
 .RE
 .TP 
 .I "reboot"

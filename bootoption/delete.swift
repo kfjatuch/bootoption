@@ -30,8 +30,9 @@ func delete() {
         let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", required: 1, helpMessage: "variable to delete, Boot####")
         let bootNextOption = BoolOption(shortFlag: "x", longFlag: "bootnext", required: 2, helpMessage: "delete BootNext")
         let timeoutOption = BoolOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "delete Timeout")
-        commandLine.invocationHelpMessage = "delete [-n ####] [-x] [-t]"
-        commandLine.setOptions(bootnumOption, bootNextOption, timeoutOption)
+        let bootOrderOption = BoolOption(shortFlag: "o", longFlag: "bootorder", required: 4, helpMessage: "delete BootOrder")
+        commandLine.invocationHelpMessage = "delete [-n ####] [-x] [-t] [-o]"
+        commandLine.setOptions(bootnumOption, bootNextOption, timeoutOption, bootOrderOption)
         
         func deleteMain() {
                 
@@ -91,6 +92,13 @@ func delete() {
                 if timeoutOption.wasSet {
                         didSomething = true
                         Nvram.shared.deleteTimeout()
+                }
+                
+                /* Delete boot order */
+                
+                if bootOrderOption.wasSet {
+                        didSomething = true
+                        Nvram.shared.deleteBootOrder()
                 }
                 
                 /* After all functions, exit some way */

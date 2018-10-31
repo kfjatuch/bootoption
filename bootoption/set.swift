@@ -35,8 +35,9 @@ func set() {
         let loaderHiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "set hidden attribute, 0 or 1")
         let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", helpMessage: "set BootNext to Boot#### (hex)")
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set boot menu Timeout in SECONDS")
-        commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] [-u] | -x #### | -t SECS"
-        commandLine.setOptions(bootnumOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption, loaderActiveOption, loaderHiddenOption, bootNextOption, timeoutOption)
+        let bootOrderOption = MultiStringOption(shortFlag: "o", longFlag: "bootorder", helpMessage: "explicitly set the boot order")
+        commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] [-u] | -x ####\n\t| -t SECS | -o Boot#### [Boot####] [Boot####] [...]"
+        commandLine.setOptions(bootnumOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption, loaderActiveOption, loaderHiddenOption, bootNextOption, timeoutOption, bootOrderOption)
         
         func setMain() {
                 
@@ -44,6 +45,7 @@ func set() {
                 let bootNextString: String = bootNextOption.value ?? ""
                 var bootNextValue: BootNumber?
                 let timeoutValue: Int? = timeoutOption.value ?? nil
+                var newBootOrder: [BootNumber]?
                 let description: String = loaderDescriptionOption.value ?? ""
                 var updateOption = false
                 var didSomething = false
@@ -71,6 +73,36 @@ func set() {
                         Debug.log("Invalid argument for option", type: .error)
                         commandLine.printErrorAndUsage(settingStatus: .invalidArgumentForOption, option: timeoutOption, argument: String(timeoutValue))
                         Debug.terminate(EX_USAGE)
+                }
+                
+                /* Boot order */
+                
+                if let arguments: [String] = bootOrderOption.value {
+                        
+                        var order: [BootNumber] = []
+                        
+                        for arg in arguments {
+                                
+                                guard let bootNum = bootNumberFromString(arg), let _ = Nvram.shared.bootOptionData(bootNum) else {
+                                        Debug.log("Invalid argument", type: .error)
+                                        print("set: invalid argument '\(arg)' for option '-o, --bootorder'", to: &standardError)
+                                        commandLine.printUsage()
+                                        Debug.terminate(EX_USAGE)
+                                }
+                                
+                                if !order.contains(bootNum) {
+                                        order.append(bootNum)
+                                } else {
+                                        Debug.log("Invalid argument", type: .error)
+                                        print("set: '\(bootNum.variableName)' was specified more than once (-o, --bootorder)", to: &standardError)
+                                        commandLine.printUsage()
+                                        Debug.terminate(EX_USAGE)
+                                }
+                        }
+                        
+                        if !order.isEmpty {
+                                newBootOrder = order
+                        }
                 }
                 
                 /*  Boot number */
@@ -136,6 +168,13 @@ func set() {
                         if !Nvram.shared.setTimeout(seconds: timeoutValue) {
                                 print("Unknown NVRAM error setting Timeout", to: &standardError)
                         }
+                        didSomething = true
+                }
+                
+                /* Set boot order */
+                
+                if let newBootOrder = newBootOrder {
+                        Nvram.shared.setBootOrder(array: newBootOrder)
                         didSomething = true
                 }
                 

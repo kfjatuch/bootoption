@@ -31,13 +31,16 @@ func print() {
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
         let loaderCommandLineOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
         let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)")
+        let fileDataOption = StringOption(shortFlag: "f", longFlag: "file", helpMessage: "append binary optional data from FILE", precludes: "au")
         let appleOption = BoolOption(shortFlag: "%", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "x")
         let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "%")
         let keyOption = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
-        commandLine.invocationHelpMessage = "print -l PATH -d LABEL [-a STRING] [-% | -x [-k KEY]]"
-        commandLine.setOptions(loaderPathOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption, appleOption, xmlOption, keyOption)
+        commandLine.invocationHelpMessage = "print -l PATH -d LABEL [-a STRING] [-u] [-f FILE]\n\t[-% | -x [-k KEY]]"
+        commandLine.setOptions(loaderPathOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption, fileDataOption, appleOption, xmlOption, keyOption)
         
         func printMain() {
+                
+                var fileData: Data?
                 
                 /* Printed output functions */
                 
@@ -81,8 +84,21 @@ func print() {
                         Debug.fault("Required options should no longer be nil")
                 }
                 
+                /* Read data from file if path specified */
+                
+                if let filePath = fileDataOption.value {
+                        guard FileManager.default.fileExists(atPath: filePath) else {
+                                Debug.fault("\(filePath) not found")
+                        }
+                        let data = NSData.init(contentsOfFile: filePath)
+                        guard data != nil else {
+                                Debug.fault("Data from \(filePath) should no longer be nil")
+                        }
+                        fileData = data as Data?
+                }
+                
                 let testCount: Int = 54
-                let option = EfiLoadOption(createFromLoaderPath: loaderPathOption.value!, descriptionString: loaderDescriptionOption.value!, optionalDataString: loaderCommandLineOption.value, ucs2OptionalData: ucs2EncodingOption.value)
+                let option = EfiLoadOption(createFromLoaderPath: loaderPathOption.value!, descriptionString: loaderDescriptionOption.value!, optionalDataString: loaderCommandLineOption.value, ucs2OptionalData: ucs2EncodingOption.value, optionalDataRaw: fileData)
                 let loadOptionData = option.data
                 if loadOptionData.count < testCount {
                         Debug.fault("Variable data is too small")

@@ -23,6 +23,40 @@ show an option's properties
 .PP
 usage: bootoption info Boot####
 .RE
+.TP
+.I "create"
+.br
+create a new EFI load option
+.RS
+.TP
+.BR \-l " or " \-\-loader " PATH
+.br
+the PATH to an EFI loader executable
+.TP
+.BR \-d " or " \-\-description " LABEL
+.br
+display LABEL in firmware boot manager
+.TP
+.BR \-a " or " \-\-arguments " STRING
+.br
+an optional STRING passed to the loader command line
+.TP
+.BR \-u
+.br
+pass command line arguments as UCS-2 (default is ASCII)
+.TP
+.BR \-f " or " \-\-file " FILE
+.br
+append binary optional data from FILE
+.RE
+.TP
+.I "order"
+.br
+re-arrange the boot order
+.RS
+.PP
+usage: bootoption order <current position> to <new position>
+.RE
 .TP 
 .I "set"
 .br
@@ -41,15 +75,19 @@ display LABEL in firmware boot manager
 .br
 an optional STRING passed to the loader command line
 .TP
-.BR \-u "
+.BR \-u
 .br
 pass command line arguments as UCS-2 (default is ASCII)
 .TP
-.BR \-\-active "
+.BR \-f " or " \-\-file " FILE
+.br
+append binary optional data from FILE
+.TP
+.BR \-\-active
 .br
 set active attribute, 0 or 1
 .TP
-.BR \-\-hidden "
+.BR \-\-hidden
 .br
 set active attribute, 0 or 1
 .TP
@@ -64,36 +102,6 @@ set boot menu Timeout in SECONDS
 .BR \-o " or " \-\-bootorder " Boot#### [Boot####] [Boot####] [...]
 .br
 explicitly set the boot order
-.RE
-.TP 
-.I "create"
-.br
-create a new EFI load option
-.RS
-.TP
-.BR \-l " or " \-\-loader " PATH
-.br
-the PATH to an EFI loader executable
-.TP
-.BR \-d " or " \-\-description " LABEL
-.br
-display LABEL in firmware boot manager
-.TP
-.BR \-a " or " \-\-arguments " STRING
-.br
-an optional STRING passed to the loader command line
-.TP
-.BR \-u "
-.br
-pass command line arguments as UCS-2 (default is ASCII)
-.RE
-.TP 
-.I "order"
-.br
-re-arrange the boot order
-.RS
-.PP
-usage: bootoption order <current position> to <new position>
 .RE
 .TP
 .I "delete"

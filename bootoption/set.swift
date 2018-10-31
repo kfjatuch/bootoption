@@ -29,15 +29,16 @@ func set() {
         Debug.log("Setting up command line", type: .info)
         let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", helpMessage: "variable to manipulate, Boot####")
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
-        let loaderCommandLineOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line")
-        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)")
+        let loaderCommandLineOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "an optional STRING passed to the loader command line", precludes: "f")
+        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", precludes: "f")
+        let fileDataOption = StringOption(shortFlag: "f", longFlag: "file", helpMessage: "append binary optional data from FILE", precludes: "au")
         let loaderActiveOption = BinaryOption(longFlag: "active", helpMessage: "set active attribute, 0 or 1")
         let loaderHiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "set hidden attribute, 0 or 1")
         let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", helpMessage: "set BootNext to Boot#### (hex)")
         let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set boot menu Timeout in SECONDS")
         let bootOrderOption = MultiStringOption(shortFlag: "o", longFlag: "bootorder", helpMessage: "explicitly set the boot order")
-        commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] [-u] | -x ####\n\t| -t SECS | -o Boot#### [Boot####] [Boot####] [...]"
-        commandLine.setOptions(bootnumOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption, loaderActiveOption, loaderHiddenOption, bootNextOption, timeoutOption, bootOrderOption)
+        commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING] [-u] [-f FILE]\n\t-x #### | -t SECS | -o Boot#### [Boot####] [Boot####] [...]"
+        commandLine.setOptions(bootnumOption, loaderDescriptionOption, loaderCommandLineOption, ucs2EncodingOption, fileDataOption, loaderActiveOption, loaderHiddenOption, bootNextOption, timeoutOption, bootOrderOption)
         
         func setMain() {
                 
@@ -47,6 +48,7 @@ func set() {
                 let timeoutValue: Int? = timeoutOption.value ?? nil
                 var newBootOrder: [BootNumber]?
                 let description: String = loaderDescriptionOption.value ?? ""
+                var fileData: Data?
                 var updateOption = false
                 var didSomething = false
                 
@@ -107,7 +109,7 @@ func set() {
                 
                 /*  Boot number */
                 
-                if bootnumOption.wasSet && (description.isEmpty && !loaderCommandLineOption.wasSet && !loaderActiveOption.wasSet && !loaderHiddenOption.wasSet) {
+                if bootnumOption.wasSet && (description.isEmpty && !loaderCommandLineOption.wasSet && !fileDataOption.wasSet && !loaderActiveOption.wasSet && !loaderHiddenOption.wasSet) {
                         Debug.log("Missing required option(s)", type: .error)
                         print("set: option \(bootnumOption.shortDescription) specified without \(loaderDescriptionOption.shortDescription), \(loaderCommandLineOption.shortDescription) or attribute options", to: &standardError)
                         commandLine.printUsage()
@@ -115,7 +117,6 @@ func set() {
                 }
                 
                 if bootnumOption.wasSet {
-                        Debug.log("Invalid argument for option", type: .error)
                         guard let bootNumber = bootNumberFromString(bootnumOption.value!), let data = Nvram.shared.bootOptionData(bootNumber) else {
                                 commandLine.printErrorAndUsage(settingStatus: .invalidArgumentForOption, option: bootnumOption, argument: bootnumOption.value!)
                                 Debug.terminate(EX_USAGE)
@@ -134,6 +135,19 @@ func set() {
                         Debug.log("Missing required option(s)", type: .error)
                         commandLine.printErrorAndUsage(settingStatus: .missingRequiredOptions, option: bootnumOption)
                         Debug.terminate(EX_USAGE)
+                }
+                
+                /* Read optional data from file if path specified */
+                
+                if let filePath = fileDataOption.value {
+                        guard FileManager.default.fileExists(atPath: filePath) else {
+                                Debug.fault("\(filePath) not found")
+                        }
+                        let data = NSData.init(contentsOfFile: filePath)
+                        guard data != nil else {
+                                Debug.fault("data should no longer be nil")
+                        }
+                        fileData = data as Data?
                 }
               
                 
@@ -185,7 +199,7 @@ func set() {
                         updateOption = true
                 }
                 
-                /* Set optional data string */
+                /* Set optional data to string, file contents or remove */
                 
                 if let commandLineString: String = loaderCommandLineOption.value {
                         if !commandLineString.isEmpty {
@@ -197,11 +211,22 @@ func set() {
                                 }
                                 updateOption = true
                         } else {
-                                option?.removeOptionalData()
-                                updateOption = true
+                                /* -a --arguments=empty string, remove any optional data */
+                                if option?.optionalData.data != nil {
+                                        Debug.log("Removing optional data", type: .info)
+                                        option?.removeOptionalData()
+                                        updateOption = true
+                                }
                         }
-                } else {
-                        if loaderCommandLineOption.wasSet {
+                } else if let data = fileData {
+                        /* set optional data from file */
+                        Debug.log("Setting optional data: %@", type: .info, argsList: data.debugString)
+                        option?.optionalData.data = data
+                        updateOption = true
+                } else if loaderCommandLineOption.wasSet {
+                        /* -a --arguments without argument, remove any optional data */
+                        if option?.optionalData.data != nil {
+                                Debug.log("Removing optional data", type: .info)
                                 option?.removeOptionalData()
                                 updateOption = true
                         }

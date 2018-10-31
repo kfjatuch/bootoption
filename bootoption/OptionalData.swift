@@ -31,14 +31,16 @@ struct OptionalData {
                         }
                         if data.isConvertibleToUTF8CString {
                                 if let ascii = String(data: data, encoding: .ascii) {
-                                        Debug.log("'%@' decoded as ascii from data: %@", type: .info, argsList: ascii, data)
-                                        return ascii
+                                        let trimmed = ascii.replacingOccurrences(of: "\r\n|\r|\n", with: " ", options: .regularExpression)
+                                        Debug.log("'%@' decoded as ascii from data: %@", type: .info, argsList: trimmed, data)
+                                        return trimmed
                                 }
                         }
                         var mutable = data
                         if let ucs2 = mutable.removeEfiString() {
-                                Debug.log("'%@' decoded as UCS-2 from data: %@", type: .info, argsList: ucs2, data)
-                                return ucs2
+                                let trimmed = ucs2.replacingOccurrences(of: "\r\n|\r|\n", with: " ", options: .regularExpression)
+                                Debug.log("'%@' decoded as UCS-2 from data: %@", type: .info, argsList: trimmed, data)
+                                return trimmed
                         }
                         Debug.log("Did not decode optional data as string: %@", type: .info, argsList: data)
                         return nil

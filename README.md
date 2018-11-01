@@ -7,7 +7,7 @@
 </picture>
 </p>
 
-A command line utility for managing a UEFI firmware's boot menu on macOS. Like efibootmgr. Report bugs [here on GitHub](https://github.com/vulgo/bootoption/issues).
+A command line utility for EFI boot menu manipulation on macOS. Like efibootmgr. Report bugs [here on GitHub](https://github.com/vulgo/bootoption/issues).
 
 ## Installing
 
@@ -26,9 +26,9 @@ available commands:
 
 - <strong>list</strong>&nbsp;&nbsp;show the firmware boot menu
 - <strong>info</strong>&nbsp;&nbsp;show an option's properties
-- <strong>set</strong>&nbsp;&nbsp;set/modify variables in NVRAM
 - <strong>create</strong>&nbsp;&nbsp;create a new EFI load option
 - <strong>order</strong>&nbsp;&nbsp;re-arrange the boot order
+- <strong>set</strong>&nbsp;&nbsp;set/modify variables in NVRAM
 - <strong>delete</strong>&nbsp;&nbsp;delete variables from NVRAM
 - <strong>reboot</strong>&nbsp;&nbsp;reboot to firmware settings
 

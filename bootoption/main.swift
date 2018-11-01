@@ -41,16 +41,16 @@ Debug.log("Version %@", type: .info, argsList: programInfo.version)
 var commandLine = CommandLine(invocationHelpMessage: "<command> [options]\n\navailable commands:", commandHelpMessage: "\nfor command usage use: %@ <command>", info: programInfo)
 let listCommand = Command("list", helpMessage: "show the firmware boot menu")
 let infoCommand = Command("info", helpMessage: "show an option's properties")
-let setCommand = Command("set", helpMessage: "set/modify variables in NVRAM")
 let createCommand = Command("create", helpMessage: "create a new EFI load option")
 let orderCommand = Command("order", helpMessage: "re-arrange the boot order")
+let setCommand = Command("set", helpMessage: "set/modify variables in NVRAM")
 let deleteCommand = Command("delete", helpMessage: "delete variables from NVRAM")
 let printCommand = Command("print", helpMessage: "output boot variable data in different formats")
 let rebootCommand = Command("reboot", helpMessage: "reboot to firmware settings")
 if DEBUG {
-        commandLine.setCommands(listCommand, infoCommand, setCommand, createCommand, orderCommand, deleteCommand, printCommand, rebootCommand)
+        commandLine.setCommands(listCommand, infoCommand, createCommand, orderCommand, setCommand, deleteCommand, printCommand, rebootCommand)
 } else {
-        commandLine.setCommands(listCommand, infoCommand, setCommand, createCommand, orderCommand, deleteCommand, rebootCommand)
+        commandLine.setCommands(listCommand, infoCommand, createCommand, orderCommand, setCommand, deleteCommand, rebootCommand)
 }
 
 commandLine.parseCommand()

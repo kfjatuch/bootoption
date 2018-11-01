@@ -61,7 +61,14 @@ class CommandLine {
                 return string
         }
         
-        struct format {
+        static var standardInput: Data {
+                let standardInputFileHandle = FileHandle.init(fileDescriptor: FileHandle.standardInput.fileDescriptor, closeOnDealloc: true)
+                let data = standardInputFileHandle.readDataToEndOfFile()
+                standardInputFileHandle.closeFile()
+                return data
+        }
+        
+        public struct format {
                 static var listPadding: String = "  "
                 static var optionMaxWidth: Int = 0
                 static var commandMaxWidth: Int = 0
@@ -117,7 +124,7 @@ class CommandLine {
                 options.append(option)
         }
         
-        func setOptions(_ options: Option...) {
+        public func setOptions(_ options: Option...) {
                 self.options = [Option]()
                 for option in options {
                         addOption(option)
@@ -127,7 +134,7 @@ class CommandLine {
                 parserStatus = .noInput
         }
     
-        func setCommands(_ commands: Command...) {
+        public func setCommands(_ commands: Command...) {
                 self.commands = [Command]()
                 for command in commands {
                         addCommand(command)
@@ -137,7 +144,7 @@ class CommandLine {
                 parserStatus = .noInput
         }
         
-        func printUsage(showingCommands: Bool = false) {
+        public func printUsage(showingCommands: Bool = false) {
                 print(formatFunction!("usage: \(baseName) \(invocationHelpMessage)", format.style.invocationMessage), terminator: "", to: &standardError)
                 if showingCommands {
                         for command in commands {
@@ -160,7 +167,7 @@ class CommandLine {
                 return commandString
         }
         
-        func parseCommand() {
+        public func parseCommand() {
                 Debug.log("Parsing command...", type: .info)
                 let firstArgument: String? = removeFirstArgument()
                 
@@ -187,7 +194,7 @@ class CommandLine {
                 Debug.log("Active command is '%@'", type: .info, argsList: activeCommand ?? "nil")
         }
         
-        func getFlagValues(rawArguments: [String], flagIndex: Int, attachedArg: String? = nil) -> [String] {
+        private func getFlagValues(rawArguments: [String], flagIndex: Int, attachedArg: String? = nil) -> [String] {
                 var args: [String] = [String]()
                 var skipFlagChecks = false
                 
@@ -215,7 +222,7 @@ class CommandLine {
                 return args
         }
         
-        func parseOptions(strict: Bool = false) {
+        public func parseOptions(strict: Bool = false) {
                 Debug.log("Parsing command options...", type: .info)
                 var rawArguments = self.rawArguments
                
@@ -428,7 +435,7 @@ class CommandLine {
                 parserStatus = .success
         }
         
-        func printErrorAndUsage(showingCommands: Bool = false) {
+        public func printErrorAndUsage(showingCommands: Bool = false) {
                 let command = "'" + (errorCausing.command ?? "nil") + "'"
                 let options = "'" + errorCausing.options.joined(separator: "', '") + "'"
                 let arguments = "'" + errorCausing.arguments.joined(separator: "', '") + "'"
@@ -470,7 +477,7 @@ class CommandLine {
                 printUsage(showingCommands: showingCommands)
         }
         
-        func printErrorAndUsage(settingStatus status: ParserStatus, option: Option? = nil, argument: String? = nil, showingCommands: Bool = false) {
+        public func printErrorAndUsage(settingStatus status: ParserStatus, option: Option? = nil, argument: String? = nil, showingCommands: Bool = false) {
                 commandLine.parserStatus = status
                 if let argument = argument {
                         CommandLine.errorCausing.addArgument(argument)

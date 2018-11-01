@@ -105,4 +105,47 @@ struct OptionalData {
                         Debug.fault("UCS-2 encoding of optional data string failed")
                 }
         }
+        
+        mutating func setOptionalData(string: String, clover: Bool = false, ucs: Bool = false) {
+                if ucs {
+                        setUcs2CommandLine(string)
+                } else {
+                        setAsciiCommandLine(string, clover: clover)
+                }
+        }
+        
+        static func selectSourceFrom(filePath: String?, arguments: String?) -> Any? {
+                Debug.log("Optional data select source...", type: .info)
+                var optionalData: Any?
+                
+                if let filePath: String = filePath {
+                        
+                        /* Read from file if path specified with option -@ --optional-data */
+                        
+                        if filePath == "$" {
+                                /* Read from stdin */
+                                Debug.log("Reading optional data from stdin...", type: .info)
+                                optionalData = CommandLine.standardInput
+                        } else {
+                                guard FileManager.default.fileExists(atPath: filePath) else {
+                                        Debug.fault("\(filePath) not found")
+                                }
+                                let data = NSData.init(contentsOfFile: filePath)
+                                optionalData = data as Data?
+                        }
+                        guard optionalData != nil else {
+                                Debug.fault("Data from \(filePath) should no longer be nil")
+                        }
+                        
+                } else if let arguments = arguments {
+                        
+                        /* Command line arguments specified with option -a --arguments */
+                        
+                        optionalData = arguments
+                        
+                }
+                
+                Debug.log("Returned: %@", type: .info, argsList: optionalData as Any)
+                return optionalData
+        }
 }

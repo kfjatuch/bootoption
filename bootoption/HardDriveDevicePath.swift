@@ -87,13 +87,11 @@ struct HardDriveDevicePath {
                 Debug.log("Initializing Hard Drive DP from loader filesystem path...", type: .info)
                 Debug.log("Path: %@", type: .info, argsList: path)
                 
-                let fileManager: FileManager = FileManager()
-                
-                guard fileManager.fileExists(atPath: path) else {
+                guard FileManager.default.fileExists(atPath: path) else {
                         Debug.fault("File not found at the specified path")
                 }
                 
-                guard var mountedVolumeUrls: [URL] = fileManager.mountedVolumeURLs(includingResourceValuesForKeys: nil) else {
+                guard var mountedVolumeUrls: [URL] = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: nil) else {
                         Debug.fault("Failed to get URLs of all mounted volumes")
                 }
                 

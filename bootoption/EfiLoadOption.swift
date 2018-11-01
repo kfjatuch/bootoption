@@ -162,7 +162,7 @@ struct EfiLoadOption {
         
         /* Init create from local filesystem path */
         
-        init(createFromLoaderPath loader: String, descriptionString: String, optionalDataString: String?, ucs2OptionalData: Bool = false, optionalDataRaw: Data?) {
+        init(createFromLoaderPath loader: String, descriptionString: String, optionalData: Any?, ucs2OptionalData: Bool = false) {
                 Debug.log("Initializing EfiLoadOption from loader filesystem path", type: .info)
 
                 /* Attributes */
@@ -208,15 +208,11 @@ struct EfiLoadOption {
                 
                 /* Optional data */
                 
-                if let string = optionalDataString {
-                        if ucs2OptionalData {
-                                optionalData.setUcs2CommandLine(string)
-                        } else {
-                                optionalData.setAsciiCommandLine(string, clover: isClover)
-                        }
-                } else if let data = optionalDataRaw {
+                if let string = optionalData as? String {
+                        self.optionalData.setOptionalData(string: string, clover: isClover, ucs: ucs2OptionalData)
+                } else if let data = optionalData as? Data {
                         Debug.log("Optional data initialized from data", type: .info)
-                        optionalData.data = data
+                        self.optionalData.data = data
                 } else {
                         Debug.log("Not generating optional data", type: .info)
                 }

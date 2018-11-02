@@ -27,7 +27,7 @@ import Foundation
 func delete() {
         
         Debug.log("Setting up command line", type: .info)
-        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", required: 1, helpMessage: "variable to delete, Boot####")
+        let bootnumOption = BootNumberOption(shortFlag: "n", longFlag: "name", required: 1, helpMessage: "variable to delete, Boot####")
         let bootNextOption = BoolOption(shortFlag: "x", longFlag: "bootnext", required: 2, helpMessage: "delete BootNext")
         let timeoutOption = BoolOption(shortFlag: "t", longFlag: "timeout", required: 3, helpMessage: "delete Timeout")
         let bootOrderOption = BoolOption(shortFlag: "o", longFlag: "bootorder", required: 4, helpMessage: "delete BootOrder")
@@ -35,18 +35,6 @@ func delete() {
         commandLine.setOptions(bootnumOption, bootNextOption, timeoutOption, bootOrderOption)
         
         commandLine.parseOptions(strict: true)
-        
-        guard commandLine.parserStatus == .success else {
-                
-                commandLine.printErrorAndUsage()
-                
-                if commandLine.parserStatus == .noInput {
-                        Debug.terminate(EX_OK)
-                } else {
-                        Debug.terminate(EX_USAGE)
-                }
-                
-        }
         
         /* Check root */
                 
@@ -60,14 +48,9 @@ func delete() {
         
         /* Delete a boot option */
         
-        if bootnumOption.wasSet {
-                didSomething = true
+        if let bootNumber: BootNumber = bootnumOption.value {
                 
-                /* Parse boot number */
-                guard let bootNumber: BootNumber = bootNumberFromString(bootnumOption.value ?? "") else {
-                        commandLine.printUsage()
-                        Debug.terminate(EX_USAGE)
-                }
+                didSomething = true
                 
                 /* Delete from boot order if needed */
                 

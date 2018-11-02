@@ -55,8 +55,8 @@ if DEBUG {
 
 commandLine.parseCommand()
 
-switch commandLine.parserStatus {
-case .success:
+if commandLine.parserStatus == .success {
+        
         switch commandLine.activeCommand {
         case listCommand.name:
                 list()
@@ -82,7 +82,5 @@ case .success:
                 commandLine.printUsage(showingCommands: true)
                 Debug.terminate(EX_USAGE)
         }
-default:
-        commandLine.printErrorAndUsage(showingCommands: true)
-        Debug.terminate(EX_USAGE)
+        
 }

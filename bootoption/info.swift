@@ -20,12 +20,20 @@
 
 import Foundation
 
-func infoUsage() -> Never {
-        print("Usage: bootoption info <Boot####>" , to: &standardError)
-        Debug.terminate(EX_USAGE)
-}
-
-func infoMain(bootNumber: BootNumber) {
+func info() {
+        
+        var required: BootNumber?
+        for argument in commandLine.rawArguments {
+                if let number = bootNumberFromString(argument) {
+                        required = number
+                        break
+                }
+        }
+        
+        guard let bootNumber = required else {
+                print("usage: bootoption info <Boot####>", to: &standardError)
+                Debug.terminate(1)
+        }
         
         if let data: Data = Nvram.shared.bootOptionData(bootNumber) {
                 let option = EfiLoadOption(fromBootNumber: bootNumber, data: data, details: true)
@@ -34,7 +42,7 @@ func infoMain(bootNumber: BootNumber) {
                 var properties: [(String, String)] = Array()
                 
                 properties.append(("Name", name))
-                if let string: String = option.descriptionString {
+                if let string = option.descriptionString {
                         properties.append(("Description", string))
                 }
                 
@@ -53,17 +61,17 @@ func infoMain(bootNumber: BootNumber) {
                 }
                 
                 properties.append(("Device path", option.devicePathDescription))
-                if let string: String = option.hardDriveDevicePath?.partitionUuid?.uuidString {
+                if let string = option.hardDriveDevicePath?.partitionUuid?.uuidString {
                         properties.append(("Partition UUID", string))
                 }
                 
-                if let string: String = option.filePathDevicePath?.path {
+                if let string = option.filePathDevicePath?.path {
                         properties.append(("Loader path", string))
                 }
                 
-                if let string: String = option.optionalData.stringValue, !string.isEmpty {
+                if let string = option.optionalData.stringValue, !string.isEmpty {
                         properties.append(("Arguments", string))
-                } else if let string: String = option.optionalData.description {
+                } else if let string = option.optionalData.description {
                         /* Insert spaces to align subsequent lines with first line content */
                         let paddedString = string.replacingOccurrences(of: "\n", with: "\n      ")
                         properties.append(("Data", paddedString))
@@ -75,22 +83,4 @@ func infoMain(bootNumber: BootNumber) {
                 
                 Debug.terminate(EX_OK)
         }
-}
-
-/*
- *  Function for command: info
- */
-
-func info() {
-
-        /* Parse command line */
-        
-        guard let string = commandLine.rawArguments.first else {
-                infoUsage()
-        }
-        guard let bootNumber = bootNumberFromString(string) else {
-                infoUsage()
-        }
-        
-        infoMain(bootNumber: bootNumber)
 }

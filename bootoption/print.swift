@@ -29,28 +29,16 @@ func print() {
         Debug.log("Setting up command line", type: .info)
         let loaderPathOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1, helpMessage: "the PATH to an EFI loader executable")
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
-        let optionalDataStringOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "optional STRING passed to the loader command line", precludes: "@")
-        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", precludes: "@")
-        let optionalDataFilePathOption = StringOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", precludes: "au")
-        let appleOption = BoolOption(shortFlag: "%", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", precludes: "x")
-        let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", precludes: "%")
+        let optionalDataStringOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "optional STRING passed to the loader command line", invalidates: "@")
+        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", invalidates: "@")
+        let optionalDataFilePathOption = FilePathOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", invalidates: "a", "u")
+        let appleOption = BoolOption(shortFlag: "%", longFlag: "apple", helpMessage: "print Apple nvram-style string instead of raw hex", invalidates: "x")
+        let xmlOption = BoolOption(shortFlag: "x", longFlag: "xml", helpMessage: "print an XML serialization instead of raw hex", invalidates: "%")
         let keyOption = StringOption(shortFlag: "k", longFlag: "key", helpMessage: "specify named KEY, use with option -x")
         commandLine.invocationHelpMessage = "print -l PATH -d LABEL [-a STRING [-u] | -@ FILE]\n\t[-% | -x [-k KEY]]"
         commandLine.setOptions(loaderPathOption, loaderDescriptionOption, optionalDataStringOption, ucs2EncodingOption, optionalDataFilePathOption, appleOption, xmlOption, keyOption)
         
         commandLine.parseOptions(strict: true)
-        
-        guard commandLine.parserStatus == .success else {
-                
-                commandLine.printErrorAndUsage()
-                
-                if commandLine.parserStatus == .noInput {
-                        Debug.terminate(EX_OK)
-                } else {
-                        Debug.terminate(EX_USAGE)
-                }
-                
-        }
         
         var optionalData: Any?
         
@@ -98,7 +86,7 @@ func print() {
         
         /* Optional data */
         
-        optionalData = OptionalData.selectSourceFrom(filePath: optionalDataFilePathOption.value, arguments: optionalDataStringOption.value)
+        optionalData = OptionalData.selectSourceFrom(data: optionalDataFilePathOption.data, arguments: optionalDataStringOption.value)
         
         /* EFI load option */
         

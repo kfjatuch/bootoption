@@ -29,25 +29,13 @@ func create() {
         Debug.log("Setting up command line", type: .info)
         let loaderPathOption = StringOption(shortFlag: "l", longFlag: "loader", required: 1,  helpMessage: "the PATH to an EFI loader executable")
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
-        let optionalDataStringOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "optional STRING passed to the loader command line", precludes: "@")
-        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", precludes: "@")
-        let optionalDataFilePathOption = StringOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", precludes: "au")
+        let optionalDataStringOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "optional STRING passed to the loader command line", invalidates: "@")
+        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", invalidates: "@")
+        let optionalDataFilePathOption = FilePathOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", invalidates: "a", "u")
         commandLine.invocationHelpMessage = "create -l PATH -d LABEL [-a STRING [-u] | -@ FILE]"
         commandLine.setOptions(loaderPathOption, loaderDescriptionOption, optionalDataStringOption, ucs2EncodingOption, optionalDataFilePathOption)
         
         commandLine.parseOptions(strict: true)
-        
-        guard commandLine.parserStatus == .success else {
-                
-                commandLine.printErrorAndUsage()
-                
-                if commandLine.parserStatus == .noInput {
-                        Debug.terminate(EX_OK)
-                } else {
-                        Debug.terminate(EX_USAGE)
-                }
-                
-        }
         
         var optionalData: Any?
         
@@ -57,24 +45,23 @@ func create() {
                 Debug.log("Only root can set NVRAM variables", type: .error)
                 Debug.fault("Permission denied")
         }
-        
-        var status = EX_OK
-        
+       
         /* Optional data */
         
-        optionalData = OptionalData.selectSourceFrom(filePath: optionalDataFilePathOption.value, arguments: optionalDataStringOption.value)
+        optionalData = OptionalData.selectSourceFrom(data: optionalDataFilePathOption.data, arguments: optionalDataStringOption.value)
         
         /* Set a new load option */
         
-        if let loaderPath = loaderPathOption.value, let description = loaderDescriptionOption.value {
-                let option = EfiLoadOption(createFromLoaderPath: loaderPath, descriptionString: description, optionalData: optionalData, ucs2OptionalData: ucs2EncodingOption.value)
-                if Nvram.shared.setNewEfiLoadOption(data: option.data, addingToBootOrder: true) == nil {
-                        print("Error setting boot option", to: &standardError)
-                        status = EX_DATAERR
-                }
-        } else {
-                status = EX_NOINPUT
+        guard let loaderPath = loaderPathOption.value, let description = loaderDescriptionOption.value else {
+                Debug.terminate(EX_NOINPUT)
         }
         
-        Debug.terminate(status)
+        let option = EfiLoadOption(createFromLoaderPath: loaderPath, descriptionString: description, optionalData: optionalData, ucs2OptionalData: ucs2EncodingOption.value)
+        
+        guard Nvram.shared.setNewEfiLoadOption(data: option.data, addingToBootOrder: true) != nil else {
+                Debug.fault("Unknown NVRAM error setting load option")
+        }
+        
+        Debug.terminate(EX_OK)
+        
 }

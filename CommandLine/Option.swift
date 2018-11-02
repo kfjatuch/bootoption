@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+import Foundation
+
 /*
  * The base class for a command-line option.
  */
@@ -26,8 +28,8 @@ class Option {
         let shortFlag: String?
         let longFlag: String?
         let required: Int
-        let helpMessage: String
-        let precludes: String
+        let helpMessage: String?
+        let invalidatesOthers: Set<Character>?
         
         /* True if the option was set when parsing command-line arguments */
         var wasSet: Bool {
@@ -73,7 +75,7 @@ class Option {
                 return string
         }
         
-        internal init(_ shortFlag: String?, _ longFlag: String?, _ required: Int, _ helpMessage: String, _ precludes: String) {
+        internal init(_ shortFlag: String?, _ longFlag: String?, _ required: Int, _ helpMessage: String?, _ invalidates: [Character]? = nil) {
                 if shortFlag != nil {
                         assert(shortFlag!.count == 1, "Short flag must be a single character")
                         assert(Int(shortFlag!) == nil && shortFlag!.toDouble() == nil, "Short flag cannot be a numeric value")
@@ -85,26 +87,37 @@ class Option {
                 self.longFlag = longFlag
                 self.helpMessage = helpMessage
                 self.required = required
-                self.precludes = precludes
+                if let invalidates = invalidates {
+                        self.invalidatesOthers = Set(invalidates)
+                } else {
+                        self.invalidatesOthers = nil
+                }
         }
         
         /* Initializes a new Option that has both long and short flags. */
-        convenience init(shortFlag: String, longFlag: String, required: Int = 0, helpMessage: String, precludes: String = "") {
-                self.init(shortFlag, longFlag, required, helpMessage, precludes)
+        convenience init(shortFlag: String, longFlag: String, required: Int = 0, helpMessage: String?, invalidates: Character ...) {
+                self.init(shortFlag, longFlag, required, helpMessage, invalidates)
         }
         
         /* Initializes a new Option that has only a short flag. */
-        convenience init(shortFlag: String, required: Int = 0, helpMessage: String, precludes: String = "") {
-                self.init(shortFlag, nil, required, helpMessage, precludes)
+        convenience init(shortFlag: String, required: Int = 0, helpMessage: String?, invalidates: Character ...) {
+                self.init(shortFlag, nil, required, helpMessage, invalidates)
         }
         
         /* Initializes a new Option that has only a long flag. */
-        convenience init(longFlag: String, required: Int = 0, helpMessage: String, precludes: String = "") {
-                self.init(nil, longFlag, required, helpMessage, precludes)
+        convenience init(longFlag: String, required: Int = 0, helpMessage: String?, invalidates: Character ...) {
+                self.init(nil, longFlag, required, helpMessage, invalidates)
         }
         
-        func flagMatch(_ flag: String) -> Bool {
-                return flag == shortFlag || flag == longFlag
+        func stringMatches(_ test: Any) -> Bool {
+                switch test {
+                case let c as Character:
+                        return String(c) == shortFlag || String(c) == longFlag
+                case let str as String:
+                        return str == shortFlag || str == longFlag
+                default:
+                        return false
+                }                
         }
         
         func setValue(_ values: [String]) -> Bool {
@@ -118,7 +131,6 @@ class Option {
  */
 
 class BoolOption: Option {
-        
         var value: Bool = false
         
         override var wasSet: Bool {
@@ -136,7 +148,6 @@ class BoolOption: Option {
  */
 
 class BinaryOption: Option {
-        
         var value: Bool? = nil
         
         override var wasSet: Bool {
@@ -172,7 +183,6 @@ class BinaryOption: Option {
 /*  An option that accepts a positive or negative integer value. */
 
 class IntOption: Option {
-        
         var value: Int?
         
         override var wasSet: Bool {
@@ -204,7 +214,6 @@ class IntOption: Option {
  */
 
 class CounterOption: Option {
-        
         var value: Int = 0
         
         override var wasSet: Bool {
@@ -224,7 +233,6 @@ class CounterOption: Option {
 /* An option that accepts a positive or negative floating-point value. */
 
 class DoubleOption: Option {
-        
         var value: Double?
         
         override var wasSet: Bool {
@@ -253,7 +261,6 @@ class DoubleOption: Option {
 /* An option that accepts a string value. */
 
 class StringOption: Option {
-        
         var value: String? = nil
         
         override var wasSet: Bool {
@@ -275,22 +282,21 @@ class StringOption: Option {
         }
 }
 
-/* An option that accepts a string value or no value  */
+/* An option that accepts a file system path */
 
-class OptionalStringOption: Option {
-        
+class FilePathOption: Option {
         var value: String? = nil
         
-        var wasSetToNil: Bool = false
+        var fileExistsAtPath: Bool {
+                if let path = value {
+                        return FileManager.default.fileExists(atPath: path)
+                } else {
+                        return false
+                }
+        }
         
         override var wasSet: Bool {
-                if wasSetToNil {
-                        return true
-                }
-                if value != nil {
-                        return true
-                }
-                return false
+                return value != nil
         }
         
         override var claimedValues: Int {
@@ -300,7 +306,61 @@ class OptionalStringOption: Option {
         override func setValue(_ values: [String]) -> Bool {
                 
                 if values.count == 0 {
-                        wasSetToNil = true
+                        return false
+                }
+                
+                value = values[0]
+                return true
+        }
+        
+        var data: Data? {
+                var buffer: Data?
+                if let filePath = value {
+                        if value == CommandLine.fileOperand {
+                                /* Read from stdin */
+                                Debug.log("Reading data from standard input...", type: .info)
+                                buffer = CommandLine.standardInput
+                        } else {
+                                guard fileExistsAtPath else {
+                                        Debug.fault("Not found: \(filePath)")
+                                }
+                                let data = NSData.init(contentsOfFile: filePath)
+                                buffer = data as Data?
+                        }
+                        guard buffer != nil else {
+                                Debug.fault("Data from file: \(filePath) should no longer be nil")
+                        }
+                        return buffer
+                } else {
+                        return nil
+                }
+        }
+}
+
+
+/* An option that accepts a string value or no value  */
+
+class OptionalStringOption: Option {
+        var value: String? = nil
+        
+        var setWithoutValue: Bool = false
+        
+        override var wasSet: Bool {
+                if setWithoutValue || value != nil {
+                        return true
+                } else {
+                        return false
+                }
+        }
+        
+        override var claimedValues: Int {
+                return value != nil ? 1 : 0
+        }
+        
+        override func setValue(_ values: [String]) -> Bool {
+                
+                if values.count == 0 {
+                        setWithoutValue = true
                 } else {
                         value = values[0]
                 }
@@ -311,7 +371,6 @@ class OptionalStringOption: Option {
 /* An option that accepts one or more string values. */
 
 class MultiStringOption: Option {
-        
         var value: [String]?
         
         override var wasSet: Bool {
@@ -341,7 +400,6 @@ class MultiStringOption: Option {
 /* An option that represents an enum value. */
 
 class EnumOption<T:RawRepresentable>: Option where T.RawValue == String {
-        
         var value: T?
         
         override var wasSet: Bool {

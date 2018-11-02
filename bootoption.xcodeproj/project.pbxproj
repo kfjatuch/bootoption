@@ -33,9 +33,11 @@
 		4D9601CF2159211E00C82104 /* NvramHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9601CE2159211E00C82104 /* NvramHelper.swift */; };
 		4DA110C62004D8D000C82104 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA110C52004D8D000C82104 /* Debug.swift */; };
 		4DA4A071200D2FC700C82104 /* info.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4A070200D2FC700C82104 /* info.swift */; };
+		4DA8EA22218CEC6A00C82104 /* BootMenuOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA8EA21218CEC6A00C82104 /* BootMenuOptions.swift */; };
 		4DD5EF771FF91DDF00C82104 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF741FF91DDE00C82104 /* main.swift */; };
 		4DD5EF781FF91DDF00C82104 /* DevicePathTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF751FF91DDE00C82104 /* DevicePathTypes.swift */; };
 		4DD5EF791FF91DDF00C82104 /* RegistryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */; };
+		4DF641FD218C916700C82104 /* CommandLineExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DF641FC218C916700C82104 /* CommandLineExtensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -79,12 +81,14 @@
 		4D9601CE2159211E00C82104 /* NvramHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NvramHelper.swift; sourceTree = "<group>"; };
 		4DA110C52004D8D000C82104 /* Debug.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Debug.swift; sourceTree = "<group>"; };
 		4DA4A070200D2FC700C82104 /* info.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = info.swift; sourceTree = "<group>"; };
+		4DA8EA21218CEC6A00C82104 /* BootMenuOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootMenuOptions.swift; sourceTree = "<group>"; };
 		4DD5EF6A1FF91D8600C82104 /* bootoption */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = bootoption; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DD5EF741FF91DDE00C82104 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		4DD5EF751FF91DDE00C82104 /* DevicePathTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevicePathTypes.swift; sourceTree = "<group>"; };
 		4DD5EF761FF91DDF00C82104 /* RegistryEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegistryEntry.swift; sourceTree = "<group>"; };
 		4DD5EF7A1FF9238000C82104 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4DE9D72D2188CC8700C82104 /* bootoption.8 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bootoption.8; sourceTree = "<group>"; };
+		4DF641FC218C916700C82104 /* CommandLineExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandLineExtensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +107,7 @@
 			children = (
 				4D461F1B1FFD7EBA00C82104 /* README.md */,
 				4D461F141FFD398D00C82104 /* CommandLine.swift */,
+				4DF641FC218C916700C82104 /* CommandLineExtensions.swift */,
 				4DA110C52004D8D000C82104 /* Debug.swift */,
 				4D461F171FFD398D00C82104 /* Option.swift */,
 				4D0ADAE3200A96F900C82104 /* Command.swift */,
@@ -163,6 +168,7 @@
 				4DAFF4402016286F00C82104 /* Efi */,
 				4DAFF4432016296F00C82104 /* Nvram */,
 				4D1A549A20033AAB00C82104 /* BootMenu.swift */,
+				4DA8EA21218CEC6A00C82104 /* BootMenuOptions.swift */,
 				4D64CF4B200E325400C82104 /* create.swift */,
 				4D78F50C20042CE600C82104 /* delete.swift */,
 				4D4EB9012004097B00C82104 /* help.swift */,
@@ -250,6 +256,7 @@
 				4D8DB9FC2017BA5A00C82104 /* reboot.swift in Sources */,
 				4D4EB8FE2003FB2800C82104 /* list.swift in Sources */,
 				4D4EB8FC2003FB1000C82104 /* print.swift in Sources */,
+				4DF641FD218C916700C82104 /* CommandLineExtensions.swift in Sources */,
 				4D7F8FC320162EAB00C82104 /* FilePathDevicePath.swift in Sources */,
 				4D461F181FFD3A6200C82104 /* CommandLine.swift in Sources */,
 				4D78F50D20042CE600C82104 /* delete.swift in Sources */,
@@ -273,6 +280,7 @@
 				4D2B86801FF98F3900C82104 /* Extensions.swift in Sources */,
 				4D64CF4C200E325400C82104 /* create.swift in Sources */,
 				4D107082215C0B2700C82104 /* OptionalData.swift in Sources */,
+				4DA8EA22218CEC6A00C82104 /* BootMenuOptions.swift in Sources */,
 				4D4EB8FA2003FB0700C82104 /* set.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

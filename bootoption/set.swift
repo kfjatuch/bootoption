@@ -27,37 +27,22 @@ import Foundation
 func set() {
         
         Debug.log("Setting up command line", type: .info)
-        let bootnumOption = StringOption(shortFlag: "n", longFlag: "name", helpMessage: "variable to manipulate, Boot####")
+        let bootnumOption = BootNumberOption(shortFlag: "n", longFlag: "name", helpMessage: "variable to manipulate, Boot####")
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
-        let optionalDataStringOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "optional STRING passed to the loader command line", precludes: "@")
-        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", precludes: "@")
-        let optionalDataFilePathOption = StringOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", precludes: "au")
+        let optionalDataStringOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "optional STRING passed to the loader command line", invalidates: "@")
+        let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", invalidates: "@")
+        let optionalDataFilePathOption = FilePathOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", invalidates: "a", "u")
         let attributeActiveOption = BinaryOption(longFlag: "active", helpMessage: "set active attribute, 0 or 1")
         let attributeHiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "set hidden attribute, 0 or 1")
-        let bootNextOption = StringOption(shortFlag: "x", longFlag: "bootnext", helpMessage: "set BootNext to Boot#### (hex)")
-        let timeoutOption = IntOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set boot menu Timeout in SECONDS")
-        let bootOrderOption = MultiStringOption(shortFlag: "o", longFlag: "bootorder", helpMessage: "explicitly set the boot order")
+        let bootNextOption = BootNumberOption(shortFlag: "x", longFlag: "bootnext", helpMessage: "set BootNext to Boot#### (hex)")
+        let timeoutOption = TimeoutOption(shortFlag: "t", longFlag: "timeout", helpMessage: "set boot menu Timeout in SECONDS")
+        let bootOrderOption = BootOrderArrayOption(shortFlag: "o", longFlag: "bootorder", helpMessage: "explicitly set the boot order")
         commandLine.invocationHelpMessage = "set -n #### [-d LABEL] [-a STRING [-u] | -@ FILE]\n\t-x #### | -t SECS | -o Boot#### [Boot####] [Boot####] [...]"
         commandLine.setOptions(bootnumOption, loaderDescriptionOption, optionalDataStringOption, ucs2EncodingOption, optionalDataFilePathOption, attributeActiveOption, attributeHiddenOption, bootNextOption, timeoutOption, bootOrderOption)
         
         commandLine.parseOptions(strict: true)
         
-        guard commandLine.parserStatus == .success else {
-                
-                commandLine.printErrorAndUsage()
-                
-                if commandLine.parserStatus == .noInput {
-                        Debug.terminate(EX_OK)
-                } else {
-                        Debug.terminate(EX_USAGE)
-                }
-                
-        }
-                
         var option: EfiLoadOption?
-        var bootNextValue: BootNumber?
-        var timeoutValue: Int?
-        var newBootOrder: [BootNumber]?
         let description: String = loaderDescriptionOption.value ?? ""
         var optionalData: Any?
         var updateOption = false
@@ -66,73 +51,19 @@ func set() {
         /*
          *  Check arguments are valid
          *
-         *  Boot next
+         *  Boot number
          */
-        
-        if let bootNext = bootNextOption.value {
-                guard let validBootNumber: BootNumber = bootNumberFromString(bootNext), let _: Data = Nvram.shared.bootOptionData(validBootNumber) else {
-                        Debug.log("Invalid argument for option", type: .error)
-                        commandLine.printErrorAndUsage(settingStatus: .invalidArgumentForOption, option: bootNextOption, argument: bootNextOption.value!)
-                        Debug.terminate(EX_USAGE)
-                }
-                bootNextValue = validBootNumber
-        }
-        
-        /* Timeout */
-        
-        if let timeout = timeoutOption.value {
-                switch timeout {
-                case 1...65533:
-                        timeoutValue = timeout
-                default:
-                        Debug.log("Invalid argument for option", type: .error)
-                        commandLine.printErrorAndUsage(settingStatus: .invalidArgumentForOption, option: timeoutOption, argument: String(timeout))
-                        Debug.terminate(EX_USAGE)
-                }
-        }
-        
-        /* Boot order */
-        
-        if let arguments: [String] = bootOrderOption.value {
-                
-                var order: [BootNumber] = []
-                
-                for arg in arguments {
-                        
-                        guard let bootNum = bootNumberFromString(arg), let _ = Nvram.shared.bootOptionData(bootNum) else {
-                                Debug.log("Invalid argument", type: .error)
-                                print("set: invalid argument '\(arg)' for option '-o, --bootorder'", to: &standardError)
-                                commandLine.printUsage()
-                                Debug.terminate(EX_USAGE)
-                        }
-                        
-                        if !order.contains(bootNum) {
-                                order.append(bootNum)
-                        } else {
-                                Debug.log("Invalid argument", type: .error)
-                                print("set: '\(bootNum.variableName)' was specified more than once (-o, --bootorder)", to: &standardError)
-                                commandLine.printUsage()
-                                Debug.terminate(EX_USAGE)
-                        }
-                }
-                
-                if !order.isEmpty {
-                        newBootOrder = order
-                }
-        }
-        
-        /*  Boot number */
-        
+       
         if bootnumOption.wasSet && (description.isEmpty && !optionalDataStringOption.wasSet && !optionalDataFilePathOption.wasSet && !attributeActiveOption.wasSet && !attributeHiddenOption.wasSet) {
-                Debug.log("Missing required option(s)", type: .error)
+                commandLine.parserStatus = .missingRequiredOptions
                 print("set: option \(bootnumOption.shortDescription) specified without \(loaderDescriptionOption.shortDescription), \(optionalDataStringOption.shortDescription) or attribute options", to: &standardError)
                 commandLine.printUsage()
                 Debug.terminate(EX_USAGE)
         }
         
-        if bootnumOption.wasSet {
-                guard let bootNumber = bootNumberFromString(bootnumOption.value!), let data = Nvram.shared.bootOptionData(bootNumber) else {
-                        commandLine.printErrorAndUsage(settingStatus: .invalidArgumentForOption, option: bootnumOption, argument: bootnumOption.value!)
+        if let bootNumber = bootnumOption.value {
+                guard let data = Nvram.shared.bootOptionData(bootNumber) else {
+                        commandLine.printErrorAndUsage(settingStatus: .invalidArgumentForOption, options: bootnumOption, arguments: bootnumOption.value!)
                         Debug.terminate(EX_USAGE)
                 }
                 
@@ -146,14 +77,13 @@ func set() {
         /* Attribute / description / optional data options */
         
         if (attributeActiveOption.wasSet || attributeHiddenOption.wasSet || !description.isEmpty || optionalDataStringOption.wasSet || optionalDataFilePathOption.wasSet) && option == nil {
-                Debug.log("Missing required option(s)", type: .error)
-                commandLine.printErrorAndUsage(settingStatus: .missingRequiredOptions, option: bootnumOption)
+                commandLine.printErrorAndUsage(settingStatus: .missingRequiredOptions, options: bootnumOption)
                 Debug.terminate(EX_USAGE)
         }
         
         /* Optional data */
         
-        optionalData = OptionalData.selectSourceFrom(filePath: optionalDataFilePathOption.value, arguments: optionalDataStringOption.value)        
+        optionalData = OptionalData.selectSourceFrom(data: optionalDataFilePathOption.data, arguments: optionalDataStringOption.value)        
         
         /*
          *  Check root
@@ -172,7 +102,7 @@ func set() {
          *  Set boot next
          */
 
-        if let bootNextValue = bootNextValue {
+        if let bootNextValue: BootNumber = bootNextOption.value {
                 if !Nvram.shared.setBootNext(bootNumber: bootNextValue) {
                         print("Unknown NVRAM error setting BootNext", to: &standardError)
                 }
@@ -181,8 +111,8 @@ func set() {
         
         /* Set timeout */
         
-        if let timeoutValue = timeoutValue {
-                if !Nvram.shared.setTimeout(seconds: timeoutValue) {
+        if let timeoutValue: UInt16 = timeoutOption.value {
+                if !Nvram.shared.setTimeout(timeoutValue) {
                         print("Unknown NVRAM error setting Timeout", to: &standardError)
                 }
                 didSomething = true
@@ -190,7 +120,7 @@ func set() {
         
         /* Set boot order */
         
-        if let newBootOrder = newBootOrder {
+        if let newBootOrder: [BootNumber] = bootOrderOption.value {
                 Nvram.shared.setBootOrder(array: newBootOrder)
                 didSomething = true
         }

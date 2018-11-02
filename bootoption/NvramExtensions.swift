@@ -94,6 +94,10 @@ extension Nvram {
         
         func setTimeout(seconds: Int) -> Bool {
                 let timeoutValue = UInt16(seconds)
+                return setTimeout(timeoutValue)
+        }
+
+        func setTimeout(_ timeoutValue: UInt16) -> Bool {
                 error = options.setDataValue(forProperty: prependingGlobalGUID("Timeout"), value: timeoutValue.data)
                 guard error == KERN_SUCCESS else {
                         Debug.log("Error setting Timeout (%@)", type: .error, argsList: error)

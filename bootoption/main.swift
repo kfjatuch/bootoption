@@ -54,33 +54,29 @@ if DEBUG {
 }
 
 commandLine.parseCommand()
-
-if commandLine.parserStatus == .success {
         
-        switch commandLine.activeCommand {
-        case listCommand.name:
-                list()
-        case infoCommand.name:
-                info()
-        case setCommand.name:
-                set()
-        case createCommand.name:
-                create()
-        case orderCommand.name:
-                order()
-        case deleteCommand.name:
-                delete()
-        case printCommand.name:
-                print()
-        case rebootCommand.name:
-                reboot()
-        case "version":
-                version()
-        case "help":
-                help()
-        default:
-                commandLine.printUsage(showingCommands: true)
-                Debug.terminate(EX_USAGE)
-        }
-        
+switch commandLine.activeCommand {
+case listCommand.name:
+        list()
+case infoCommand.name:
+        info()
+case setCommand.name:
+        set()
+case createCommand.name:
+        create()
+case orderCommand.name:
+        order()
+case deleteCommand.name:
+        delete()
+case printCommand.name:
+        print()
+case rebootCommand.name:
+        reboot()
+case "version":
+        version()
+case "help":
+        help()
+default:
+        commandLine.printUsage(showingCommands: true)
+        Debug.terminate(EX_USAGE)
 }

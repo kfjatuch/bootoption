@@ -31,16 +31,20 @@ func create() {
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", required: 1, helpMessage: "display LABEL in firmware boot manager")
         let optionalDataStringOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "optional STRING passed to the loader command line", invalidates: "@")
         let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", invalidates: "@")
-        let optionalDataFilePathOption = FilePathOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", invalidates: "a", "u")
-        let testOption = BoolOption(shortFlag: "t", longFlag: "test", helpMessage: "output to stdout instead of NVRAM")
+        let optionalDataFilePathOption = InputFilePathOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", invalidates: "a", "u")
+        let testOption = OutputFilePathOption(shortFlag: "t", longFlag: "test", helpMessage: "output to stdout instead of NVRAM")
         commandLine.invocationHelpMessage = "create -l PATH -d LABEL [-a STRING [-u] | -@ FILE]"
         commandLine.setOptions(loaderPathOption, loaderDescriptionOption, optionalDataStringOption, ucs2EncodingOption, optionalDataFilePathOption, testOption)
         
         commandLine.parseOptions(strict: true)
         
-        var optionalData: Any?
-       
         /* Optional data */
+        
+        var optionalData: Any?
+        
+        if let filePath = optionalDataFilePathOption.value, !optionalDataFilePathOption.fileExists {
+                Debug.fault("Not found: \(filePath)")
+        }
         
         optionalData = OptionalData.selectSourceFrom(data: optionalDataFilePathOption.data, arguments: optionalDataStringOption.value)
         
@@ -52,12 +56,18 @@ func create() {
         
         let option = EfiLoadOption(createFromLoaderPath: loaderPath, descriptionString: description, optionalData: optionalData, ucs2OptionalData: ucs2EncodingOption.value)
         
-        switch testOption.value {
+        switch testOption.wasSet {
                 
         case true:
                 /* This is a test, output to stdout instead of NVRAM */
-                print(option.dataString)
-                Debug.terminate(EX_OK)
+                if let outputFileHandle = testOption.fileHandle {
+                        outputFileHandle.write(option.data)
+                        outputFileHandle.closeFile()
+                        Debug.terminate(EX_OK)
+                } else {
+                        Debug.fault("Could not write to: \(testOption.value ?? "nil")")
+                }
+                
                 
         case false:
                 /* Check root */

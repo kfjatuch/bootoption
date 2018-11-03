@@ -24,13 +24,6 @@ extension CommandLine {
                 return activeCommand ?? programInfo.name
         }
         
-        static var standardInput: Data {
-                let standardInputFileHandle = FileHandle.init(fileDescriptor: FileHandle.standardInput.fileDescriptor, closeOnDealloc: true)
-                let data = standardInputFileHandle.readDataToEndOfFile()
-                standardInputFileHandle.closeFile()
-                return data
-        }
-        
         internal func removeFirstArgument() -> String? {
                 let commandString = rawArguments.count != 0 ? rawArguments.removeFirst() : nil
                 return commandString
@@ -51,7 +44,9 @@ extension CommandLine {
         }
         
         func appendArgs(to array: inout [String], option: Option, index: Int) {
-                if let _ = option as? FilePathOption {
+                if let _ = option as? InputFilePathOption {
+                        array.append(contentsOf: getArguments(followingIndex: index, fileOperandIsValid: true))
+                } else if let _ = option as? OutputFilePathOption {
                         array.append(contentsOf: getArguments(followingIndex: index, fileOperandIsValid: true))
                 } else {
                         array.append(contentsOf: getArguments(followingIndex: index))

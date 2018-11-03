@@ -287,9 +287,9 @@ class StringOption: Option {
 class FilePathOption: Option {
         var value: String? = nil
         
-        var fileExistsAtPath: Bool {
+        var fileExists: Bool {
                 if let path = value {
-                        return FileManager.default.fileExists(atPath: path)
+                        return path == CommandLine.fileOperand ? true : FileManager.default.fileExists(atPath: path)
                 } else {
                         return false
                 }
@@ -304,7 +304,6 @@ class FilePathOption: Option {
         }
         
         override func setValue(_ values: [String]) -> Bool {
-                
                 if values.count == 0 {
                         return false
                 }
@@ -312,27 +311,60 @@ class FilePathOption: Option {
                 value = values[0]
                 return true
         }
+}
+
+/* An option that accepts a file system path for reading from */
+
+class InputFilePathOption: FilePathOption {
+        var fileHandle: FileHandle? {
+                if value == nil {
+                        return nil
+                }
+                switch value! {
+                case CommandLine.fileOperand:
+                        return FileHandle.init(fileDescriptor: FileHandle.standardInput.fileDescriptor, closeOnDealloc: true)
+                default:
+                        if let path = value {
+                                let fileHandle = FileHandle.init(forReadingAtPath: path)
+                                return fileHandle
+                        } else {
+                                return nil
+                        }
+                }
+        }
         
         var data: Data? {
                 var buffer: Data?
-                if let filePath = value {
-                        if value == CommandLine.fileOperand {
-                                /* Read from stdin */
-                                Debug.log("Reading data from standard input...", type: .info)
-                                buffer = CommandLine.standardInput
-                        } else {
-                                guard fileExistsAtPath else {
-                                        Debug.fault("Not found: \(filePath)")
-                                }
-                                let data = NSData.init(contentsOfFile: filePath)
-                                buffer = data as Data?
-                        }
-                        guard buffer != nil else {
-                                Debug.fault("Data from file: \(filePath) should no longer be nil")
-                        }
-                        return buffer
-                } else {
+                if let fileHandle = fileHandle {
+                        buffer = fileHandle.readDataToEndOfFile()
+                        fileHandle.closeFile()
+                }
+                return buffer
+        }
+}
+
+/* An option that accepts a file system path for writing to */
+
+class OutputFilePathOption: FilePathOption {
+        var fileHandle: FileHandle? {
+                if value == nil {
                         return nil
+                }
+                switch value! {
+                case CommandLine.fileOperand:
+                        return FileHandle.init(fileDescriptor: FileHandle.standardOutput.fileDescriptor, closeOnDealloc: true)
+                default:
+                        if let path = value {
+                                if !fileExists {
+                                        guard FileManager.default.createFile(atPath: path, contents: nil, attributes: nil) else {
+                                                Debug.fault("Can't create file for writing at: \(path)")
+                                        }
+                                }
+                                let fileHandle = FileHandle.init(forWritingAtPath: path)
+                                return fileHandle
+                        } else {
+                                return nil
+                        }
                 }
         }
 }

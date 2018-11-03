@@ -31,7 +31,7 @@ func set() {
         let loaderDescriptionOption = StringOption(shortFlag: "d", longFlag: "description", helpMessage: "display LABEL in firmware boot manager")
         let optionalDataStringOption = OptionalStringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "optional STRING passed to the loader command line", invalidates: "@")
         let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", invalidates: "@")
-        let optionalDataFilePathOption = FilePathOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", invalidates: "a", "u")
+        let optionalDataFilePathOption = InputFilePathOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", invalidates: "a", "u")
         let attributeActiveOption = BinaryOption(longFlag: "active", helpMessage: "set active attribute, 0 or 1")
         let attributeHiddenOption = BinaryOption(longFlag: "hidden", helpMessage: "set hidden attribute, 0 or 1")
         let bootNextOption = BootNumberOption(shortFlag: "x", longFlag: "bootnext", helpMessage: "set BootNext to Boot#### (hex)")
@@ -82,6 +82,10 @@ func set() {
         }
         
         /* Optional data */
+        
+        if let filePath = optionalDataFilePathOption.value, !optionalDataFilePathOption.fileExists {
+                Debug.fault("Not found: \(filePath)")
+        }
         
         optionalData = OptionalData.selectSourceFrom(data: optionalDataFilePathOption.data, arguments: optionalDataStringOption.value)        
         

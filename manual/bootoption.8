@@ -1,4 +1,4 @@
-.TH "BOOTOPTION" "8" "October 2018" "bootoption 0.3" "bootoption"
+.TH "BOOTOPTION" "8" "November 2018" "bootoption 0.3" "bootoption"
 .SH "NAME"
 bootoption \- EFI boot menu manipulation 
 .SH "SYNOPSIS"
@@ -6,7 +6,7 @@ bootoption \- EFI boot menu manipulation
 .I "command"
 [options]
 .SH "DESCRIPTION"
-bootoption is a program for the manipulation of boot\-related firmware variables.
+Program for setting boot\-related firmware variables.
 .SH "COMMANDS"
 Each
 .I "command"
@@ -133,6 +133,72 @@ delete the boot order
 .I "reboot"
 .br
 reboot to firmware settings
+.SH "EXAMPLES"
+.PP
+.na
+.BR "Show the firmware boot menu":
+.PP
+.na
+.RS
+bootoption list
+.RE
+.PP
+.na
+.BR "Show an option's properties":
+.PP
+.na
+.RS
+bootoption info Boot0003
+.RE
+.PP
+.na
+.BR "Create a new load option, writing to stdout instead of NVRAM and piping to xxd(1)":
+.PP
+.na
+.RS
+bootoption create \-t \- \-l /Volumes/EFI/EFI/GRUB/GRUBX64.EFI \-d "GNU GRUB" | xxd
+.RE
+.SH "EXAMPLES (MUST BE ROOT)"
+.PP
+.na
+.BR "Create a new option and add it to the boot order":
+.PP
+.na
+.RS
+bootoption create \-l /Volumes/EFI/EFI/GRUB/GRUBX64.EFI \-d "GNU GRUB"
+.RE
+.PP
+.na
+.BR "Move an option from 4th to 1st in the boot order":
+.PP
+.na
+.RS
+bootoption order 4 to 1
+.RE
+.PP
+.na
+.BR "Disable an option":
+.PP
+.na
+.RS
+bootoption set \-n Boot0002 \-\-active=0
+.RE
+.PP
+.na
+.BR "Change the boot menu timeout to 10 seconds":
+.PP
+.na
+.RS
+bootoption set \-t 10
+.RE
+.PP
+.na
+.BR "Set an option's command line argmuments":
+.PP
+.na
+.RS
+bootoption set \-n Boot0000 \-a "initrd=/initramfs.img root=/dev/disk/by\-uuid/346d9a61\-f7e5\-4f58\-bad7\-026bb5376e0f"
+.RE
 .SH "SEE ALSO"
 nvram(8), efibootmgr(8)
 .SH "BUGS"

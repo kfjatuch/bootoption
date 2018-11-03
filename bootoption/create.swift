@@ -32,8 +32,8 @@ func create() {
         let optionalDataStringOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "optional STRING passed to the loader command line", invalidates: "@")
         let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", invalidates: "@")
         let optionalDataFilePathOption = InputFilePathOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", invalidates: "a", "u")
-        let testOption = OutputFilePathOption(shortFlag: "t", longFlag: "test", helpMessage: "output to stdout instead of NVRAM")
-        commandLine.invocationHelpMessage = "create -l PATH -d LABEL [-a STRING [-u] | -@ FILE]"
+        let testOption = OutputFilePathOption(shortFlag: "t", longFlag: "test", helpMessage: "output to FILE instead of NVRAM")
+        commandLine.invocationHelpMessage = "create -l PATH -d LABEL [-a STRING [-u] | -@ FILE] [-t FILE]"
         commandLine.setOptions(loaderPathOption, loaderDescriptionOption, optionalDataStringOption, ucs2EncodingOption, optionalDataFilePathOption, testOption)
         
         commandLine.parseOptions(strict: true)

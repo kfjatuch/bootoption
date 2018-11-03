@@ -52,7 +52,8 @@ struct FilePathDevicePath {
                 }
                 
                 set {
-                        if let string: String = newValue {
+                        if var string: String = newValue {
+                                string = string.replacingOccurrences(of: "\\\\", with: "\\")
                                 if string.containsOutlawedCharacters() {
                                         Debug.fault("Forbidden character(s) found in path")
                                 }

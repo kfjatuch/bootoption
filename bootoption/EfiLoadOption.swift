@@ -66,6 +66,12 @@ struct EfiLoadOption {
                 }
                 return buffer
         }
+        
+        var dataString: String {
+                let strings = data.map { String(format: "%02x", $0) }
+                let dataString = strings.joined()
+                return dataString
+        }
 
         /*  LOAD_OPTION_ACTIVE 0x00000001 */
         
@@ -314,5 +320,31 @@ struct EfiLoadOption {
                                 break;
                         }
                 }
+        }
+        
+        var formatString: String {
+                let strings = data.map { String(format: "%%%02x", $0) }
+                let formatString = strings.joined()
+                return formatString
+        }
+        
+        var xmlString: String {
+                let key: String = "Boot"
+                let dictionary: NSDictionary = ["\(key)": data]
+                var propertyList: Data
+                do {
+                        propertyList = try PropertyListSerialization.data(fromPropertyList: dictionary, format: .xml, options: 0)
+                } catch let error as NSError {
+                        let errorDescription = error.localizedDescription
+                        let errorCode = error.code
+                        print(errorDescription)
+                        Debug.log("%@ (%@)", type: .error, argsList: errorDescription, errorCode)
+                        Debug.fault("Error serializing to XML")
+                }
+                guard let xml = String(data: propertyList, encoding: .utf8) else {
+                        Debug.fault("Error generating XML string")
+                }
+                let xmlString = String(xml.filter { !"\n\t\r".contains($0) })
+                return xmlString
         }
 }

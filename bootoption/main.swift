@@ -45,13 +45,8 @@ let createCommand = Command("create", helpMessage: "create a new EFI load option
 let orderCommand = Command("order", helpMessage: "re-arrange the boot order")
 let setCommand = Command("set", helpMessage: "set/modify variables in NVRAM")
 let deleteCommand = Command("delete", helpMessage: "delete variables from NVRAM")
-let printCommand = Command("print", helpMessage: "output boot variable data in different formats")
 let rebootCommand = Command("reboot", helpMessage: "reboot to firmware settings")
-if DEBUG {
-        commandLine.setCommands(listCommand, infoCommand, createCommand, orderCommand, setCommand, deleteCommand, printCommand, rebootCommand)
-} else {
-        commandLine.setCommands(listCommand, infoCommand, createCommand, orderCommand, setCommand, deleteCommand, rebootCommand)
-}
+commandLine.setCommands(listCommand, infoCommand, createCommand, orderCommand, setCommand, deleteCommand, rebootCommand)
 
 commandLine.parseCommand()
         
@@ -68,8 +63,6 @@ case orderCommand.name:
         order()
 case deleteCommand.name:
         delete()
-case printCommand.name:
-        print()
 case rebootCommand.name:
         reboot()
 case "version":

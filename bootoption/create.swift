@@ -32,19 +32,13 @@ func create() {
         let optionalDataStringOption = StringOption(shortFlag: "a", longFlag: "arguments", helpMessage: "optional STRING passed to the loader command line", invalidates: "@")
         let ucs2EncodingOption = BoolOption(shortFlag: "u", helpMessage: "pass command line arguments as UCS-2 (default is ASCII)", invalidates: "@")
         let optionalDataFilePathOption = FilePathOption(shortFlag: "@", longFlag: "optional-data", helpMessage: "append optional data from FILE", invalidates: "a", "u")
+        let testOption = BoolOption(shortFlag: "t", longFlag: "test", helpMessage: "output to stdout instead of NVRAM")
         commandLine.invocationHelpMessage = "create -l PATH -d LABEL [-a STRING [-u] | -@ FILE]"
-        commandLine.setOptions(loaderPathOption, loaderDescriptionOption, optionalDataStringOption, ucs2EncodingOption, optionalDataFilePathOption)
+        commandLine.setOptions(loaderPathOption, loaderDescriptionOption, optionalDataStringOption, ucs2EncodingOption, optionalDataFilePathOption, testOption)
         
         commandLine.parseOptions(strict: true)
         
         var optionalData: Any?
-        
-        /* Check root */
-        
-        if NSUserName() != "root" {
-                Debug.log("Only root can set NVRAM variables", type: .error)
-                Debug.fault("Permission denied")
-        }
        
         /* Optional data */
         
@@ -58,10 +52,23 @@ func create() {
         
         let option = EfiLoadOption(createFromLoaderPath: loaderPath, descriptionString: description, optionalData: optionalData, ucs2OptionalData: ucs2EncodingOption.value)
         
-        guard Nvram.shared.setNewEfiLoadOption(data: option.data, addingToBootOrder: true) != nil else {
-                Debug.fault("Unknown NVRAM error setting load option")
+        switch testOption.value {
+                
+        case true:
+                /* This is a test, output to stdout instead of NVRAM */
+                print(option.dataString)
+                Debug.terminate(EX_OK)
+                
+        case false:
+                /* Check root */
+                if NSUserName() != "root" {
+                        Debug.log("Only root can set NVRAM variables", type: .error)
+                        Debug.fault("Permission denied")
+                }
+                guard Nvram.shared.setNewEfiLoadOption(data: option.data, addingToBootOrder: true) != nil else {
+                        Debug.fault("Unknown NVRAM error setting load option")
+                }
+                Debug.terminate(EX_OK)                
         }
-        
-        Debug.terminate(EX_OK)
         
 }

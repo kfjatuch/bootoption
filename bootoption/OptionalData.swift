@@ -49,8 +49,8 @@ struct OptionalData {
         
         func chomp(data: inout Data, _ output: inout String, _ asciiColumn: inout String) {
                 let byte = data.remove8()
-                output.append(String(format: "%02x", byte))
-                asciiColumn.append(byte.ascii)
+                output += String(format: "%02x", byte)
+                asciiColumn += byte.ascii
         }
         
         var description: String? {
@@ -63,20 +63,23 @@ struct OptionalData {
                                 if buffer.count > 1 {
                                         chomp(data: &buffer, &output, &asciiColumn)
                                         chomp(data: &buffer, &output, &asciiColumn)
-                                        output.append(" ")
+                                        output += " "
                                 } else {
                                         chomp(data: &buffer, &output, &asciiColumn)
-                                        output.append("   ")
+                                        output += "   "
                                 }
                                 if columnNumber % 8 == 0 {
-                                        output.append("\(asciiColumn)\n")
+                                        output += " "
+                                        output += asciiColumn
+                                        output += "\n"
                                         asciiColumn = ""
                                 }
                         } while !buffer.isEmpty
                         for _ in 1...(8 - columnNumber % 8) {
-                                output.append("     ")
+                                output += "     "
                         }
-                        output.append(asciiColumn)
+                        output += " "
+                        output += asciiColumn
                         return output
                 }
                 return nil

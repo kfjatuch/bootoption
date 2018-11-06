@@ -47,31 +47,23 @@ extension Nvram {
         }
         
         var bootCurrent: BootNumber?  {
-                if var data = options.getDataValue(forProperty: prependingGlobalGUID("BootCurrent")) {
-                        return data.remove16()
-                } else {
-                        return nil
-                }
+                return options.getDataValue(forProperty: prependingGlobalGUID("BootCurrent"))?.uint16
         }
         
         var bootNext: BootNumber? {
-                if var data = options.getDataValue(forProperty: prependingGlobalGUID("BootNext")) {
-                        return data.remove16()
-                } else {
-                        return nil
-                }
+                return options.getDataValue(forProperty: prependingGlobalGUID("BootNext"))?.uint16
         }
         
         var timeout: UInt16? {
-                if var data = options.getDataValue(forProperty: prependingGlobalGUID("Timeout")) {
-                        return data.remove16()
-                } else {
-                        return nil
-                }
+                return options.getDataValue(forProperty: prependingGlobalGUID("Timeout"))?.uint16
         }
         
         var bootOrderData: Data? {
                 return options.getDataValue(forProperty: prependingGlobalGUID("BootOrder"))
+        }
+        
+        var emuVariableUefiPresent: Bool {
+                return options.getDataValue(forProperty: "EmuVariableUefiPresent") != nil
         }
         
         /* Functions for setting boot-related NVRAM variables */
@@ -241,9 +233,4 @@ extension Nvram {
         func bootOptionData(_ number: BootNumber) -> Data? {
                 return options.getDataValue(forProperty: number.variableNameWithGuid)
         }
-        
-        var emuVariableUefiPresent: Bool {
-                return options.getDataValue(forProperty: "EmuVariableUefiPresent") != nil
-        }
-        
 }

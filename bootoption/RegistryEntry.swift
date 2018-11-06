@@ -57,15 +57,15 @@ class RegistryEntry {
         
         init(ioMediaFromMountPoint mountPoint: CFString) {
                 guard let session: DASession = DASessionCreate(kCFAllocatorDefault) else {
-                        Debug.fault("Failed to create DASession")
+                        Debug.fault("failed to create DASession")
                 }
                 
                 guard let url: CFURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, mountPoint, CFURLPathStyle(rawValue: 0)!, true) else {
-                        Debug.fault("Failed to create CFURL for mount point")
+                        Debug.fault("failed to create CFURL for mount point")
                 }
                 
                 guard let disk: DADisk = DADiskCreateFromVolumePath(kCFAllocatorDefault, session, url) else {
-                        Debug.fault("Failed to create DADisk from volume URL")
+                        Debug.fault("failed to create DADisk from volume URL")
                 }
                 registryEntry = DADiskCopyIOMedia(disk)
         }

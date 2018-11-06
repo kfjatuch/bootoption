@@ -183,7 +183,7 @@ struct EfiLoadOption {
                 
                 description = descriptionString.efiStringData()
                 guard description != nil else {
-                        Debug.fault("Failed to set EfiLoadOption.description")
+                        Debug.fault("failed to set EfiLoadOption.description")
                 }
                 Debug.log("Description string: '%@', data: %@", type: .info, argsList: descriptionString, description!)
                 
@@ -339,10 +339,10 @@ struct EfiLoadOption {
                         let errorCode = error.code
                         print(errorDescription)
                         Debug.log("%@ (%@)", type: .error, argsList: errorDescription, errorCode)
-                        Debug.fault("Error serializing to XML")
+                        Debug.fault("error serializing to XML")
                 }
                 guard let xml = String(data: propertyList, encoding: .utf8) else {
-                        Debug.fault("Error generating XML string")
+                        Debug.fault("error generating XML string")
                 }
                 let xmlString = String(xml.filter { !"\n\t\r".contains($0) })
                 return xmlString

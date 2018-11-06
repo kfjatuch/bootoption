@@ -357,7 +357,7 @@ class OutputFilePathOption: FilePathOption {
                         if let path = value {
                                 if !fileExists {
                                         guard FileManager.default.createFile(atPath: path, contents: nil, attributes: nil) else {
-                                                Debug.fault("Can't create file for writing at: \(path)")
+                                                Debug.fault("can't create file for writing at: \(path)")
                                         }
                                 }
                                 let fileHandle = FileHandle.init(forWritingAtPath: path)

@@ -77,7 +77,7 @@ func order() {
                 
                 if NSUserName() != "root" {
                         Debug.log("Only root can set NVRAM variables", type: .error)
-                        Debug.fault("Permission denied")
+                        Debug.fault("permission denied")
                 }
                 
                 guard bootOrder.count > 0 else {
@@ -88,7 +88,7 @@ func order() {
                 
                 let indices = bootOrder.indices
                 guard indices.contains(optionIndex) && indices.contains(destination) else {
-                        Debug.fault("Index out of range")
+                        Debug.fault("index out of range")
                 }
                 
                 /* Change order */
@@ -102,7 +102,7 @@ func order() {
                 /* Set new boot order */
                 
                 if !Nvram.shared.setBootOrder(data: data) {
-                        Debug.fault("Error setting new boot order")
+                        Debug.fault("error setting new boot order")
                 }
                 
                 Debug.terminate(EX_OK)

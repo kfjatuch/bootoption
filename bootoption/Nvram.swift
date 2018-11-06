@@ -37,7 +37,7 @@ class Nvram {
                         self.options = options
                 } else {
                         print("Fatal: Failed to initialize NVRAM options")
-                        Debug.fault("Fatal: Failed to initialize NVRAM options")
+                        Debug.fault("failed to initialize NVRAM options")
                 }
         }
         

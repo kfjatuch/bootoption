@@ -84,7 +84,7 @@ func set() {
         /* Optional data */
         
         if let filePath = optionalDataFilePathOption.value, !optionalDataFilePathOption.fileExists {
-                Debug.fault("Not found: \(filePath)")
+                Debug.fault("not found: \(filePath)")
         }
         
         optionalData = OptionalData.selectSourceFrom(data: optionalDataFilePathOption.data, arguments: optionalDataStringOption.value)        
@@ -95,7 +95,7 @@ func set() {
         
         if NSUserName() != "root" {
                 Debug.log("Only root can set NVRAM variables", type: .error)
-                Debug.fault("Permission denied")
+                Debug.fault("permission denied")
         }
         
         

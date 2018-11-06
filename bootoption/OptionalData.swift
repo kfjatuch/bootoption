@@ -96,7 +96,7 @@ struct OptionalData {
                         }
                         Debug.log("Ascii encoded optional data string: %@", type: .info, argsList: asciiData)
                 } else {
-                        Debug.fault("Ascii encoding of optional data string failed")
+                        Debug.fault("ascii encoding of optional data string failed")
                 }
         }
         

@@ -43,7 +43,7 @@ func create() {
         var optionalData: Any?
         
         if let filePath = optionalDataFilePathOption.value, !optionalDataFilePathOption.fileExists {
-                Debug.fault("Not found: \(filePath)")
+                Debug.fault("not found: \(filePath)")
         }
         
         optionalData = OptionalData.selectSourceFrom(data: optionalDataFilePathOption.data, arguments: optionalDataStringOption.value)
@@ -65,7 +65,7 @@ func create() {
                         outputFileHandle.closeFile()
                         Debug.terminate(EX_OK)
                 } else {
-                        Debug.fault("Could not write to: \(testOption.value ?? "nil")")
+                        Debug.fault("could not write to: \(testOption.value ?? "nil")")
                 }
                 
                 
@@ -73,10 +73,10 @@ func create() {
                 /* Check root */
                 if NSUserName() != "root" {
                         Debug.log("Only root can set NVRAM variables", type: .error)
-                        Debug.fault("Permission denied")
+                        Debug.fault("permission denied")
                 }
                 guard Nvram.shared.setNewEfiLoadOption(data: option.data, addingToBootOrder: true) != nil else {
-                        Debug.fault("Unknown NVRAM error setting load option")
+                        Debug.fault("unknown NVRAM error setting load option")
                 }
                 Debug.terminate(EX_OK)                
         }

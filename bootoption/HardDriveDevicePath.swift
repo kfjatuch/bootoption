@@ -71,7 +71,7 @@ struct HardDriveDevicePath {
                 signatureType = buffer.remove8()
                 Debug.log("Signature Type: %@", type: .info, argsList: signatureType)
                 if !buffer.isEmpty {
-                        Debug.fault("Buffer not empty after parsing hard drive device path")
+                        Debug.fault("buffer not empty after parsing hard drive device path")
                 }
                 if signatureType == 2 && partitionFormat == 2 {
                         partitionUuid = EfiUuid(fromData: partitionSignature)
@@ -88,11 +88,11 @@ struct HardDriveDevicePath {
                 Debug.log("Path: %@", type: .info, argsList: path)
                 
                 guard FileManager.default.fileExists(atPath: path) else {
-                        Debug.fault("File not found at the specified path")
+                        Debug.fault("file not found at the specified path")
                 }
                 
                 guard var mountedVolumeUrls: [URL] = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: nil) else {
-                        Debug.fault("Failed to get URLs of all mounted volumes")
+                        Debug.fault("failed to get URLs of all mounted volumes")
                 }
                 
                 /* Compare mounted volume paths with our path */
@@ -116,7 +116,7 @@ struct HardDriveDevicePath {
                 }
                 
                 guard mountPoint != "", mountPoint != "/" else {
-                        Debug.fault("Failed to get a volume mount point from the path")
+                        Debug.fault("failed to get a volume mount point from the path")
                 }
                 
                 Debug.log("Chosen volume path: %@", type: .info, argsList: mountPoint)
@@ -126,13 +126,13 @@ struct HardDriveDevicePath {
                 let ioMedia = RegistryEntry(ioMediaFromMountPoint: mountPoint as CFString)
                 
                 if (ioMedia.getIntValue(forProperty: kIOMediaGPTPartitionAttributesKey)) == nil {
-                        Debug.fault("Only GPT disks are supported")
+                        Debug.fault("only GPT disks are supported")
                 }
                 
                 /* Set DP properties according to IOMedia object */
                 
                 guard let blockSize: Int = ioMedia.getIntValue(forProperty: kIOMediaPreferredBlockSizeKey) else {
-                        Debug.fault("Failed to get IO Media Preferred Block Size")
+                        Debug.fault("failed to get IO Media Preferred Block Size")
                 }
                 
                 Debug.log("Preferred Block Size: %@", type: .info, argsList: blockSize)
@@ -141,25 +141,25 @@ struct HardDriveDevicePath {
                         Debug.log("Partition ID: %@", type: .info, argsList: partId)
                         partitionNumber = UInt32(partId)
                 } else {
-                        Debug.fault("Failed to get IOMedia Partition ID")
+                        Debug.fault("failed to get IOMedia Partition ID")
                 }
                 
                 if let base: Int = ioMedia.getIntValue(forProperty: kIOMediaBaseKey) {
                         Debug.log("Base: %@", type: .info, argsList: partitionStart)
                         partitionStart = UInt64(base / blockSize)
                 } else {
-                        Debug.fault("Failed to get IOMedia Base")
+                        Debug.fault("failed to get IOMedia Base")
                 }
                 
                 if let size: Int = ioMedia.getIntValue(forProperty: kIOMediaSizeKey) {
                         Debug.log("Size: %@", type: .info, argsList: size)
                         partitionSize = UInt64(size / blockSize)
                 } else {
-                        Debug.fault("Failed to get IOMedia Size")
+                        Debug.fault("failed to get IOMedia Size")
                 }
                 
                 guard let ioUUIDString: String = ioMedia.getStringValue(forProperty: kIOMediaUUIDKey) else {
-                        Debug.fault("Failed to get IOMedia UUID")
+                        Debug.fault("failed to get IOMedia UUID")
                 }
                 
                 Debug.log("UUID: %@", type: .info, argsList: ioUUIDString)

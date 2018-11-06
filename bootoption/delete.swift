@@ -40,7 +40,7 @@ func delete() {
                 
         if NSUserName() != "root" {
                 Debug.log("Only root can delete NVRAM variables", type: .error)
-                Debug.fault("Permission denied")
+                Debug.fault("permission denied")
         }
         
         var status = EX_OK

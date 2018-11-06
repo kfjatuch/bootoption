@@ -30,7 +30,7 @@ func reboot() {
         
         if NSUserName() != "root" {
                 Debug.log("Only root can reboot to firmware settings.", type: .error)
-                Debug.fault("Permission denied")
+                Debug.fault("permission denied")
         }
         
         /* Set OsIndications */

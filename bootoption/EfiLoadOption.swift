@@ -339,10 +339,10 @@ struct EfiLoadOption {
                         let errorCode = error.code
                         print(errorDescription)
                         Debug.log("%@ (%@)", type: .error, argsList: errorDescription, errorCode)
-                        Debug.fault("error serializing to XML")
+                        Debug.fault("serializing to XML failed")
                 }
                 guard let xml = String(data: propertyList, encoding: .utf8) else {
-                        Debug.fault("error generating XML string")
+                        Debug.fault("generating XML string failed")
                 }
                 let xmlString = String(xml.filter { !"\n\t\r".contains($0) })
                 return xmlString

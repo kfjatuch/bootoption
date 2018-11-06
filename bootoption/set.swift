@@ -84,7 +84,7 @@ func set() {
         /* Optional data */
         
         if let filePath = optionalDataFilePathOption.value, !optionalDataFilePathOption.fileExists {
-                Debug.fault("not found: \(filePath)")
+                Debug.fault("optional data file not found: \(filePath)")
         }
         
         optionalData = OptionalData.selectSourceFrom(data: optionalDataFilePathOption.data, arguments: optionalDataStringOption.value)        

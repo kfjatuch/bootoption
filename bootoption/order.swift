@@ -102,7 +102,7 @@ func order() {
                 /* Set new boot order */
                 
                 if !Nvram.shared.setBootOrder(data: data) {
-                        Debug.fault("error setting new boot order")
+                        Debug.fault("unknown NVRAM error setting new boot order")
                 }
                 
                 Debug.terminate(EX_OK)

@@ -27,9 +27,9 @@ struct Debug {
         static func fault(_ errorMessage: String, file: String = #file, function: String = #function) -> Never {
                 if DEBUG {
                         Debug.log(errorMessage, type: .fault, file: file, function: function)
-                        print(errorMessage, to: &standardError)
+                        print("error: " + errorMessage, to: &standardError)
                 } else {
-                        print(errorMessage, to: &standardError)
+                        print("error: " + errorMessage, to: &standardError)
                 }
                 exit(1)
         }

@@ -242,4 +242,8 @@ extension Nvram {
                 return options.getDataValue(forProperty: number.variableNameWithGuid)
         }
         
+        var emuVariableUefiPresent: Bool {
+                return options.getDataValue(forProperty: "EmuVariableUefiPresent") != nil
+        }
+        
 }

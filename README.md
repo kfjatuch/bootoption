@@ -1,13 +1,10 @@
 #  bootoption
 
 <p align="center">
-<picture>
-<source srcset="https://github.com/vulgo/bootoption/raw/master/Images/screenshot.png, https://github.com/vulgo/bootoption/raw/master/Images/screenshot@2x.png 2x" />
-<img src="https://github.com/vulgo/bootoption/raw/master/Images/screenshot@2x.png" alt="bootoption screenshot" width="750" />
-</picture>
+<img src="https://github.com/vulgo/bootoption/raw/master/screenshot.png" alt="bootoption screenshot" width="682" />
 </p>
 
-A command line utility for EFI boot menu manipulation on macOS. Like efibootmgr. Report bugs [here on GitHub](https://github.com/vulgo/bootoption/issues).
+EFI boot menu manipulation for macOS. Like efibootmgr. Report bugs [here on GitHub](https://github.com/vulgo/bootoption/issues).
 
 ## Installing
 
@@ -32,7 +29,7 @@ available commands:
 - <strong>delete</strong>&nbsp;&nbsp;delete variables from NVRAM
 - <strong>reboot</strong>&nbsp;&nbsp;reboot to firmware settings
 
-bootoption \<command> without options will show the usage or options for that command, where available. Making changes to the boot menu requires sudo and working hardware NVRAM - for instance, emulated NVRAM will not work.
+bootoption \<command> without options will show the usage or options for that command, where available. Making changes to the boot menu requires sudo and working hardware NVRAM - emulated NVRAM for instance, will not work.
 
 
 #### Create a new option and add it to the boot order

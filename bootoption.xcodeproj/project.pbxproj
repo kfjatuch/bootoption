@@ -72,7 +72,6 @@
 		4D7F8FC220162EAB00C82104 /* FilePathDevicePath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePathDevicePath.swift; sourceTree = "<group>"; };
 		4D7F8FC420162EEF00C82104 /* HardDriveDevicePath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardDriveDevicePath.swift; sourceTree = "<group>"; };
 		4D7F8FC620162F1500C82104 /* EndDevicePath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndDevicePath.swift; sourceTree = "<group>"; };
-		4D862BD42013914E00C82104 /* bootoption-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "bootoption-Bridging-Header.h"; sourceTree = "<group>"; };
 		4D8CEE3F2184B01300C82104 /* ProgramInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramInfo.swift; sourceTree = "<group>"; };
 		4D8DB9FB2017BA5A00C82104 /* reboot.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = reboot.swift; sourceTree = "<group>"; };
 		4D90D7532006E86600C82104 /* NvramExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NvramExtensions.swift; sourceTree = "<group>"; };
@@ -147,7 +146,6 @@
 				4DD5EF6C1FF91D8600C82104 /* bootoption */,
 				4DD5EF6B1FF91D8600C82104 /* Products */,
 				4D461F131FFD398D00C82104 /* CommandLine */,
-				4D862BD42013914E00C82104 /* bootoption-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -408,6 +406,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
 			};
@@ -422,6 +421,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 4.2;
 			};
 			name = Release;

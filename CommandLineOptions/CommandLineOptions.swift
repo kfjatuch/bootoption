@@ -1,5 +1,5 @@
 /*
- * CommandLine.swift
+ * CommandLineOptions.swift
  * Copyright © 2014 Ben Gollmer
  * Copyright © 2017-2018 vulgo
  *
@@ -18,7 +18,7 @@
 
 import Foundation
 
-class CommandLine {
+class CommandLineOptions {
         
         private var standardError = FileHandle.standardError
         private let shortPrefix: String = "-"
@@ -26,12 +26,12 @@ class CommandLine {
         private let stopParsing: String = "--"
         private let assignmentOperator: Character = "="
         private let programInfo: ProgramInfo
-        private var formatFunction: ((String, CommandLine.format.style) -> String)?
+        private var formatFunction: ((String, CommandLineOptions.format.style) -> String)?
         
         static let fileOperand: String = "-"
 
         private var baseName: String {
-                return NSString(string: Swift.CommandLine.arguments[0]).lastPathComponent
+                return NSString(string: CommandLine.arguments[0]).lastPathComponent
         }
         
         private var usedFlags: Set<String> {
@@ -133,8 +133,8 @@ class CommandLine {
                 case unparsedArguments
         }
 
-        init(invocationHelpMessage: String = "[options]", commandHelpMessage: String? = nil, info: ProgramInfo, userFormatFunction: ((String, CommandLine.format.style) -> String)? = nil) {
-                var arguments: [String] = Swift.CommandLine.arguments
+        init(invocationHelpMessage: String = "[options]", commandHelpMessage: String? = nil, info: ProgramInfo, userFormatFunction: ((String, CommandLineOptions.format.style) -> String)? = nil) {
+                var arguments: [String] = CommandLine.arguments
                 arguments.removeFirst()
                 rawArguments = arguments
                 self.invocationHelpMessage = invocationHelpMessage
@@ -217,7 +217,7 @@ class CommandLine {
                         
                         if checkPrefix, argument.hasPrefix(shortPrefix) {
                                 
-                                if fileOperandIsValid, argument == CommandLine.fileOperand {
+                                if fileOperandIsValid, argument == CommandLineOptions.fileOperand {
                                         arguments.append(argument)
                                         continue
                                 } else if Int(argument) != nil || argument.toDouble() != nil {

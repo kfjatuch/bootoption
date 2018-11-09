@@ -1,5 +1,5 @@
 /*
- * CommandLineExtensions.swift
+ * CommandLineOptionsExtensions.swift
  * Copyright © 2014 Ben Gollmer
  * Copyright © 2017-2018 vulgo
  *
@@ -18,7 +18,7 @@
 
 import Foundation
 
-extension CommandLine {
+extension CommandLineOptions {
         
         private var activeCommandOrProgramName: String {
                 return activeCommand ?? programInfo.name
@@ -71,19 +71,19 @@ extension CommandLine {
                 }
                 
                 if let string = arguments as? String {
-                        CommandLine.parseErrorsVars.addArgument(string)
+                        CommandLineOptions.parseErrorsVars.addArgument(string)
                 } else if let stringArray = arguments as? [String] {
-                        CommandLine.parseErrorsVars.addArguments(stringArray)
+                        CommandLineOptions.parseErrorsVars.addArguments(stringArray)
                 }
                 
                 if let string = options as? String {
-                        CommandLine.parseErrorsVars.addOption(string)
+                        CommandLineOptions.parseErrorsVars.addOption(string)
                 } else if let option = options as? Option {
-                        CommandLine.parseErrorsVars.addOption(option)
+                        CommandLineOptions.parseErrorsVars.addOption(option)
                 } else if let stringArray = options as? [String] {
-                        CommandLine.parseErrorsVars.addOptions(stringArray)
+                        CommandLineOptions.parseErrorsVars.addOptions(stringArray)
                 } else if let optionArray = options as? [Option] {
-                        CommandLine.parseErrorsVars.addOptions(optionArray)
+                        CommandLineOptions.parseErrorsVars.addOptions(optionArray)
                 }
                 
                 let options = "'" + parseErrorsVars.options.joined(separator: "', '") + "'"

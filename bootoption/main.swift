@@ -42,7 +42,7 @@ var programInfo = ProgramInfo(name: "bootoption", version: "0.2.99", copyright: 
 
 Debug.log("Version %@", type: .info, argsList: programInfo.version)
 
-var commandLine = CommandLine(invocationHelpMessage: "<command> [options]\n\navailable commands:", commandHelpMessage: "\nfor command usage use: %@ <command>", info: programInfo)
+var commandLine = CommandLineOptions(invocationHelpMessage: "<command> [options]\n\navailable commands:", commandHelpMessage: "\nfor command usage use: %@ <command>", info: programInfo)
 let listCommand = Command("list", helpMessage: "show the firmware boot menu")
 let infoCommand = Command("info", helpMessage: "show an option's properties")
 let createCommand = Command("create", helpMessage: "create a new EFI load option")

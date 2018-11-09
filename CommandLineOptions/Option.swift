@@ -289,7 +289,7 @@ class FilePathOption: Option {
         
         var fileExists: Bool {
                 if let path = value {
-                        return path == CommandLine.fileOperand ? true : FileManager.default.fileExists(atPath: path)
+                        return path == CommandLineOptions.fileOperand ? true : FileManager.default.fileExists(atPath: path)
                 } else {
                         return false
                 }
@@ -321,7 +321,7 @@ class InputFilePathOption: FilePathOption {
                         return nil
                 }
                 switch value! {
-                case CommandLine.fileOperand:
+                case CommandLineOptions.fileOperand:
                         return FileHandle.init(fileDescriptor: FileHandle.standardInput.fileDescriptor, closeOnDealloc: true)
                 default:
                         if let path = value {
@@ -351,7 +351,7 @@ class OutputFilePathOption: FilePathOption {
                         return nil
                 }
                 switch value! {
-                case CommandLine.fileOperand:
+                case CommandLineOptions.fileOperand:
                         return FileHandle.init(fileDescriptor: FileHandle.standardOutput.fileDescriptor, closeOnDealloc: true)
                 default:
                         if let path = value {
